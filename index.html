@@ -3545,25 +3545,21 @@ function planoLimiteUsuarios() {
 // Toast de upgrade contextual com preço
 function toastUpgrade(recurso) {
   const proximo = {
-    free:  { plano: 'Basic', preco: 'R$ 49/mês',  key: 'basic'  },
-    basic: { plano: 'Pro',   preco: 'R$ 99/mês',  key: 'pro'    },
-    pro:   { plano: 'Enterprise', preco: 'R$ 249/mês', key: 'enterprise' },
+    free:  { plano: 'Basic',      preco: 'R$ 49/mês'  },
+    basic: { plano: 'Pro',        preco: 'R$ 99/mês'  },
+    pro:   { plano: 'Enterprise', preco: 'R$ 249/mês' },
   }[planoAtual()];
 
   const msgs = {
-    csv:    'Exportação CSV',
-    marca:  'Personalização de marca',
-    pwa:    'PWA instalável',
+    csv:      'Exportação CSV',
+    marca:    'Personalização de marca',
+    pwa:      'PWA instalável',
     usuarios: 'Mais usuários',
   };
 
   if (!proximo) return;
   const msg = msgs[recurso] || recurso;
-  toast(
-    `🔒 ${msg} disponível no plano <b>${proximo.plano}</b> — ${proximo.preco}. ` +
-    `<span style="cursor:pointer;text-decoration:underline" onclick="navegar('plano')">Ver planos →</span>`,
-    5000
-  );
+  toast(`🔒 ${msg} disponível no plano ${proximo.plano} (${proximo.preco}). Acesse Meu Plano para fazer upgrade.`, 5000);
 }
 
 function planoAtual() {
@@ -3843,7 +3839,7 @@ async function adminCarregar() {
   if (_sb && currentCompany?.id !== 'demo_company') {
     const { data, error } = await _sb
       .from('companies')
-      .select('*, profiles(id, name, role, email)')
+      .select('*, profiles(id, name, role)')
       .order('created_at', { ascending: false });
 
     if (error) { toast('❌ Erro ao carregar: ' + error.message); return; }
