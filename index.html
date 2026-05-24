@@ -707,16 +707,19 @@
     // GATEWAYS DE PAGAMENTO
     // ════════════════════════════════════════
     const PAGAMENTO_CONFIG = {
-      // Mercado Pago — trocar por APP_USR-... em produção
-      MP_ACCESS_TOKEN: '', // ← fica no Supabase Secrets (nunca no frontend)
+      // Mercado Pago — token fica no Supabase Secrets
+      MP_ACCESS_TOKEN: '', // ← nunca no frontend
 
-      // Stripe — trocar por sk_live_... em produção
-      STRIPE_SECRET_KEY: '', // ← fica no Supabase Secrets (nunca no frontend)
+      // Stripe — chaves ficam no Supabase Secrets
+      STRIPE_SECRET_KEY: '', // ← nunca no frontend
       STRIPE_PRICE_IDS: {
         basic:      'price_1TYuQZCVpW5d3wGItmu8wD4O',
         pro:        'price_1TYuQuCVpW5d3wGIK0xYJEoa',
         enterprise: 'price_1TYuRHCVpW5d3wGIVDFJI6uq'
       },
+
+      // URL do app (nova URL de produção)
+      APP_URL: 'https://nexos-erp-blush.vercel.app',
 
       // URL das Edge Functions no Supabase
       EDGE_URL: 'https://awdgnxwmzestfdfuabcb.supabase.co/functions/v1',
@@ -1055,7 +1058,7 @@
         </table>
       </div>
       <div class="tbl-footer">
-        <button class="btn btn-secondary btn-sm" onclick="exportCSV(receitas,'receitas')">⬇ Exportar CSV</button>
+        <button class="btn btn-secondary btn-sm" id="btnCsvReceitas" onclick="exportCSV(receitas,'receitas')">⬇ Exportar CSV</button>
       </div>
     </section>
 
@@ -1156,7 +1159,7 @@
         </table>
       </div>
       <div class="tbl-footer">
-        <button class="btn btn-secondary btn-sm" onclick="exportCSV(despesas,'despesas')">⬇ Exportar CSV</button>
+        <button class="btn btn-secondary btn-sm" id="btnCsvDespesas" onclick="exportCSV(despesas,'despesas')">⬇ Exportar CSV</button>
       </div>
     </section>
 
@@ -1285,7 +1288,7 @@
         </table>
       </div>
       <div class="tbl-footer">
-        <button class="btn btn-secondary btn-sm" onclick="exportCSV(clientes,'clientes')">⬇ Exportar CSV</button>
+        <button class="btn btn-secondary btn-sm" id="btnCsvClientes" onclick="exportCSV(clientes,'clientes')">⬇ Exportar CSV</button>
       </div>
     </section>
 
@@ -1393,7 +1396,30 @@
         </table>
       </div>
       <div class="tbl-footer">
-        <button class="btn btn-secondary btn-sm" onclick="exportCSV(produtos,'produtos')">⬇ Exportar CSV</button>
+        <button class="btn btn-secondary btn-sm" id="btnCsvProdutos" onclick="exportCSV(produtos,'produtos')">⬇ Exportar CSV</button>
+        <button class="btn btn-secondary btn-sm" onclick="exportCSV(movimentacoes,'movimentacoes')">⬇ Histórico CSV</button>
+      </div>
+
+      <!-- Histórico de movimentações -->
+      <div style="margin-top:24px">
+        <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
+          📋 Histórico de movimentações
+          <button class="btn btn-ghost btn-sm" onclick="prodHistoricoRender()">🔄</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Data/Hora</th>
+                <th>Produto</th>
+                <th>Tipo</th>
+                <th>Qtd</th>
+                <th>Motivo</th>
+              </tr>
+            </thead>
+            <tbody id="prodHistoricoTbody"></tbody>
+          </table>
+        </div>
       </div>
     </section>
 
@@ -1736,7 +1762,16 @@
 <!-- Modal: Detalhes empresa (Admin) -->
 <div class="modal-overlay" id="modalEmpresaAdmin">
   <div class="modal" style="max-width:520px">
-    <h3 id="modalEmpresaNome">Empresa</h3>
+    <!-- Nome da empresa editável -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <div style="flex:1;min-width:0">
+        <label style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-light);display:block;margin-bottom:4px">Nome da empresa</label>
+        <input type="text" id="modalEmpresaNomeInput" placeholder="Nome da empresa"
+          style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:9px;font-size:.96rem;font-weight:700;font-family:inherit;outline:none;box-sizing:border-box;transition:border-color .15s"
+          onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+      </div>
+      <button class="btn btn-primary btn-sm" style="flex-shrink:0;margin-top:16px" onclick="adminSalvarNomeEmpresa()">✓ Salvar</button>
+    </div>
     <div class="admin-detail-grid" id="modalEmpresaDetalhes"></div>
     <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
     <div style="font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:10px">Alterar plano</div>
@@ -1788,7 +1823,7 @@
           <div style="font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:4px" id="logoNomeArquivo">Nenhum arquivo selecionado</div>
           <div style="font-size:.7rem;color:var(--text-muted)">PNG, JPG ou SVG · Máx 500KB</div>
         </div>
-        <button class="btn btn-secondary btn-sm" onclick="$('adminLogoUpload').click()" style="flex-shrink:0">
+        <button class="btn btn-secondary btn-sm" onclick="logoTriggerUpload()" style="flex-shrink:0">
           📁 Escolher
         </button>
       </div>
@@ -1978,6 +2013,7 @@ let clientes  = [];
 let produtos  = [];
 let vendas    = [];
 let carrinho  = [];
+let movimentacoes = []; // histórico de entradas/saídas de estoque
 
 // Edição
 let recEdit   = null;
@@ -2270,7 +2306,8 @@ function iniciarApp(user, company) {
   despesas = carregar('despesas');
   clientes = carregar('clientes');
   produtos = carregar('produtos');
-  vendas   = carregar('vendas');
+  vendas        = carregar('vendas');
+    movimentacoes = carregar('movimentacoes');
 
   // Seed demo
   if (company.id === 'demo_company') seedDemo();
@@ -2284,6 +2321,7 @@ function iniciarApp(user, company) {
   const meUser = todosUsers.find(u => u.email === user.email);
   currentPerfil = meUser?.perfil || (isAdmin() ? 'admin' : 'vendedor');
   aplicarPermissoes();
+  planoAtualizarUI();
 
   // Init módulos
   recInit(); despInit(); cliInit(); prodInit();
@@ -2376,10 +2414,12 @@ function navegar(page) {
   if (page === 'receitas')    recRender();
   if (page === 'despesas')    despRender();
   if (page === 'clientes')    cliRender();
-  if (page === 'produtos')    prodRender();
+  if (page === 'produtos')    { prodRender(); prodHistoricoRender(); }
   if (page === 'vendas')      { vendRenderCatalogo(); vendRenderHistorico(); vendStats(); }
   if (page === 'plano')       planoRenderPagina();
   if (page === 'admin')       adminCarregar();
+  // Atualizar UI de restrições em todas as telas
+  planoAtualizarUI();
 }
 
 function toggleSidebar() {
@@ -2389,6 +2429,42 @@ function toggleSidebar() {
 function closeSidebar() {
   $('sidebar').classList.remove('open');
   $('sidebarOverlay').classList.remove('open');
+}
+
+
+function prodHistoricoRender() {
+  const tbody = $('prodHistoricoTbody');
+  if (!tbody) return;
+
+  const lista = [...movimentacoes]
+    .sort((a, b) => b.data.localeCompare(a.data))
+    .slice(0, 50);
+
+  if (!lista.length) {
+    tbody.innerHTML = `<tr><td colspan="5" class="empty-state"><span class="empty-ico">📋</span><p>Nenhuma movimentação registrada.</p></td></tr>`;
+    return;
+  }
+
+  const tipoLabel = {
+    entrada: '<span class="badge badge-ok">📥 Entrada</span>',
+    saida:   '<span class="badge badge-vencido">📤 Saída</span>',
+    venda:   '<span class="badge badge-info">🛒 Venda</span>',
+    ajuste:  '<span class="badge badge-pendente">🔧 Ajuste</span>',
+  };
+
+  tbody.innerHTML = lista.map(m => {
+    const d   = new Date(m.data);
+    const dt  = d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+    const cor = m.qtd > 0 ? 'var(--success)' : 'var(--danger)';
+    const sinal = m.qtd > 0 ? '+' : '';
+    return `<tr>
+      <td class="mono" style="font-size:.75rem;white-space:nowrap">${dt}</td>
+      <td style="font-size:.82rem;font-weight:500">${esc(m.produto)}</td>
+      <td>${tipoLabel[m.tipo] || m.tipo}</td>
+      <td class="mono" style="font-weight:700;color:${cor}">${sinal}${m.qtd}</td>
+      <td style="font-size:.78rem;color:var(--text-muted)">${esc(m.motivo||'—')}</td>
+    </tr>`;
+  }).join('');
 }
 
 /* ═══════════════════════════════════════════
@@ -2837,14 +2913,42 @@ function prodSalvar() {
   if (!nome) { toast('⚠️ Informe o nome do produto.'); return; }
 
   if (prodEdit) {
+    // Edição direta (via Ajuste Manual) — atualiza tudo
+    const antes = prodEdit.quantidade;
     Object.assign(prodEdit, { nome, categoria:categ, quantidade:qtd, preco, minimo:min });
+    // Registrar movimentação se quantidade mudou
+    if (qtd !== antes) {
+      prodRegistrarMov(prodEdit.id, nome, qtd - antes, 'ajuste', 'Ajuste manual');
+    }
     prodEdit = null;
     $('prodFormTitle').textContent = '➕ Novo produto';
     $('prodCancelarBtn').style.display = 'none';
     toast('✅ Produto atualizado!');
   } else {
-    produtos.push({ id:uid(), company_id:currentCompany.id, nome, categoria:categ, quantidade:qtd, preco, minimo:min });
-    toast('✅ Produto adicionado!');
+    // Novo produto — verificar se já existe com mesmo nome
+    const normalizar = s => s.toLowerCase().trim().replace(/\s+/g,' ');
+    const existente = produtos.find(p =>
+      normalizar(p.nome) === normalizar(nome)
+    );
+
+    if (existente) {
+      // Produto já existe — somar estoque em vez de duplicar
+      const antes = existente.quantidade;
+      existente.quantidade += qtd;
+      // Atualizar preço e mínimo se informados
+      if (preco > 0) existente.preco = preco;
+      if (min  > 0) existente.minimo = min;
+      if (categ) existente.categoria = categ;
+      // Registrar entrada no histórico
+      prodRegistrarMov(existente.id, existente.nome, qtd, 'entrada', 'Nova entrada de estoque');
+      toast(`✅ Entrada registrada! "${nome}": ${antes} → ${existente.quantidade} unidades`);
+    } else {
+      // Produto realmente novo
+      const novoProd = { id:uid(), company_id:currentCompany.id, nome, categoria:categ, quantidade:qtd, preco, minimo:min };
+      produtos.push(novoProd);
+      if (qtd > 0) prodRegistrarMov(novoProd.id, nome, qtd, 'entrada', 'Estoque inicial');
+      toast('✅ Produto cadastrado!');
+    }
   }
   salvar('produtos', produtos);
   prodLimparForm();
@@ -2852,6 +2956,21 @@ function prodSalvar() {
   prodAtualizarFiltroCateg();
   vendRenderCatalogo();
   dashAtualizar();
+}
+
+// Registrar movimentação de estoque com data/hora
+function prodRegistrarMov(prodId, prodNome, qtd, tipo, motivo) {
+  movimentacoes.push({
+    id:         uid(),
+    company_id: currentCompany.id,
+    produto_id: prodId,
+    produto:    prodNome,
+    qtd:        qtd,
+    tipo:       tipo,       // 'entrada', 'saida', 'ajuste', 'venda'
+    motivo:     motivo,
+    data:       new Date().toISOString(),
+  });
+  salvar('movimentacoes', movimentacoes);
 }
 function prodLimparForm() {
   $('prodNome').value  = '';
@@ -2941,9 +3060,12 @@ function prodConfirmarMovimentacao() {
   }
 
   salvar('produtos', produtos);
+  // Registrar no histórico
+  prodRegistrarMov(id, p.nome, tipo === 'entrada' ? qtd : -qtd, tipo,
+    $('movMotivo').value.trim() || (tipo === 'entrada' ? 'Entrada manual' : 'Saída manual'));
   $('modalMovimentacao').classList.remove('open');
 
-  const label = tipo === 'entrada' ? 'Entrada' : 'Saída';
+  const label = tipo === 'entrada' ? '📥 Entrada' : '📤 Saída';
   toast(`✅ ${label} de ${qtd} un. registrada. Estoque: ${antes} → ${p.quantidade}`);
   prodRender();
   vendRenderCatalogo();
@@ -3257,6 +3379,11 @@ function dashAtualizar() {
    EXPORT CSV
 ═══════════════════════════════════════════ */
 function exportCSV(lista, nome) {
+  // Bloquear para plano Free
+  if (!planoTemRecurso('csv')) {
+    toastUpgrade('csv');
+    return;
+  }
   if (!lista.length) { toast('Nenhum dado para exportar.'); return; }
   const keys = Object.keys(lista[0]).filter(k => k !== 'company_id');
   const linhas = [
@@ -3304,6 +3431,47 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
 }
 
 
+
+/* ═══════════════════════════════════════════
+   CONTROLE DE UI POR PLANO
+═══════════════════════════════════════════ */
+function planoAtualizarUI() {
+  const temCSV   = planoTemRecurso('csv');
+  const temMarca = planoTemRecurso('marca');
+  const limUsr   = planoLimiteUsuarios();
+
+  // Botões CSV — mostrar com cadeado se plano Free
+  ['btnCsvReceitas','btnCsvDespesas','btnCsvClientes','btnCsvProdutos'].forEach(id => {
+    const btn = $(id);
+    if (!btn) return;
+    if (!temCSV) {
+      btn.innerHTML  = '🔒 Exportar CSV';
+      btn.title      = `Disponível a partir do plano Basic (R$ 49/mês)`;
+      btn.style.opacity = '0.55';
+    } else {
+      btn.innerHTML  = '⬇ Exportar CSV';
+      btn.title      = '';
+      btn.style.opacity = '1';
+    }
+  });
+
+  // Badge de limite de usuários no botão "+ Novo usuário"
+  const atual   = getUsers().filter(u => u.company_id === currentCompany?.id).length;
+  const btnUsr  = document.querySelector('[onclick="usuarioAbrirNovo()"]');
+  if (btnUsr) {
+    btnUsr.title = `${atual}/${limUsr} usuários (plano ${planoAtualNome()})`;
+    if (atual >= limUsr) {
+      btnUsr.innerHTML = `🔒 + Novo usuário (${atual}/${limUsr})`;
+      btnUsr.style.opacity = '0.65';
+    } else {
+      btnUsr.innerHTML = `+ Novo usuário (${atual}/${limUsr})`;
+      btnUsr.style.opacity = '1';
+    }
+  }
+
+  // Botão "Salvar personalização" — ocultar se plano da empresa não tem
+  // (verificado no adminSalvarMarca, não precisa ocultar o botão)
+}
 /* ═══════════════════════════════════════════
    CONTROLE DE PLANOS
 ═══════════════════════════════════════════ */
@@ -3316,11 +3484,45 @@ const PLANOS_CONFIG = {
 
 // Limites por plano
 const PLANO_LIMITES = {
-  free:       { produtos: 50,  clientes: 100 },
-  basic:      { produtos: 9999, clientes: 9999 },
-  pro:        { produtos: 9999, clientes: 9999 },
-  enterprise: { produtos: 9999, clientes: 9999 },
+  free:       { produtos: 50,   clientes: 100, usuarios: 1,  csv: false, marca: false, pwa: false },
+  basic:      { produtos: 9999, clientes: 9999, usuarios: 1,  csv: true,  marca: false, pwa: false },
+  pro:        { produtos: 9999, clientes: 9999, usuarios: 3,  csv: true,  marca: true,  pwa: true  },
+  enterprise: { produtos: 9999, clientes: 9999, usuarios: 99, csv: true,  marca: true,  pwa: true  },
 };
+
+// Verifica se o plano atual tem acesso a um recurso
+function planoTemRecurso(recurso) {
+  return PLANO_LIMITES[planoAtual()]?.[recurso] === true;
+}
+
+// Limite de usuários por plano
+function planoLimiteUsuarios() {
+  return PLANO_LIMITES[planoAtual()]?.usuarios || 1;
+}
+
+// Toast de upgrade contextual com preço
+function toastUpgrade(recurso) {
+  const proximo = {
+    free:  { plano: 'Basic', preco: 'R$ 49/mês',  key: 'basic'  },
+    basic: { plano: 'Pro',   preco: 'R$ 99/mês',  key: 'pro'    },
+    pro:   { plano: 'Enterprise', preco: 'R$ 249/mês', key: 'enterprise' },
+  }[planoAtual()];
+
+  const msgs = {
+    csv:    'Exportação CSV',
+    marca:  'Personalização de marca',
+    pwa:    'PWA instalável',
+    usuarios: 'Mais usuários',
+  };
+
+  if (!proximo) return;
+  const msg = msgs[recurso] || recurso;
+  toast(
+    `🔒 ${msg} disponível no plano <b>${proximo.plano}</b> — ${proximo.preco}. ` +
+    `<span style="cursor:pointer;text-decoration:underline" onclick="navegar('plano')">Ver planos →</span>`,
+    5000
+  );
+}
 
 function planoAtual() {
   return currentCompany?.plan || 'free';
@@ -3333,11 +3535,23 @@ function planoAtualNome() {
 function planoVerificarLimite(tipo) {
   const limite = PLANO_LIMITES[planoAtual()];
   if (tipo === 'produtos' && produtos.length >= limite.produtos) {
-    toast(`⚠️ Limite do plano ${planoAtualNome()}: ${limite.produtos} produtos. Faça upgrade!`);
+    const prox = planoAtual() === 'free' ? 'Basic (R$ 49/mês)' : 'Pro (R$ 99/mês)';
+    toast(
+      `🔒 Limite do plano ${planoAtualNome()}: ${limite.produtos} produtos. ` +
+      `Faça upgrade para o ${prox} e tenha produtos ilimitados. ` +
+      `<span style="cursor:pointer;text-decoration:underline" onclick="navegar('plano')">Ver planos →</span>`,
+      6000
+    );
     return false;
   }
   if (tipo === 'clientes' && clientes.length >= limite.clientes) {
-    toast(`⚠️ Limite do plano ${planoAtualNome()}: ${limite.clientes} clientes. Faça upgrade!`);
+    const prox = planoAtual() === 'free' ? 'Basic (R$ 49/mês)' : 'Pro (R$ 99/mês)';
+    toast(
+      `🔒 Limite do plano ${planoAtualNome()}: ${limite.clientes} clientes. ` +
+      `Faça upgrade para o ${prox} e tenha clientes ilimitados. ` +
+      `<span style="cursor:pointer;text-decoration:underline" onclick="navegar('plano')">Ver planos →</span>`,
+      6000
+    );
     return false;
   }
   return true;
@@ -3706,7 +3920,8 @@ function adminAbrirEmpresa(id) {
   if (!e) return;
   adminEmpresaSel = e;
 
-  $('modalEmpresaNome').textContent = e.nome;
+  // Preencher campo de nome editável
+  if ($('modalEmpresaNomeInput')) $('modalEmpresaNomeInput').value = e.nome || '';
   $('modalEmpresaDetalhes').innerHTML = `
     <div class="admin-detail-item"><div class="lbl">E-mail</div><div class="val">${esc(e.email)}</div></div>
     <div class="admin-detail-item"><div class="lbl">Plano</div><div class="val"><span class="plan-chip plan-${e.plano}">${PLANOS_CONFIG[e.plano]?.nome||e.plano}</span></div></div>
@@ -3778,32 +3993,62 @@ function syncColor(input) {
 
 // Upload de logo — converte para base64 e salva
 function logoHandleUpload(input) {
-  const file = input.files[0];
+  const file = input.files && input.files[0];
   if (!file) return;
 
   if (file.size > 512 * 1024) {
     toast('⚠️ Logo muito grande. Máximo 500KB.');
+    input.value = '';
     return;
   }
 
+  // Mostrar nome imediatamente
+  if ($('logoNomeArquivo')) $('logoNomeArquivo').textContent = '⏳ Carregando ' + file.name + '...';
+
   const reader = new FileReader();
-  reader.onload = function(e) {
-    const base64 = e.target.result;
+
+  reader.onerror = function() {
+    toast('❌ Erro ao ler o arquivo. Tente novamente.');
+    if ($('logoNomeArquivo')) $('logoNomeArquivo').textContent = 'Erro ao carregar';
+  };
+
+  reader.onload = function(ev) {
+    const base64 = ev.target.result;
 
     // Mostrar preview
     const img = $('logoPreviewImg');
     const ph  = $('logoPreviewPlaceholder');
-    if (img) { img.src = base64; img.style.display = 'block'; }
-    if (ph)  ph.style.display = 'none';
+    const wrap= $('logoPreviewWrap');
 
-    // Atualizar campo URL com o base64
+    if (img) {
+      img.src = base64;
+      img.style.display = 'block';
+      // Forçar reflow para garantir renderização no mobile
+      img.offsetHeight;
+    }
+    if (ph)   ph.style.display = 'none';
+    if (wrap) wrap.style.borderStyle = 'solid';
+
+    // Salvar no campo de URL
     if ($('adminBrandLogo')) $('adminBrandLogo').value = base64;
-    if ($('logoNomeArquivo')) $('logoNomeArquivo').textContent = file.name;
+    if ($('logoNomeArquivo')) $('logoNomeArquivo').textContent = '✅ ' + file.name;
 
     brandPreviewAtualizar();
-    toast('✅ Logo carregado! Clique em Salvar.');
+    toast('✅ Logo carregado! Clique em 💾 Salvar personalização.');
   };
+
   reader.readAsDataURL(file);
+}
+
+// Trigger alternativo para mobile (alguns Android não disparam onchange no input file)
+function logoTriggerUpload() {
+  const input = $('adminLogoUpload');
+  if (!input) return;
+  // Recriar o input para limpar cache de eventos
+  const novo = input.cloneNode(true);
+  novo.onchange = function() { logoHandleUpload(novo); };
+  input.parentNode.replaceChild(novo, input);
+  novo.click();
 }
 
 // Remover logo
@@ -3844,8 +4089,39 @@ function brandPreviewAtualizar() {
 }
 
 // Salvar personalização no localStorage (e Supabase)
+
+function adminSalvarNomeEmpresa() {
+  if (!adminEmpresaSel) return;
+  const novoNome = ($('modalEmpresaNomeInput')?.value || '').trim();
+  if (!novoNome) { toast('⚠️ Informe o nome da empresa.'); return; }
+
+  // Atualizar localmente
+  adminEmpresaSel.nome = novoNome;
+
+  // Atualizar no localStorage (companies local)
+  const companies = getCompanies();
+  const c = companies.find(x => x.id === adminEmpresaSel.id);
+  if (c) { c.name = novoNome; c.nome = novoNome; saveCompanies(companies); }
+
+  // Atualizar no Supabase
+  if (_sb && !adminEmpresaSel.id.startsWith('demo_')) {
+    _sb.from('companies').update({ name: novoNome }).eq('id', adminEmpresaSel.id).then(() => {});
+  }
+
+  // Atualizar na tabela do admin sem fechar o modal
+  adminRender();
+  toast(`✅ Nome alterado para "${novoNome}"`);
+}
 function adminSalvarMarca() {
   if (!adminEmpresaSel) return;
+
+  // Verificar se a empresa selecionada tem plano Pro+
+  const planoEmp = adminEmpresaSel.plano || 'free';
+  const temMarca = ['pro','enterprise'].includes(planoEmp);
+  if (!temMarca) {
+    toast(`🔒 Personalização de marca disponível apenas no plano Pro (R$ 99/mês) e Enterprise. Atualize o plano desta empresa primeiro.`, 5000);
+    return;
+  }
   const marca = {
     cor:  $('adminBrandColor')?.value || '#1e4f9f',
     bg:   $('adminBrandBg')?.value    || '#eef5fd',
@@ -4174,6 +4450,21 @@ async function usuarioSalvar() {
   if (!nome)  { toast('⚠️ Informe o nome.'); return; }
   if (!email) { toast('⚠️ Informe o e-mail.'); return; }
   if (!editId && senha.length < 6) { toast('⚠️ Senha mínima de 6 caracteres.'); return; }
+
+  // Verificar limite de usuários do plano (apenas ao criar novo)
+  if (!editId) {
+    const limite   = planoLimiteUsuarios();
+    const atual    = getUsers().filter(u => u.company_id === currentCompany.id).length;
+    if (atual >= limite) {
+      toastUpgrade('usuarios');
+      toast(
+        `🔒 Seu plano ${planoAtualNome()} permite até ${limite} usuário${limite > 1 ? 's' : ''}. ` +
+        `Você já tem ${atual}. Faça upgrade para adicionar mais.`, 6000
+      );
+      $('modalUsuario').classList.remove('open');
+      return;
+    }
+  }
 
   // Sempre salvar no localStorage (funciona local e serve de cache)
   const users = getUsers();
