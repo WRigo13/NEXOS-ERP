@@ -1702,11 +1702,31 @@
           <button class="btn btn-primary btn-sm" onclick="usuarioAbrirNovo()">+ Novo usuário</button>
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:16px">
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px"><div style="margin-bottom:4px"><span class="perfil-badge perfil-admin">Admin</span></div><div style="font-size:.72rem;color:var(--text-muted)">Acesso total</div></div>
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px"><div style="margin-bottom:4px"><span class="perfil-badge perfil-gerente">Gerente</span></div><div style="font-size:.72rem;color:var(--text-muted)">Comercial + financeiro leitura</div></div>
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px"><div style="margin-bottom:4px"><span class="perfil-badge perfil-financeiro">Financeiro</span></div><div style="font-size:.72rem;color:var(--text-muted)">Dashboard + financeiro</div></div>
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px"><div style="margin-bottom:4px"><span class="perfil-badge perfil-estoquista">Estoquista</span></div><div style="font-size:.72rem;color:var(--text-muted)">Somente produtos</div></div>
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px"><div style="margin-bottom:4px"><span class="perfil-badge perfil-vendedor">Vendedor</span></div><div style="font-size:.72rem;color:var(--text-muted)">Vendas + cadastrar clientes</div></div>
+          <div class="perfil-card-click" onclick="perfilVerUsuarios('admin')" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div style="margin-bottom:4px"><span class="perfil-badge perfil-admin">Admin</span></div>
+            <div style="font-size:.72rem;color:var(--text-muted)">Acesso total</div>
+            <div style="font-size:.68rem;color:var(--accent);margin-top:4px">👆 Ver usuários</div>
+          </div>
+          <div class="perfil-card-click" onclick="perfilVerUsuarios('gerente')" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div style="margin-bottom:4px"><span class="perfil-badge perfil-gerente">Gerente</span></div>
+            <div style="font-size:.72rem;color:var(--text-muted)">Comercial + financeiro leitura</div>
+            <div style="font-size:.68rem;color:var(--accent);margin-top:4px">👆 Ver usuários</div>
+          </div>
+          <div class="perfil-card-click" onclick="perfilVerUsuarios('financeiro')" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div style="margin-bottom:4px"><span class="perfil-badge perfil-financeiro">Financeiro</span></div>
+            <div style="font-size:.72rem;color:var(--text-muted)">Dashboard + financeiro</div>
+            <div style="font-size:.68rem;color:var(--accent);margin-top:4px">👆 Ver usuários</div>
+          </div>
+          <div class="perfil-card-click" onclick="perfilVerUsuarios('estoquista')" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div style="margin-bottom:4px"><span class="perfil-badge perfil-estoquista">Estoquista</span></div>
+            <div style="font-size:.72rem;color:var(--text-muted)">Somente produtos</div>
+            <div style="font-size:.68rem;color:var(--accent);margin-top:4px">👆 Ver usuários</div>
+          </div>
+          <div class="perfil-card-click" onclick="perfilVerUsuarios('vendedor')" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div style="margin-bottom:4px"><span class="perfil-badge perfil-vendedor">Vendedor</span></div>
+            <div style="font-size:.72rem;color:var(--text-muted)">Vendas + cadastrar clientes</div>
+            <div style="font-size:.68rem;color:var(--accent);margin-top:4px">👆 Ver usuários</div>
+          </div>
         </div>
         <div class="users-grid" id="usuariosGrid"></div>
       </div>
@@ -1986,6 +2006,29 @@
   </div>
 </div>
 
+
+<!-- Modal: Usuários por Perfil -->
+<div class="modal-overlay" id="modalPerfilUsuarios">
+  <div class="modal" style="max-width:500px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h3 id="modalPerfilTitulo" style="margin:0">👤 Usuários</h3>
+      <button class="btn btn-primary btn-sm" id="btnNovoPerfilUsuario" onclick="">➕ Novo usuário neste perfil</button>
+    </div>
+
+    <!-- Módulos liberados -->
+    <div id="modalPerfilModulos" style="background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:11px 14px;margin-bottom:16px">
+      <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:8px">Módulos liberados</div>
+      <div id="modalPerfilModulosList" style="display:flex;flex-wrap:wrap;gap:5px"></div>
+    </div>
+
+    <!-- Lista de usuários com credenciais -->
+    <div id="modalPerfilUsersList" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto"></div>
+
+    <div class="modal-actions" style="margin-top:14px">
+      <button class="btn btn-secondary" onclick="$('modalPerfilUsuarios').classList.remove('open')">Fechar</button>
+    </div>
+  </div>
+</div>
 <div id="toast"></div>
 
 <!-- Banner PWA Install -->
@@ -3514,6 +3557,124 @@ function planoAtualizarUI() {
   // Botão "Salvar personalização" — ocultar se plano da empresa não tem
   // (verificado no adminSalvarMarca, não precisa ocultar o botão)
 }
+
+function perfilVerUsuarios(perfil) {
+  const cfg = PERMISSOES[perfil];
+  if (!cfg) return;
+
+  // Título e badge
+  const badges = {
+    admin:      'perfil-admin',
+    gerente:    'perfil-gerente',
+    financeiro: 'perfil-financeiro',
+    estoquista: 'perfil-estoquista',
+    vendedor:   'perfil-vendedor',
+  };
+  document.getElementById('modalPerfilTitulo').innerHTML =
+    `<span class="perfil-badge ${badges[perfil]}" style="font-size:.8rem">${cfg.label}</span>
+     <span style="font-size:.9rem;font-weight:600;margin-left:8px">— Usuários cadastrados</span>`;
+
+  // Módulos liberados
+  const mList = document.getElementById('modalPerfilModulosList');
+  if (mList) {
+    mList.innerHTML = cfg.paginas.map(p =>
+      `<span style="background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:2px 9px;font-size:.72rem">${MODULO_LABELS[p]||p}</span>`
+    ).join('');
+  }
+
+  // Botão novo usuário pré-selecionando o perfil
+  const btnNovo = document.getElementById('btnNovoPerfilUsuario');
+  if (btnNovo) {
+    btnNovo.onclick = () => {
+      $('modalPerfilUsuarios').classList.remove('open');
+      usuarioAbrirNovo();
+      setTimeout(() => {
+        if ($('usuarioPerfil')) {
+          $('usuarioPerfil').value = perfil;
+          usuarioAtualizarPreview();
+        }
+      }, 100);
+    };
+  }
+
+  // Usuários com este perfil na empresa selecionada
+  const companyId = adminEmpresaSel?.id || currentCompany?.id;
+  const todos     = getUsers().filter(u =>
+    u.company_id === companyId && (u.perfil || 'vendedor') === perfil
+  );
+
+  const lista = document.getElementById('modalPerfilUsersList');
+  if (!lista) return;
+
+  if (!todos.length) {
+    lista.innerHTML = `
+      <div style="text-align:center;padding:24px 0;color:var(--text-muted)">
+        <div style="font-size:1.8rem;margin-bottom:8px">👤</div>
+        <div style="font-size:.86rem">Nenhum usuário com perfil <b>${cfg.label}</b> cadastrado.</div>
+        <div style="font-size:.78rem;color:var(--text-light);margin-top:4px">Clique em "Novo usuário neste perfil" para adicionar.</div>
+      </div>`;
+  } else {
+    const cores = { admin:'#c62828', gerente:'#283593', financeiro:'#1b5e20', estoquista:'#f57f17', vendedor:'#0d47a1' };
+    lista.innerHTML = todos.map(u => `
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px 15px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div style="width:36px;height:36px;border-radius:50%;background:${cores[perfil]||'#555'};
+            display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:.9rem;flex-shrink:0">
+            ${(u.name||u.email)[0].toUpperCase()}
+          </div>
+          <div>
+            <div style="font-weight:600;font-size:.9rem">${esc(u.name||'—')}</div>
+            <div style="font-size:.75rem;color:var(--text-muted)">${esc(u.email)}</div>
+          </div>
+        </div>
+        <!-- Credenciais de acesso -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+          <div style="font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
+            color:var(--text-light);margin-bottom:8px">🔐 Credenciais de acesso</div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:.72rem;color:var(--text-muted);min-width:48px">Login</span>
+              <code style="font-size:.78rem;background:var(--surface2);padding:3px 8px;
+                border-radius:5px;flex:1;word-break:break-all">${esc(u.email)}</code>
+              <button class="btn btn-secondary btn-icon btn-sm" style="padding:3px 8px;font-size:.7rem"
+                onclick="navigator.clipboard.writeText('${esc(u.email)}').then(()=>toast('📋 E-mail copiado!'))">
+                📋
+              </button>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:.72rem;color:var(--text-muted);min-width:48px">Senha</span>
+              <code id="pw_${u.id}" style="font-size:.78rem;background:var(--surface2);padding:3px 8px;
+                border-radius:5px;flex:1;letter-spacing:2px">••••••••</code>
+              <button class="btn btn-secondary btn-icon btn-sm" style="padding:3px 8px;font-size:.7rem"
+                onclick="toggleSenha('${u.id}','${esc(u.password||'')}')">
+                👁
+              </button>
+              ${u.password ? `<button class="btn btn-secondary btn-icon btn-sm" style="padding:3px 8px;font-size:.7rem"
+                onclick="navigator.clipboard.writeText('${esc(u.password||'')}').then(()=>toast('📋 Senha copiada!'))">
+                📋
+              </button>` : ''}
+            </div>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+
+  $('modalPerfilUsuarios').classList.add('open');
+}
+
+// Mostrar/ocultar senha
+function toggleSenha(id, senha) {
+  const el = document.getElementById('pw_' + id);
+  if (!el) return;
+  if (el.textContent === '••••••••') {
+    el.textContent = senha || '(senha não disponível)';
+    el.style.letterSpacing = 'normal';
+  } else {
+    el.textContent = '••••••••';
+    el.style.letterSpacing = '2px';
+  }
+}
+
 /* ═══════════════════════════════════════════
    CONTROLE DE PLANOS
 ═══════════════════════════════════════════ */
