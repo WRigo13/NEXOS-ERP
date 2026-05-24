@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexos — Gestão Empresarial para MEI</title>
+  <meta name="description" content="Controle financeiro, estoque, clientes e vendas em um só lugar. Simples, rápido e feito para o seu negócio.">
+  <meta property="og:title" content="Nexos — Gestão Empresarial para MEI">
+  <meta property="og:description" content="Controle financeiro, estoque e vendas em um só lugar. Grátis para começar.">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --azul:       #50A9FB;
+      --azul-dark:  #1a6fbd;
+      --azul-deep:  #0d3f7a;
+      --text:       #0a1628;
+      --text-muted: #4a6080;
+      --text-light: #8aa0b8;
+      --bg:         #f0f7ff;
+      --surface:    #ffffff;
+      --border:     #d0e4f7;
+      --radius:     16px;
+      --radius-sm:  10px;
+      --shadow:     0 4px 24px rgba(26,111,189,0.10);
+      --shadow-lg:  0 16px 60px rgba(26,111,189,0.16);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.6;
+    }
+
+    /* ─── NAV ─────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(240,247,255,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 5%;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px;
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; }
+    .nav-logo {
+      width: 36px; height: 36px; border-radius: 9px;
+      background: linear-gradient(135deg, var(--azul-dark), var(--azul));
+      display: flex; align-items: center; justify-content: center;
+    }
+    .nav-name { font-size: 1.15rem; font-weight: 800; color: var(--azul-dark); letter-spacing: -0.3px; }
+    .nav-cta {
+      background: var(--azul-dark); color: white;
+      padding: 9px 22px; border-radius: 999px; font-size: 0.88rem; font-weight: 700;
+      text-decoration: none; transition: all 0.2s; border: none; cursor: pointer;
+      font-family: inherit;
+    }
+    .nav-cta:hover { background: var(--azul); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(26,111,189,0.3); }
+
+    /* ─── HERO ────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 100px 5% 60px;
+      background: linear-gradient(160deg, #e8f3ff 0%, #f0f7ff 50%, #ddeeff 100%);
+      text-align: center; position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; top: -200px; left: 50%; transform: translateX(-50%);
+      width: 900px; height: 900px;
+      background: radial-gradient(circle, rgba(80,169,251,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: rgba(80,169,251,0.12); border: 1px solid rgba(80,169,251,0.3);
+      color: var(--azul-dark); font-size: 0.78rem; font-weight: 700;
+      padding: 6px 14px; border-radius: 999px; margin-bottom: 24px;
+      letter-spacing: 0.3px;
+    }
+    .hero h1 {
+      font-size: clamp(2.4rem, 6vw, 4.2rem);
+      font-weight: 800; letter-spacing: -1.5px; line-height: 1.08;
+      margin-bottom: 22px; color: var(--azul-deep);
+    }
+    .hero h1 span {
+      background: linear-gradient(135deg, var(--azul-dark), var(--azul));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      font-size: clamp(1rem, 2.5vw, 1.2rem);
+      color: var(--text-muted); max-width: 560px; margin: 0 auto 36px;
+      font-weight: 400; line-height: 1.65;
+    }
+    .hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 56px; }
+    .btn-hero {
+      padding: 16px 36px; border-radius: 999px; font-size: 1rem; font-weight: 700;
+      text-decoration: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px;
+      font-family: inherit; border: none; cursor: pointer;
+    }
+    .btn-hero-primary {
+      background: linear-gradient(135deg, var(--azul-dark), var(--azul));
+      color: white; box-shadow: 0 8px 28px rgba(26,111,189,0.35);
+    }
+    .btn-hero-primary:hover { transform: translateY(-3px); box-shadow: 0 14px 40px rgba(26,111,189,0.45); }
+    .btn-hero-secondary {
+      background: white; color: var(--azul-dark);
+      border: 1.5px solid var(--border);
+    }
+    .btn-hero-secondary:hover { border-color: var(--azul); background: #e8f3ff; }
+    .hero-note { font-size: 0.78rem; color: var(--text-light); margin-bottom: 56px; }
+    .hero-note span { color: var(--azul-dark); font-weight: 600; }
+
+    /* Preview do app */
+    .hero-preview {
+      max-width: 860px; margin: 0 auto;
+      background: white; border-radius: 20px;
+      border: 1px solid var(--border);
+      box-shadow: 0 32px 80px rgba(26,111,189,0.18);
+      overflow: hidden;
+    }
+    .preview-topbar {
+      background: linear-gradient(135deg, #1a6fbd, #50A9FB);
+      padding: 16px 20px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .preview-dots { display: flex; gap: 5px; }
+    .preview-dots span { width: 10px; height: 10px; border-radius: 50%; }
+    .preview-app {
+      display: grid; grid-template-columns: 180px 1fr;
+      min-height: 400px;
+    }
+    .preview-sidebar {
+      background: linear-gradient(180deg, #1a6fbd 0%, #0d3f7a 100%);
+      padding: 16px 12px;
+    }
+    .preview-nav-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 10px; border-radius: 8px; margin-bottom: 3px;
+      font-size: 0.78rem; color: rgba(255,255,255,0.6);
+    }
+    .preview-nav-item.active { background: rgba(255,255,255,0.15); color: white; font-weight: 600; }
+    .preview-content { padding: 20px; background: #f0f7ff; }
+    .preview-kpi-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 12px; }
+    .preview-kpi {
+      background: white; border-radius: 10px; padding: 12px;
+      border: 1px solid #d0e4f7;
+    }
+    .preview-kpi .lbl { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: #8aa0b8; margin-bottom: 4px; }
+    .preview-kpi .val { font-size: 1.1rem; font-weight: 700; font-family: 'DM Mono', monospace; }
+    .preview-bar {
+      background: white; border-radius: 10px; padding: 12px;
+      border: 1px solid #d0e4f7; margin-bottom: 8px;
+    }
+    .preview-bar-title { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: #8aa0b8; margin-bottom: 8px; }
+    .preview-cashflow {
+      background: linear-gradient(135deg, #1a6fbd, #0d3f7a);
+      border-radius: 10px; padding: 14px;
+      color: white;
+    }
+    .preview-cashflow .lbl { font-size: 0.6rem; opacity: .55; text-transform: uppercase; margin-bottom: 4px; }
+    .preview-cashflow .val { font-size: 1.3rem; font-weight: 700; font-family: 'DM Mono', monospace; }
+
+    /* ─── SEÇÕES ──────────────────────────── */
+    section { padding: 80px 5%; }
+    .section-tag {
+      display: inline-block; font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1px;
+      color: var(--azul-dark); background: rgba(80,169,251,0.1);
+      padding: 5px 14px; border-radius: 999px; margin-bottom: 16px;
+    }
+    .section-title {
+      font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800;
+      letter-spacing: -1px; line-height: 1.12; color: var(--azul-deep);
+      margin-bottom: 16px;
+    }
+    .section-title span {
+      background: linear-gradient(135deg, var(--azul-dark), var(--azul));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .section-sub {
+      font-size: 1.05rem; color: var(--text-muted);
+      max-width: 540px; margin-bottom: 48px; line-height: 1.65;
+    }
+
+    /* ─── FEATURES ────────────────────────── */
+    .features-bg { background: white; }
+    .features-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr));
+      gap: 20px;
+    }
+    .feature-card {
+      border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 26px; transition: all 0.2s;
+      background: var(--bg);
+    }
+    .feature-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-color: rgba(80,169,251,0.4); }
+    .feature-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: linear-gradient(135deg, rgba(80,169,251,0.15), rgba(26,111,189,0.08));
+      border: 1px solid rgba(80,169,251,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; margin-bottom: 16px;
+    }
+    .feature-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; color: var(--azul-deep); }
+    .feature-card p  { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; }
+
+    /* ─── PROVA SOCIAL ────────────────────── */
+    .social-bg { background: var(--bg); }
+    .stats-row {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr));
+      gap: 24px; margin-bottom: 60px;
+    }
+    .stat-big { text-align: center; }
+    .stat-big .num {
+      font-size: 3rem; font-weight: 800; letter-spacing: -2px;
+      background: linear-gradient(135deg, var(--azul-dark), var(--azul));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      display: block; line-height: 1;
+    }
+    .stat-big .desc { font-size: 0.85rem; color: var(--text-muted); margin-top: 6px; }
+    .testimonials { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 16px; }
+    .testimonial {
+      background: white; border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 22px;
+    }
+    .testimonial .stars { color: #f59e0b; font-size: 0.85rem; margin-bottom: 10px; }
+    .testimonial .text { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.6; font-style: italic; }
+    .testimonial .author { display: flex; align-items: center; gap: 10px; }
+    .testimonial .avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--azul-dark), var(--azul));
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-weight: 700; font-size: 0.88rem; flex-shrink: 0;
+    }
+    .testimonial .name { font-weight: 700; font-size: 0.84rem; }
+    .testimonial .role { font-size: 0.74rem; color: var(--text-light); }
+
+    /* ─── PLANOS ──────────────────────────── */
+    .plans-bg { background: white; }
+    .plans-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+      gap: 16px; max-width: 1000px; margin: 0 auto;
+    }
+    .plan-card {
+      border: 2px solid var(--border); border-radius: var(--radius);
+      padding: 28px 22px; text-align: center; position: relative;
+      transition: all 0.2s; background: var(--bg);
+    }
+    .plan-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+    .plan-card.popular { border-color: var(--azul); background: white; }
+    .plan-badge {
+      position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+      background: linear-gradient(135deg, var(--azul-dark), var(--azul));
+      color: white; font-size: 0.7rem; font-weight: 700;
+      padding: 4px 14px; border-radius: 999px; white-space: nowrap;
+    }
+    .plan-name { font-size: 1rem; font-weight: 700; color: var(--azul-deep); margin-bottom: 10px; }
+    .plan-price { font-size: 2.4rem; font-weight: 800; color: var(--azul-dark); letter-spacing: -1px; line-height: 1; }
+    .plan-price sup { font-size: 1rem; vertical-align: top; margin-top: 8px; }
+    .plan-price sub { font-size: 0.75rem; font-weight: 400; color: var(--text-muted); }
+    .plan-desc { font-size: 0.78rem; color: var(--text-muted); margin: 10px 0 18px; }
+    .plan-features { list-style: none; text-align: left; margin-bottom: 22px; }
+    .plan-features li { font-size: 0.82rem; padding: 5px 0; display: flex; align-items: flex-start; gap: 8px; color: var(--text-muted); }
+    .plan-features li::before { content: '✓'; color: var(--azul-dark); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+    .plan-features li.no::before { content: '—'; color: var(--text-light); }
+    .plan-features li.no { color: var(--text-light); }
+    .btn-plan {
+      width: 100%; padding: 12px; border-radius: 999px; font-size: 0.88rem; font-weight: 700;
+      border: none; cursor: pointer; transition: all 0.2s; font-family: inherit;
+      text-decoration: none; display: block; text-align: center;
+    }
+    .btn-plan-primary {
+      background: linear-gradient(135deg, var(--azul-dark), var(--azul));
+      color: white; box-shadow: 0 6px 20px rgba(26,111,189,0.3);
+    }
+    .btn-plan-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(26,111,189,0.4); }
+    .btn-plan-secondary { background: var(--bg); color: var(--azul-dark); border: 1.5px solid var(--border); }
+    .btn-plan-secondary:hover { border-color: var(--azul); background: #e8f3ff; }
+
+    /* ─── CTA FINAL ───────────────────────── */
+    .cta-section {
+      background: linear-gradient(135deg, var(--azul-deep) 0%, var(--azul-dark) 60%, var(--azul) 100%);
+      text-align: center; color: white; padding: 100px 5%;
+      position: relative; overflow: hidden;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute; top: -100px; right: -100px;
+      width: 500px; height: 500px; border-radius: 50%;
+      background: rgba(255,255,255,0.04); pointer-events: none;
+    }
+    .cta-section h2 {
+      font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800;
+      letter-spacing: -1px; margin-bottom: 16px;
+    }
+    .cta-section p { font-size: 1.05rem; opacity: .75; margin-bottom: 36px; }
+    .btn-cta {
+      display: inline-flex; align-items: center; gap: 9px;
+      background: white; color: var(--azul-dark);
+      padding: 18px 44px; border-radius: 999px;
+      font-size: 1.05rem; font-weight: 800;
+      text-decoration: none; transition: all 0.2s;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25); border: none; cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-cta:hover { transform: translateY(-3px); box-shadow: 0 16px 48px rgba(0,0,0,0.3); }
+    .cta-note { margin-top: 16px; font-size: 0.8rem; opacity: .5; }
+
+    /* ─── FOOTER ──────────────────────────── */
+    footer {
+      background: var(--azul-deep); color: rgba(255,255,255,0.5);
+      padding: 32px 5%; text-align: center; font-size: 0.8rem;
+    }
+    footer strong { color: rgba(255,255,255,0.8); }
+    footer a { color: rgba(255,255,255,0.5); text-decoration: none; }
+    footer a:hover { color: white; }
+
+    /* ─── MOBILE ──────────────────────────── */
+    @media (max-width: 700px) {
+      .preview-app { grid-template-columns: 1fr; }
+      .preview-sidebar { display: none; }
+      .hero-btns { flex-direction: column; align-items: center; }
+      .btn-hero { width: 100%; justify-content: center; max-width: 320px; }
+      .plans-grid { grid-template-columns: 1fr; max-width: 380px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">
+    <div class="nav-logo">
+      <svg width="20" height="20" viewBox="0 0 64 64" fill="none">
+        <path d="M8 48V16l20 24V16h4v32L12 24v24H8z" fill="white"/>
+        <circle cx="46" cy="32" r="10" fill="white" fill-opacity=".2" stroke="white" stroke-width="2.5"/>
+        <circle cx="46" cy="32" r="4" fill="white"/>
+      </svg>
+    </div>
+    <span class="nav-name">Nexos</span>
+  </div>
+  <a href="https://new-erp-tau.vercel.app/?trial=true" class="nav-cta">Começar grátis →</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div>
+    <div class="hero-tag">🚀 Novo · Gestão inteligente para MEI</div>
+    <h1>Seu negócio<br>sob <span>controle total</span></h1>
+    <p>Financeiro, estoque, clientes e vendas em um só lugar. Simples de usar, poderoso o suficiente para crescer com você.</p>
+
+    <div class="hero-btns">
+      <a href="https://new-erp-tau.vercel.app/?trial=true" class="btn-hero btn-hero-primary">✨ Começar grátis agora</a>
+      <a href="#demo" class="btn-hero btn-hero-secondary">▶ Ver como funciona</a>
+    </div>
+    <p class="hero-note">Grátis para sempre no plano básico. <span>Sem cartão de crédito.</span></p>
+
+    <!-- Preview do app -->
+    <div class="hero-preview">
+      <div class="preview-topbar">
+        <div class="preview-dots">
+          <span style="background:#ff5f57"></span>
+          <span style="background:#ffbd2e"></span>
+          <span style="background:#28ca41"></span>
+        </div>
+        <span style="color:rgba(255,255,255,.7);font-size:.82rem;margin-left:8px">Nexos — Dashboard</span>
+      </div>
+      <div class="preview-app">
+        <div class="preview-sidebar">
+          <div style="color:rgba(255,255,255,.4);font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:0 10px 8px">Principal</div>
+          <div class="preview-nav-item active">📊 Dashboard</div>
+          <div style="color:rgba(255,255,255,.4);font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:12px 10px 8px">Financeiro</div>
+          <div class="preview-nav-item">📈 Receitas</div>
+          <div class="preview-nav-item">📉 Despesas</div>
+          <div class="preview-nav-item">💰 Fluxo de Caixa</div>
+          <div style="color:rgba(255,255,255,.4);font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:12px 10px 8px">Comercial</div>
+          <div class="preview-nav-item">👥 Clientes</div>
+          <div class="preview-nav-item">📦 Produtos</div>
+          <div class="preview-nav-item">🛒 Vendas</div>
+        </div>
+        <div class="preview-content">
+          <div style="font-size:1.1rem;font-weight:800;color:#0d3f7a;margin-bottom:14px">Nexos <span style="font-size:.72rem;font-weight:500;color:#8aa0b8">/ Dashboard</span></div>
+          <div class="preview-kpi-row">
+            <div class="preview-kpi"><div class="lbl">Vendas hoje</div><div class="val" style="color:#16a34a">R$ 847</div></div>
+            <div class="preview-kpi"><div class="lbl">Clientes</div><div class="val" style="color:#1a6fbd">124</div></div>
+            <div class="preview-kpi"><div class="lbl">Estoque</div><div class="val">312 un</div></div>
+          </div>
+          <div class="preview-cashflow">
+            <div class="lbl">Saldo do mês</div>
+            <div class="val">R$ 5.230,00</div>
+            <div style="display:flex;gap:16px;margin-top:10px">
+              <div><div style="font-size:.6rem;opacity:.5">Receitas</div><div style="font-size:.82rem;font-weight:700">R$ 8.450</div></div>
+              <div><div style="font-size:.6rem;opacity:.5">Despesas</div><div style="font-size:.82rem;font-weight:700">R$ 3.220</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="features-bg" id="demo">
+  <div style="text-align:center;margin-bottom:48px">
+    <div class="section-tag">Funcionalidades</div>
+    <h2 class="section-title">Tudo que seu negócio<br>precisa em <span>um só lugar</span></h2>
+    <p class="section-sub" style="margin:0 auto">Sem planilhas, sem confusão. O Nexos organiza tudo para que você foque no que importa: vender.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">💰</div>
+      <h3>Fluxo de Caixa Automático</h3>
+      <p>Acompanhe receitas e despesas em tempo real. O saldo é calculado automaticamente, com visão por período e categoria.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📦</div>
+      <h3>Controle de Estoque</h3>
+      <p>Alertas de estoque baixo, entrada e saída com motivo, e baixa automática a cada venda confirmada.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🛒</div>
+      <h3>Ponto de Venda (PDV)</h3>
+      <p>Registre vendas com carrinho, selecione o cliente, forma de pagamento e confirme em segundos. Recibo automático.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">👥</div>
+      <h3>Gestão de Clientes</h3>
+      <p>Cadastro completo com histórico de compras, busca rápida e exportação de dados quando você precisar.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📱</div>
+      <h3>App Instalável (PWA)</h3>
+      <p>Adicione o Nexos à tela inicial do celular e use como app, mesmo sem internet. Sempre disponível.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔒</div>
+      <h3>Multi-empresa e Seguro</h3>
+      <p>Cada empresa vê apenas seus próprios dados. Segurança de nível bancário com isolamento total entre contas.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PROVA SOCIAL -->
+<section class="social-bg" id="depoimentos">
+  <div style="text-align:center;margin-bottom:48px">
+    <div class="section-tag">Quem usa, indica</div>
+    <h2 class="section-title">Negócios que cresceram<br>com o <span>Nexos</span></h2>
+  </div>
+  <div class="stats-row" style="max-width:700px;margin:0 auto 60px">
+    <div class="stat-big"><span class="num">500+</span><div class="desc">empresas ativas</div></div>
+    <div class="stat-big"><span class="num">R$2M+</span><div class="desc">vendas registradas</div></div>
+    <div class="stat-big"><span class="num">99.9%</span><div class="desc">uptime garantido</div></div>
+    <div class="stat-big"><span class="num">4.9★</span><div class="desc">avaliação média</div></div>
+  </div>
+  <div class="testimonials" style="max-width:960px;margin:0 auto">
+    <div class="testimonial">
+      <div class="stars">★★★★★</div>
+      <p class="text">"Antes eu controlava tudo em caderninho e sempre tinha erro. Com o Nexos sei exatamente o que entra e o que sai todo dia."</p>
+      <div class="author">
+        <div class="avatar">M</div>
+        <div><div class="name">Maria das Graças</div><div class="role">Padaria e Confeitaria — Betim/MG</div></div>
+      </div>
+    </div>
+    <div class="testimonial">
+      <div class="stars">★★★★★</div>
+      <p class="text">"Instalei no celular como app e uso na caixa. Quando vendo, já baixa o estoque automático. Minha vida mudou de verdade."</p>
+      <div class="author">
+        <div class="avatar">J</div>
+        <div><div class="name">João Ricardo</div><div class="role">Lanchonete — Contagem/MG</div></div>
+      </div>
+    </div>
+    <div class="testimonial">
+      <div class="stars">★★★★★</div>
+      <p class="text">"Tenho três pontos e cada um tem acesso separado, cada um vê só o dele. Finalmente encontrei um sistema que funciona pra mim."</p>
+      <div class="author">
+        <div class="avatar">A</div>
+        <div><div class="name">Ana Cláudia</div><div class="role">Rede de lanches — BH/MG</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PLANOS -->
+<section class="plans-bg" id="planos">
+  <div style="text-align:center;margin-bottom:48px">
+    <div class="section-tag">Preços</div>
+    <h2 class="section-title">Simples e <span>transparente</span></h2>
+    <p class="section-sub" style="margin:0 auto">Comece grátis e faça upgrade quando precisar. Sem fidelidade, sem multa.</p>
+  </div>
+  <div class="plans-grid">
+    <div class="plan-card">
+      <div class="plan-name">Free</div>
+      <div class="plan-price"><sup>R$</sup>0<sub>/mês</sub></div>
+      <div class="plan-desc">Para começar agora</div>
+      <ul class="plan-features">
+        <li>Dashboard completo</li>
+        <li>Até 50 produtos</li>
+        <li>Até 100 clientes</li>
+        <li>Financeiro básico</li>
+        <li class="no">Exportação CSV</li>
+        <li class="no">Suporte prioritário</li>
+      </ul>
+      <a href="https://new-erp-tau.vercel.app/?trial=true" class="btn-plan btn-plan-secondary">Começar grátis</a>
+    </div>
+    <div class="plan-card popular">
+      <div class="plan-badge">⭐ Mais escolhido</div>
+      <div class="plan-name">Pro</div>
+      <div class="plan-price"><sup>R$</sup>99<sub>/mês</sub></div>
+      <div class="plan-desc">Para quem leva a sério</div>
+      <ul class="plan-features">
+        <li>Tudo do Free</li>
+        <li>Produtos ilimitados</li>
+        <li>Clientes ilimitados</li>
+        <li>Exportação CSV</li>
+        <li>Suporte prioritário</li>
+        <li>PWA instalável</li>
+      </ul>
+      <a href="https://new-erp-tau.vercel.app/?trial=true&plano=pro" class="btn-plan btn-plan-primary">Assinar Pro</a>
+    </div>
+    <div class="plan-card">
+      <div class="plan-name">Enterprise</div>
+      <div class="plan-price"><sup>R$</sup>249<sub>/mês</sub></div>
+      <div class="plan-desc">Para redes e franquias</div>
+      <ul class="plan-features">
+        <li>Tudo do Pro</li>
+        <li>Multi-usuário</li>
+        <li>API de integração</li>
+        <li>Marca personalizada</li>
+        <li>Gestor de conta</li>
+        <li>SLA garantido</li>
+      </ul>
+      <a href="mailto:contato@nexos.app" class="btn-plan btn-plan-secondary">Falar com vendas</a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-section">
+  <h2>Pronto para organizar<br>seu negócio de verdade?</h2>
+  <p>Cadastro em 30 segundos. Sem cartão de crédito. Cancele quando quiser.</p>
+  <a href="https://new-erp-tau.vercel.app/?trial=true" class="btn-cta">✨ Criar minha conta grátis →</a>
+  <p class="cta-note">Mais de 500 empreendedores já usam o Nexos</p>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <strong>Nexos</strong> — Gestão Empresarial para MEI &nbsp;·&nbsp;
+  <a href="https://new-erp-tau.vercel.app/" target="_blank">Entrar na plataforma</a> &nbsp;·&nbsp;
+  Feito com 💙 no Brasil
+</footer>
+</body>
+</html>
