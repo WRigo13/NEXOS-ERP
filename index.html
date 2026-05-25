@@ -1693,13 +1693,13 @@
       </div>
 
       <!-- USUARIOS DA EMPRESA -->
-      <div style="margin-top:32px;padding-top:24px;border-top:1px solid var(--border)" id="secaoUsuarios">
+      <div style="margin-top:32px;padding-top:24px;border-top:1px solid var(--border)">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
           <div>
             <h3 style="font-size:.95rem;font-weight:700">👤 Usuários da empresa</h3>
-            <p style="font-size:.76rem;color:var(--text-muted);margin-top:2px" id="subtituloUsuarios">Crie e gerencie acessos por perfil</p>
+            <p style="font-size:.76rem;color:var(--text-muted);margin-top:2px">Crie e gerencie acessos por perfil</p>
           </div>
-          <button class="btn btn-primary btn-sm" id="btnNovoUsuarioAdmin" onclick="usuarioAbrirNovo()">+ Novo usuário</button>
+          <button class="btn btn-primary btn-sm" onclick="usuarioAbrirNovo()">+ Novo usuário</button>
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:16px">
           <div class="perfil-card-click" onclick="perfilVerUsuarios('admin')" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
@@ -3995,59 +3995,6 @@ function adminInit() {
   $('navAdminBtn').style.display = '';
 }
 
-
-function adminControlarSecaoUsuarios() {
-  const secao   = $('secaoUsuarios');
-  const btnNovo = $('btnNovoUsuarioAdmin');
-  const sub     = $('subtituloUsuarios');
-  if (!secao) return;
-
-  // Admin global (William/diasvictormaciel) sempre vê tudo
-  if (isAdmin()) {
-    secao.style.display = '';
-    if (btnNovo) btnNovo.style.display = '';
-    return;
-  }
-
-  // Verificar plano da empresa selecionada ou da empresa atual
-  const planoEmp = adminEmpresaSel?.plano || currentCompany?.plan || 'free';
-  const temAcessoUsuarios = ['pro','enterprise'].includes(planoEmp);
-
-  if (temAcessoUsuarios) {
-    secao.style.display = '';
-    if (btnNovo) btnNovo.style.display = '';
-    if (sub) sub.textContent = 'Crie e gerencie acessos por perfil';
-  } else {
-    // Mostrar seção mas com aviso de upgrade
-    secao.style.display = '';
-    if (btnNovo) btnNovo.style.display = 'none';
-    if (sub) sub.innerHTML =
-      '🔒 Disponível no plano <strong>Pro (R$ 99/mês)</strong> — ' +
-      '<span style="color:var(--accent);cursor:pointer;text-decoration:underline" ' +
-      'onclick="navegar('plano')">fazer upgrade →</span>';
-
-    // Substituir grid de usuários por banner de upgrade
-    const grid = $('usuariosGrid');
-    if (grid) {
-      grid.innerHTML = \`
-        <div style="background:var(--accent-light);border:1.5px dashed var(--accent-mid);
-          border-radius:12px;padding:28px;text-align:center">
-          <div style="font-size:2rem;margin-bottom:10px">🔒</div>
-          <div style="font-weight:700;font-size:.96rem;margin-bottom:6px">
-            Gestão de usuários disponível no plano Pro
-          </div>
-          <div style="font-size:.84rem;color:var(--text-muted);margin-bottom:16px">
-            No plano Pro você pode criar até 3 usuários com perfis diferentes
-            (Gerente, Financeiro, Estoquista, Vendedor) e controlar o acesso de cada um.
-          </div>
-          <button class="btn btn-primary" onclick="navegar('plano')">
-            ✨ Fazer upgrade para Pro — R$ 99/mês
-          </button>
-        </div>\`;
-    }
-  }
-}
-
 async function adminCarregar() {
   // ── Supabase ativo: carrega dados reais do banco ──────
   if (_sb && currentCompany?.id !== 'demo_company') {
@@ -4069,7 +4016,6 @@ async function adminCarregar() {
     }));
     adminRenderKPIs();
     adminRender();
-    setTimeout(adminControlarSecaoUsuarios, 100);
     return;
   }
 
@@ -4106,7 +4052,6 @@ async function adminCarregar() {
 
   adminRenderKPIs();
   adminRender();
-  setTimeout(adminControlarSecaoUsuarios, 100);
 }
 
 function adminGerarDemoData() {
