@@ -16,7 +16,7 @@
 
   <!-- Fontes -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
   <style>
     /* ═══════════════════════════════════════════
@@ -690,6 +690,31 @@
       .page { padding: 12px 12px 40px; }
       .section-top { margin-bottom: 14px; }
     }
+  
+    /* ── PAGINAÇÃO ── */
+    .pag-wrap { display:flex;align-items:center;gap:4px;padding:10px 0 2px;flex-wrap:wrap;justify-content:center; }
+    .pag-btn { min-width:32px;height:32px;border:1px solid var(--border);background:var(--surface);
+      color:var(--text);border-radius:7px;font-size:.8rem;font-weight:600;cursor:pointer;
+      font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;
+      justify-content:center;padding:0 8px; }
+    .pag-btn:hover:not([disabled]) { border-color:var(--accent);color:var(--accent);background:var(--accent-light); }
+    .pag-btn[disabled] { opacity:.35;cursor:default; }
+    .pag-btn.pag-ativa { background:var(--accent);color:#fff;border-color:var(--accent); }
+    .pag-ellipsis { color:var(--text-muted);font-size:.8rem;padding:0 3px; }
+    .pag-label { font-size:.74rem;color:var(--text-muted);margin-left:8px;white-space:nowrap; }
+
+  
+    .nexos-wordmark {
+      display: block;
+      font-family: 'Barlow', 'Arial Black', sans-serif;
+      font-size: 1.12rem;
+      font-weight: 800;
+      color: white;
+      letter-spacing: .40em;
+      text-transform: uppercase;
+      line-height: 1;
+      margin-bottom: 3px;
+    }
   </style>
   <!-- Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -707,8 +732,9 @@
     // GATEWAYS DE PAGAMENTO
     // ════════════════════════════════════════
     const PAGAMENTO_CONFIG = {
-      // Mercado Pago — token fica no Supabase Secrets
-      MP_ACCESS_TOKEN: '', // ← nunca no frontend
+      // Mercado Pago — Public Key (pode ficar no frontend)
+      MP_PUBLIC_KEY: 'APP_USR-f7d51962-159d-425c-a8b4-eb35ace2bda6',
+      // MP_ACCESS_TOKEN fica no Supabase Secrets — nunca no frontend
 
       // Stripe — chaves ficam no Supabase Secrets
       STRIPE_SECRET_KEY: '', // ← nunca no frontend
@@ -718,7 +744,7 @@
         enterprise: 'price_1TYuRHCVpW5d3wGIVDFJI6uq'
       },
 
-      // URL do app (nova URL de produção)
+      // URL do app (produção)
       APP_URL: 'https://nexos-erp-blush.vercel.app',
 
       // URL das Edge Functions no Supabase
@@ -739,23 +765,26 @@
     <div class="login-card">
       <div class="login-header">
         <div class="login-logo" style="background:none;width:auto;height:auto;margin-bottom:6px;display:flex;justify-content:center">
-          <svg viewBox="0 0 160 160" width="88" height="88" xmlns="http://www.w3.org/2000/svg" style="border-radius:20px;display:block">
-            <rect width="160" height="160" rx="32" fill="#1e4f9f"/>
+          <svg viewBox="0 0 200 200" width="88" height="88" xmlns="http://www.w3.org/2000/svg" style="display:block">
             <defs>
-              <clipPath id="cuts_l">
-                <rect x="0" y="16"  width="160" height="14"/>
-                <rect x="0" y="40"  width="160" height="14"/>
-                <rect x="0" y="64"  width="160" height="14"/>
-                <rect x="0" y="88"  width="160" height="14"/>
-                <rect x="0" y="112" width="160" height="14"/>
-                <rect x="0" y="136" width="160" height="14"/>
-              </clipPath>
+              <linearGradient id="ng88" x1="0%" y1="0%" x2="80%" y2="100%">
+                <stop offset="0%" stop-color="#60CAFF"/>
+                <stop offset="45%" stop-color="#2979F5"/>
+                <stop offset="100%" stop-color="#1035A0"/>
+              </linearGradient>
+              <linearGradient id="ns88" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="rgba(0,20,80,.45)"/>
+                <stop offset="100%" stop-color="rgba(0,20,80,.0)"/>
+              </linearGradient>
             </defs>
-            <g fill="white" clip-path="url(#cuts_l)">
-              <rect x="20" y="16" width="26" height="128"/>
-              <rect x="114" y="16" width="26" height="128"/>
-              <polygon points="46,16 72,16 140,144 114,144"/>
-            </g>
+            <!-- Coluna esquerda -->
+            <rect x="18" y="18" width="38" height="164" rx="8" fill="url(#ng88)"/>
+            <!-- Coluna direita -->
+            <rect x="144" y="18" width="38" height="164" rx="8" fill="url(#ng88)"/>
+            <!-- Diagonal principal -->
+            <polygon points="56,18 94,18 144,182 106,182" fill="url(#ng88)"/>
+            <!-- Sombra na diagonal para profundidade -->
+            <polygon points="56,18 94,18 144,182 106,182" fill="url(#ns88)"/>
           </svg>
         </div>
         <h2 style="font-size:1.6rem;letter-spacing:-0.5px">Nexos</h2>
@@ -822,26 +851,21 @@
     <div class="sidebar-brand">
       <div class="brand-logo">
         <div class="brand-icon" style="background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.2);overflow:hidden;padding:2px">
-          <svg viewBox="0 0 160 160" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <clipPath id="cuts_s">
-                <rect x="0" y="16"  width="160" height="14"/>
-                <rect x="0" y="40"  width="160" height="14"/>
-                <rect x="0" y="64"  width="160" height="14"/>
-                <rect x="0" y="88"  width="160" height="14"/>
-                <rect x="0" y="112" width="160" height="14"/>
-                <rect x="0" y="136" width="160" height="14"/>
-              </clipPath>
-            </defs>
-            <g fill="white" clip-path="url(#cuts_s)">
-              <rect x="20" y="16" width="26" height="128"/>
-              <rect x="114" y="16" width="26" height="128"/>
-              <polygon points="46,16 72,16 140,144 114,144"/>
-            </g>
-          </svg>
+          <svg viewBox="0 0 200 200" width="32" height="32" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+              <defs>
+                <linearGradient id="ng32" x1="0%" y1="0%" x2="80%" y2="100%">
+                  <stop offset="0%" stop-color="#60CAFF"/>
+                  <stop offset="45%" stop-color="#2979F5"/>
+                  <stop offset="100%" stop-color="#1035A0"/>
+                </linearGradient>
+              </defs>
+              <rect x="18" y="18" width="38" height="164" rx="8" fill="url(#ng32)"/>
+              <rect x="144" y="18" width="38" height="164" rx="8" fill="url(#ng32)"/>
+              <polygon points="56,18 94,18 144,182 106,182" fill="url(#ng32)"/>
+            </svg>
         </div>
         <div class="brand-text">
-          <h1>Nexos</h1>
+          <span class="nexos-wordmark">NEXOS</span>
           <p>Gestão Empresarial</p>
         </div>
       </div>
@@ -1030,14 +1054,14 @@
       <div class="toolbar">
         <div class="search-box">
           <span class="search-ico">🔍</span>
-          <input type="text" id="recSearch" placeholder="Buscar descrição…" oninput="recRender()">
+          <input type="text" id="recSearch" placeholder="Buscar descrição…" oninput="pagReset('rec');recRender()">
         </div>
-        <select class="toolbar-select" id="recFiltroStatus" onchange="recRender()">
+        <select class="toolbar-select" id="recFiltroStatus" onchange="pagReset('rec');recRender()">
           <option value="">Todos</option>
           <option value="pago">Recebido</option>
           <option value="pendente">Pendente</option>
         </select>
-        <select class="toolbar-select" id="recFiltroCateg" onchange="recRender()">
+        <select class="toolbar-select" id="recFiltroCateg" onchange="pagReset('rec');recRender()">
           <option value="">Todas categorias</option>
         </select>
       </div>
@@ -1054,8 +1078,9 @@
               <th>Ações</th>
             </tr>
           </thead>
-          <tbody id="recTbody"></tbody>
+          <tbody id="recTbody"></div>></tbody>
         </table>
+          <div class="pag-wrap" id="rec_pag"></div>
       </div>
       <div class="tbl-footer">
         <button class="btn btn-secondary btn-sm" id="btnCsvReceitas" onclick="exportCSV(receitas,'receitas')">⬇ Exportar CSV</button>
@@ -1131,14 +1156,14 @@
       <div class="toolbar">
         <div class="search-box">
           <span class="search-ico">🔍</span>
-          <input type="text" id="despSearch" placeholder="Buscar descrição…" oninput="despRender()">
+          <input type="text" id="despSearch" placeholder="Buscar descrição…" oninput="pagReset('desp');despRender()">
         </div>
-        <select class="toolbar-select" id="despFiltroStatus" onchange="despRender()">
+        <select class="toolbar-select" id="despFiltroStatus" onchange="pagReset('desp');despRender()">
           <option value="">Todos</option>
           <option value="pago">Pago</option>
           <option value="pendente">Pendente</option>
         </select>
-        <select class="toolbar-select" id="despFiltroCateg" onchange="despRender()">
+        <select class="toolbar-select" id="despFiltroCateg" onchange="pagReset('desp');despRender()">
           <option value="">Todas categorias</option>
         </select>
       </div>
@@ -1155,8 +1180,9 @@
               <th>Ações</th>
             </tr>
           </thead>
-          <tbody id="despTbody"></tbody>
+          <tbody id="despTbody"></div>></tbody>
         </table>
+          <div class="pag-wrap" id="desp_pag"></div>
       </div>
       <div class="tbl-footer">
         <button class="btn btn-secondary btn-sm" id="btnCsvDespesas" onclick="exportCSV(despesas,'despesas')">⬇ Exportar CSV</button>
@@ -1171,7 +1197,7 @@
           <p>Cálculo automático de receitas menos despesas</p>
         </div>
         <div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap;">
-          <select class="toolbar-select" id="fluxoMes" onchange="fluxoRender()">
+          <select class="toolbar-select" id="fluxoMes" onchange="pagReset('fluxo');fluxoRender()">
             <option value="">Todos os períodos</option>
           </select>
           <button class="btn btn-secondary btn-sm" onclick="fluxoRender()">🔄 Atualizar</button>
@@ -1211,6 +1237,7 @@
           </thead>
           <tbody id="fluxoTbody"></tbody>
         </table>
+          <div class="pag-wrap" id="fluxo_pag"></div>
       </div>
     </section>
 
@@ -1269,7 +1296,7 @@
       <div class="toolbar">
         <div class="search-box">
           <span class="search-ico">🔍</span>
-          <input type="text" id="cliSearch" placeholder="Buscar por nome, e-mail ou telefone…" oninput="cliRender()">
+          <input type="text" id="cliSearch" placeholder="Buscar por nome, e-mail ou telefone…" oninput="pagReset('cli');cliRender()">
         </div>
       </div>
 
@@ -1284,8 +1311,9 @@
               <th>Ações</th>
             </tr>
           </thead>
-          <tbody id="cliTbody"></tbody>
+          <tbody id="cliTbody"></div>></tbody>
         </table>
+          <div class="pag-wrap" id="cli_pag"></div>
       </div>
       <div class="tbl-footer">
         <button class="btn btn-secondary btn-sm" id="btnCsvClientes" onclick="exportCSV(clientes,'clientes')">⬇ Exportar CSV</button>
@@ -1366,12 +1394,12 @@
       <div class="toolbar">
         <div class="search-box">
           <span class="search-ico">🔍</span>
-          <input type="text" id="prodSearch" placeholder="Buscar produto…" oninput="prodRender()">
+          <input type="text" id="prodSearch" placeholder="Buscar produto…" oninput="pagReset('prod');prodRender()">
         </div>
-        <select class="toolbar-select" id="prodFiltroCateg" onchange="prodRender()">
+        <select class="toolbar-select" id="prodFiltroCateg" onchange="pagReset('prod');prodRender()">
           <option value="">Todas categorias</option>
         </select>
-        <select class="toolbar-select" id="prodOrdem" onchange="prodRender()">
+        <select class="toolbar-select" id="prodOrdem" onchange="pagReset('prod');prodRender()">
           <option value="nome">Nome A→Z</option>
           <option value="qtd_asc">Qtd (menor)</option>
           <option value="qtd_desc">Qtd (maior)</option>
@@ -1392,8 +1420,9 @@
               <th>Ações</th>
             </tr>
           </thead>
-          <tbody id="prodTbody"></tbody>
+          <tbody id="prodTbody"></div>></tbody>
         </table>
+          <div class="pag-wrap" id="prod_pag"></div>
       </div>
       <div class="tbl-footer">
         <button class="btn btn-secondary btn-sm" id="btnCsvProdutos" onclick="exportCSV(produtos,'produtos')">⬇ Exportar CSV</button>
@@ -1439,6 +1468,51 @@
             <div class="stat-label">📅 Mês</div>
             <div class="stat-value green" id="vendMes" style="font-size:1.1rem">R$ 0</div>
           </div>
+        </div>
+      </div>
+
+      <!-- ── VENDA DIRETA ── -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:18px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+          <span style="font-size:1rem">⚡</span>
+          <span style="font-size:.88rem;font-weight:700;color:var(--text)">Venda Direta</span>
+          <span style="font-size:.75rem;color:var(--text-muted);margin-left:2px">— sem produto cadastrado</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:end" id="vendaDiretaForm">
+          <div>
+            <label style="font-size:.7rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:3px">Item / Descrição</label>
+            <input type="text" id="vdItem" placeholder="Ex: Coxinha, Refrigerante..."
+              style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;
+              font-size:.85rem;font-family:inherit;outline:none;box-sizing:border-box"
+              onfocus="this.style.borderColor='var(--accent)'"
+              onblur="this.style.borderColor='var(--border)'"
+              onkeydown="if(event.key==='Enter')$('vdQtd').focus()">
+          </div>
+          <div>
+            <label style="font-size:.7rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:3px">Qtd</label>
+            <input type="number" id="vdQtd" value="1" min="1"
+              style="width:70px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;
+              font-size:.85rem;font-family:inherit;outline:none;text-align:center"
+              onfocus="this.style.borderColor='var(--accent)'"
+              onblur="this.style.borderColor='var(--border)'"
+              oninput="vendaDiretaAtualizar()" onkeydown="if(event.key==='Enter')$('vdValor').focus()">
+          </div>
+          <div>
+            <label style="font-size:.7rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:3px">Valor unit. (R$)</label>
+            <input type="number" id="vdValor" placeholder="0,00" min="0" step="0.01"
+              style="width:110px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;
+              font-size:.85rem;font-family:inherit;outline:none"
+              onfocus="this.style.borderColor='var(--accent)'"
+              onblur="this.style.borderColor='var(--border)'"
+              oninput="vendaDiretaAtualizar()" onkeydown="if(event.key==='Enter')vendaDiretaSalvar()">
+          </div>
+        </div>
+        <!-- Total preview -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;flex-wrap:wrap;gap:8px">
+          <div id="vdTotal" style="font-size:.85rem;color:var(--text-muted)">Total: R$ 0,00</div>
+          <button class="btn btn-primary btn-sm" onclick="vendaDiretaSalvar()" style="gap:6px">
+            💾 Registrar venda
+          </button>
         </div>
       </div>
 
@@ -1522,6 +1596,7 @@
             </thead>
             <tbody id="vendHistorico"></tbody>
           </table>
+          <div class="pag-wrap" id="vhist_pag"></div>
         </div>
       </div>
     </section>
@@ -1693,13 +1768,13 @@
       </div>
 
       <!-- USUARIOS DA EMPRESA -->
-      <div style="margin-top:32px;padding-top:24px;border-top:1px solid var(--border)">
+      <div style="margin-top:32px;padding-top:24px;border-top:1px solid var(--border)" id="secaoUsuarios">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
           <div>
             <h3 style="font-size:.95rem;font-weight:700">👤 Usuários da empresa</h3>
-            <p style="font-size:.76rem;color:var(--text-muted);margin-top:2px">Crie e gerencie acessos por perfil</p>
+            <p style="font-size:.76rem;color:var(--text-muted);margin-top:2px" id="subtituloUsuarios">Crie e gerencie acessos por perfil</p>
           </div>
-          <button class="btn btn-primary btn-sm" onclick="usuarioAbrirNovo()">+ Novo usuário</button>
+          <button class="btn btn-primary btn-sm" id="btnNovoUsuarioAdmin" onclick="usuarioAbrirNovo()">+ Novo usuário</button>
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:16px">
           <div class="perfil-card-click" onclick="perfilVerUsuarios('admin')" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
@@ -1781,7 +1856,17 @@
 
 <!-- Modal: Detalhes empresa (Admin) -->
 <div class="modal-overlay" id="modalEmpresaAdmin">
-  <div class="modal" style="max-width:520px">
+  <div class="modal" style="max-width:520px;max-height:90vh;overflow-y:auto;position:relative">
+    <!-- Botão fechar -->
+    <button onclick="$('modalEmpresaAdmin').classList.remove('open')"
+      title="Fechar sem salvar"
+      style="position:sticky;top:0;float:right;margin:-4px -4px 0 0;
+      background:rgba(0,0,0,.06);border:none;width:32px;height:32px;
+      border-radius:50%;font-size:1.1rem;cursor:pointer;z-index:10;
+      display:flex;align-items:center;justify-content:center;
+      transition:background .15s;flex-shrink:0"
+      onmouseover="this.style.background='rgba(0,0,0,.14)'"
+      onmouseout="this.style.background='rgba(0,0,0,.06)'">✕</button>
     <!-- Nome da empresa editável -->
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
       <div style="flex:1;min-width:0">
@@ -1792,7 +1877,7 @@
       </div>
       <button class="btn btn-primary btn-sm" style="flex-shrink:0;margin-top:16px" onclick="adminSalvarNomeEmpresa()">✓ Salvar</button>
     </div>
-    <div class="admin-detail-grid" id="modalEmpresaDetalhes"></div>
+    <div class="admin-detail-grid" id="modalEmpresaDetalhes" style="overflow-y:auto;max-height:calc(100vh - 100px)"></div>
     <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
     <div style="font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:10px">Alterar plano</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
@@ -2097,13 +2182,52 @@ function getKey(mod) {
   return `erp_${currentCompany?.id || 'guest'}_${mod}`;
 }
 function salvar(mod, data) {
+  // 1. Salvar local imediatamente (UI responsiva)
   try { localStorage.setItem(getKey(mod), JSON.stringify(data)); } catch(e) {}
+  // 2. Persistir no Supabase em background (sincronização)
+  if (_sb && currentCompany?.id && currentCompany.id !== 'demo_company') {
+    _salvarSupabase(mod, data).catch(() => {});
+  }
 }
+
+async function _salvarSupabase(mod, data) {
+  if (!_sb || !currentCompany?.id) return;
+  const cid = currentCompany.id;
+  // Deletar registros antigos do módulo desta empresa e reinserir
+  // (upsert por id é mais seguro — evita duplicatas)
+  const arr = Array.isArray(data) ? data : [];
+  if (!arr.length) {
+    await _sb.from(mod).delete().eq('company_id', cid);
+    return;
+  }
+  // Upsert em lotes de 50
+  const comCid = arr.map(r => ({ ...r, company_id: cid }));
+  for (let i = 0; i < comCid.length; i += 50) {
+    await _sb.from(mod).upsert(comCid.slice(i, i+50), { onConflict: 'id' });
+  }
+}
+
 function carregar(mod) {
   try {
     const d = localStorage.getItem(getKey(mod));
     return d ? JSON.parse(d) : [];
   } catch(e) { return []; }
+}
+
+// Carregar dados do Supabase e sincronizar com localStorage
+async function carregarDoSupabase(mod) {
+  if (!_sb || !currentCompany?.id || currentCompany.id === 'demo_company') return null;
+  try {
+    const { data, error } = await _sb
+      .from(mod)
+      .select('*')
+      .eq('company_id', currentCompany.id)
+      .order('created_at', { ascending: false });
+    if (error || !data) return null;
+    // Atualizar localStorage com dados do Supabase
+    localStorage.setItem(getKey(mod), JSON.stringify(data));
+    return data;
+  } catch(e) { return null; }
 }
 
 /* ═══════════════════════════════════════════
@@ -2508,6 +2632,28 @@ function prodHistoricoRender() {
       <td style="font-size:.78rem;color:var(--text-muted)">${esc(m.motivo||'—')}</td>
     </tr>`;
   }).join('');
+
+  // Controle de paginação do fluxo
+  const _ctrlF = $('fluxo_pag');
+  if (_ctrlF) {
+    if (movComSaldo.length <= POR_PAG) {
+      _ctrlF.style.display = 'none';
+    } else {
+      _ctrlF.style.display = 'flex';
+      let btns = '';
+      btns += `<button class="pag-btn" onclick="pagIr('fluxo',${_pagF-1},${_totF})" ${_pagF<=1?'disabled':''}>‹</button>`;
+      for (let i=1;i<=_totF;i++){
+        if(_totF>7 && i!==1 && i!==_totF && Math.abs(i-_pagF)>1){
+          if(i===2||i===_totF-1) btns+=`<span class="pag-ellipsis">…</span>`;
+          continue;
+        }
+        btns+=`<button class="pag-btn ${i===_pagF?'pag-ativa':''}" onclick="pagIr('fluxo',${i},${_totF})">${i}</button>`;
+      }
+      btns += `<button class="pag-btn" onclick="pagIr('fluxo',${_pagF+1},${_totF})" ${_pagF>=_totF?'disabled':''}>›</button>`;
+      btns += `<span class="pag-label">${(_pagF-1)*POR_PAG+1}–${Math.min(_pagF*POR_PAG,movComSaldo.length)} de ${movComSaldo.length}</span>`;
+      _ctrlF.innerHTML = btns;
+    }
+  }
 }
 
 /* ═══════════════════════════════════════════
@@ -2607,7 +2753,9 @@ function recRender() {
     tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><span class="empty-ico">📈</span><p>Nenhuma receita encontrada.</p></td></tr>`;
     return;
   }
-  tbody.innerHTML = lista.map(r => `
+
+  // ── Paginação rec ──
+  pagRender(lista, 'recTbody', r => `
     <tr>
       <td>${esc(r.descricao)}</td>
       <td><span class="badge badge-info">${esc(r.categoria)}</span></td>
@@ -2618,7 +2766,7 @@ function recRender() {
         <button class="btn btn-secondary btn-icon btn-sm" onclick="recEditar('${r.id}')" title="Editar">✏️</button>
         <button class="btn btn-danger btn-icon btn-sm" onclick="recExcluir('${r.id}')" title="Excluir">🗑</button>
       </div></td>
-    </tr>`).join('');
+    </tr>`, 'rec');
 }
 
 // Carregar receitas do Supabase
@@ -2749,7 +2897,9 @@ function despRender() {
     tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><span class="empty-ico">📉</span><p>Nenhuma despesa encontrada.</p></td></tr>`;
     return;
   }
-  tbody.innerHTML = lista.map(d => `
+
+  // ── Paginação desp ──
+  pagRender(lista, 'despTbody', d => `
     <tr>
       <td>${esc(d.descricao)}</td>
       <td><span class="badge badge-info">${esc(d.categoria)}</span></td>
@@ -2760,7 +2910,7 @@ function despRender() {
         <button class="btn btn-secondary btn-icon btn-sm" onclick="despEditar('${d.id}')" title="Editar">✏️</button>
         <button class="btn btn-danger btn-icon btn-sm" onclick="despExcluir('${d.id}')" title="Excluir">🗑</button>
       </div></td>
-    </tr>`).join('');
+    </tr>`, 'desp');
 }
 
 /* ═══════════════════════════════════════════
@@ -2810,16 +2960,29 @@ function fluxoRender() {
     ...despFilt.map(d => ({ ...d, tipo: 'despesa' }))
   ].sort((a,b) => a.data.localeCompare(b.data));
 
-  let saldoAcum = 0;
   const tbody = $('fluxoTbody');
   if (!movimentos.length) {
     tbody.innerHTML = `<tr><td colspan="7" class="empty-state"><span class="empty-ico">💰</span><p>Sem movimentações no período.</p></td></tr>`;
+    if ($('fluxo_pag')) $('fluxo_pag').style.display = 'none';
     return;
   }
-  tbody.innerHTML = movimentos.map(m => {
+
+  // Calcular saldo acumulado COMPLETO (pré-computado para paginar corretamente)
+  let saldoAcum = 0;
+  const movComSaldo = movimentos.map(m => {
     const pago = m.status === 'pago';
     if (pago) saldoAcum += m.tipo === 'receita' ? m.valor : -m.valor;
-    const corSaldo = saldoAcum >= 0 ? 'var(--success)' : 'var(--danger)';
+    return { ...m, saldoAcum: pago ? saldoAcum : null };
+  });
+
+  // Paginação
+  const _pagF  = pagGet('fluxo');
+  const _totF  = Math.ceil(movComSaldo.length / POR_PAG);
+  const _slice = movComSaldo.slice((_pagF-1)*POR_PAG, _pagF*POR_PAG);
+
+  tbody.innerHTML = _slice.map(m => {
+    const pago = m.status === 'pago';
+    const corSaldo = (m.saldoAcum||0) >= 0 ? 'var(--success)' : 'var(--danger)';
     return `<tr>
       <td class="mono" style="white-space:nowrap">${new Date(m.data+'T00:00').toLocaleDateString('pt-BR')}</td>
       <td>${m.tipo==='receita' ? '<span class="badge badge-ok">📈 Receita</span>' : '<span class="badge badge-vencido">📉 Despesa</span>'}</td>
@@ -2827,7 +2990,7 @@ function fluxoRender() {
       <td><span class="badge badge-info">${esc(m.categoria)}</span></td>
       <td><span class="badge badge-${m.status}">${m.status==='pago'?'Pago':'Pendente'}</span></td>
       <td class="mono" style="font-weight:700;color:${m.tipo==='receita'?'var(--success)':'var(--danger)'}">${m.tipo==='receita'?'+':'-'}${moeda(m.valor)}</td>
-      <td class="mono" style="font-weight:700;color:${corSaldo}">${pago?moeda(saldoAcum):'—'}</td>
+      <td class="mono" style="font-weight:700;color:${corSaldo}">${pago?moeda(m.saldoAcum):'—'}</td>
     </tr>`;
   }).join('');
 }
@@ -2903,7 +3066,9 @@ function cliRender() {
     tbody.innerHTML = `<tr><td colspan="5" class="empty-state"><span class="empty-ico">👥</span><p>Nenhum cliente encontrado.</p></td></tr>`;
     return;
   }
-  tbody.innerHTML = lista.map(c => `
+
+  // ── Paginação cli ──
+  pagRender(lista, 'cliTbody', c => `
     <tr>
       <td>
         <div class="client-info">
@@ -2921,7 +3086,7 @@ function cliRender() {
         <button class="btn btn-secondary btn-icon btn-sm" onclick="cliEditar('${c.id}')" title="Editar">✏️</button>
         <button class="btn btn-danger btn-icon btn-sm" onclick="cliExcluir('${c.id}')" title="Excluir">🗑</button>
       </div></td>
-    </tr>`).join('');
+    </tr>`, 'cli');
 }
 
 /* ═══════════════════════════════════════════
@@ -3168,7 +3333,9 @@ function prodRender() {
     tbody.innerHTML = `<tr><td colspan="7" class="empty-state"><span class="empty-ico">📦</span><p>Nenhum produto encontrado.</p></td></tr>`;
     return;
   }
-  tbody.innerHTML = lista.map(p => {
+
+  // ── Paginação prod ──
+  pagRender(lista, 'prodTbody', p => {
     const pct   = p.minimo > 0 ? Math.min(100, Math.round(p.quantidade/p.minimo*100/2)) : (p.quantidade>0?100:0);
     const estBadge = p.quantidade === 0 ? 'badge-empty' : p.quantidade <= p.minimo ? 'badge-low' : 'badge-ok';
     const estLabel = p.quantidade === 0 ? 'Sem estoque' : p.quantidade <= p.minimo ? 'Estoque baixo' : 'OK';
@@ -3188,7 +3355,7 @@ function prodRender() {
         <button class="btn btn-danger btn-icon btn-sm" onclick="prodExcluir('${p.id}')" title="Excluir">🗑</button>
       </div></td>
     </tr>`;
-  }).join('');
+  }, 'prod');
 }
 
 /* ═══════════════════════════════════════════
@@ -3322,7 +3489,9 @@ function vendRenderHistorico() {
     tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><span class="empty-ico">🕐</span><p>Nenhuma venda registrada.</p></td></tr>`;
     return;
   }
-  tbody.innerHTML = lista.slice(0,50).map(v => {
+
+  // ── Paginação vhist ──
+  pagRender(lista, 'vendHistorico', v => {
     const d  = new Date(v.data);
     const dt = `${d.toLocaleDateString('pt-BR')} ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`;
     const its= v.itens.map(i => `${i.qtd}× ${i.nome}`).join(', ');
@@ -3334,7 +3503,7 @@ function vendRenderHistorico() {
       <td class="mono" style="font-weight:700;color:var(--success)">${moeda(v.total)}</td>
       <td><button class="btn btn-danger btn-icon btn-sm" onclick="vendExcluir('${v.id}')" title="Excluir">🗑</button></td>
     </tr>`;
-  }).join('');
+  }, 'vhist');
 }
 
 function vendExcluir(id) {
@@ -3675,6 +3844,165 @@ function toggleSenha(id, senha) {
   }
 }
 
+
+/* ═══════════════════════════════════════════
+   VENDA DIRETA
+═══════════════════════════════════════════ */
+function vendaDiretaAtualizar() {
+  const qtd   = parseFloat($('vdQtd')?.value)  || 0;
+  const valor = parseFloat($('vdValor')?.value) || 0;
+  const total = qtd * valor;
+  const el = $('vdTotal');
+  if (el) el.textContent = `Total: ${fmt(total)}`;
+}
+
+function vendaDiretaSalvar() {
+  const item  = $('vdItem')?.value.trim();
+  const qtd   = parseInt($('vdQtd')?.value)    || 1;
+  const valor = parseFloat($('vdValor')?.value) || 0;
+
+  if (!item)  { toast('⚠️ Informe o nome do item.'); $('vdItem')?.focus(); return; }
+  if (!valor) { toast('⚠️ Informe o valor unitário.'); $('vdValor')?.focus(); return; }
+
+  const total = qtd * valor;
+  const agora = new Date();
+
+  // Criar registro de venda direta
+  const venda = {
+    id:          uid(),
+    company_id:  currentCompany.id,
+    tipo:        'direta',
+    items:       [{ nome: item, qtd, preco: valor }],
+    total,
+    cliente:     'Venda direta',
+    pagamento:   'dinheiro',
+    data:        agora.toISOString(),
+    hora:        agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+  };
+
+  vendas.unshift(venda);
+  salvar('vendas', vendas);
+
+  // Também registrar como receita
+  receitas.unshift({
+    id:         uid(),
+    company_id: currentCompany.id,
+    descricao:  `Venda direta: ${qtd}x ${item}`,
+    valor:      total,
+    categoria:  'Vendas',
+    status:     'recebido',
+    data:       agora.toISOString().split('T')[0],
+  });
+  salvar('receitas', receitas);
+
+  // Limpar formulário
+  if ($('vdItem'))  { $('vdItem').value  = ''; }
+  if ($('vdQtd'))   { $('vdQtd').value   = '1'; }
+  if ($('vdValor')) { $('vdValor').value  = ''; }
+  if ($('vdTotal')) { $('vdTotal').textContent = 'Total: R$ 0,00'; }
+  $('vdItem')?.focus();
+
+  // Atualizar telas
+  vendRenderHistorico();
+  vendStats();
+  dashAtualizar();
+
+  toast(`✅ Venda registrada: ${qtd}x ${item} — ${fmt(total)}`);
+}
+
+/* ═══════════════════════════════════════════
+   PAGINAÇÃO GLOBAL
+═══════════════════════════════════════════ */
+const PAGINAS = {};  // { tabela_id: pagina_atual }
+const POR_PAG = 10; // linhas por página
+
+function pagGet(id) { return PAGINAS[id] || 1; }
+function pagSet(id, p) { PAGINAS[id] = p; }
+
+function pagRender(lista, tbodyId, renderFn, paginaId) {
+  const pag    = pagGet(paginaId);
+  const total  = Math.ceil(lista.length / POR_PAG);
+  const inicio = (pag - 1) * POR_PAG;
+  const fim    = inicio + POR_PAG;
+  const slice  = lista.slice(inicio, fim);
+
+  const tbody = $(tbodyId);
+  if (tbody) tbody.innerHTML = slice.map(renderFn).join('');
+
+  // Atualizar controles de paginação
+  const ctrl = $(paginaId + '_pag');
+  if (!ctrl) return;
+
+  if (lista.length <= POR_PAG) {
+    ctrl.style.display = 'none';
+    return;
+  }
+  ctrl.style.display = 'flex';
+
+  // Montar botões
+  let btns = '';
+  // Anterior
+  btns += `<button class="pag-btn" onclick="pagIr('${paginaId}',${pag-1},${total})"
+    ${pag <= 1 ? 'disabled' : ''}>‹</button>`;
+
+  // Páginas
+  for (let i = 1; i <= total; i++) {
+    if (total > 7) {
+      // Mostrar só: 1, ..., pag-1, pag, pag+1, ..., total
+      if (i !== 1 && i !== total && Math.abs(i - pag) > 1) {
+        if (i === 2 || i === total - 1) btns += `<span class="pag-ellipsis">…</span>`;
+        continue;
+      }
+    }
+    btns += `<button class="pag-btn ${i === pag ? 'pag-ativa' : ''}"
+      onclick="pagIr('${paginaId}',${i},${total})">${i}</button>`;
+  }
+
+  // Próximo
+  btns += `<button class="pag-btn" onclick="pagIr('${paginaId}',${pag+1},${total})"
+    ${pag >= total ? 'disabled' : ''}>›</button>`;
+
+  // Label
+  btns += `<span class="pag-label">${inicio+1}–${Math.min(fim,lista.length)} de ${lista.length}</span>`;
+
+  ctrl.innerHTML = btns;
+}
+
+function pagIr(id, p, total) {
+  if (p < 1 || p > total) return;
+  pagSet(id, p);
+  // Re-renderizar a tabela correspondente
+  const renders = {
+    'rec':    recRender,
+    'desp':   despRender,
+    'cli':    cliRender,
+    'prod':   prodRender,
+    'vhist':  vendRenderHistorico,
+    'fluxo':  fluxoRender,
+    'phistorico': prodHistoricoRender,
+  };
+  if (renders[id]) renders[id]();
+}
+
+function pagReset(id) { PAGINAS[id] = 1; }
+
+function exportFluxoCSV() {
+  if (!planoTemRecurso('csv')) { toastUpgrade('csv'); return; }
+  const mes = $('fluxoFiltroMes')?.value || '';
+  const r = receitas.filter(x => x.company_id === currentCompany.id && (!mes || (x.data||'').startsWith(mes)));
+  const d = despesas.filter(x => x.company_id === currentCompany.id && (!mes || (x.data||'').startsWith(mes)));
+  const rows = [
+    ['Tipo','Descricao','Categoria','Data','Valor','Status'],
+    ...r.map(x => ['Receita', x.descricao||'', x.categoria||'', x.data||'', x.valor||0, x.status||'']),
+    ...d.map(x => ['Despesa', x.descricao||'', x.categoria||'', x.data||'', -(x.valor||0), x.status||'']),
+  ];
+  const csv = rows.map(row => row.map(c => '"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(csv);
+  a.download = 'fluxo-caixa' + (mes ? '-'+mes : '') + '.csv';
+  a.click();
+  toast('✅ CSV do fluxo exportado!');
+}
 /* ═══════════════════════════════════════════
    CONTROLE DE PLANOS
 ═══════════════════════════════════════════ */
@@ -3995,6 +4323,50 @@ function adminInit() {
   $('navAdminBtn').style.display = '';
 }
 
+
+function adminControlarSecaoUsuarios() {
+  const secao   = $('secaoUsuarios');
+  const btnNovo = $('btnNovoUsuarioAdmin');
+  const sub     = $('subtituloUsuarios');
+  if (!secao) return;
+
+  // Admin global (William/diasvictormaciel) sempre vê tudo
+  if (isAdmin()) {
+    secao.style.display = '';
+    if (btnNovo) btnNovo.style.display = '';
+    return;
+  }
+
+  // Verificar plano da empresa selecionada ou da empresa atual
+  const planoEmp = adminEmpresaSel?.plano || currentCompany?.plan || 'free';
+  const temAcessoUsuarios = ['pro','enterprise'].includes(planoEmp);
+
+  if (temAcessoUsuarios) {
+    secao.style.display = '';
+    if (btnNovo) btnNovo.style.display = '';
+    if (sub) sub.textContent = 'Crie e gerencie acessos por perfil';
+  } else {
+    // Mostrar seção mas com aviso de upgrade
+    secao.style.display = '';
+    if (btnNovo) btnNovo.style.display = 'none';
+    if (sub) sub.innerHTML =
+      '🔒 Disponível no plano <strong>Pro (R$ 99/mês)</strong> — ' +
+      '<span style="color:var(--accent);cursor:pointer;text-decoration:underline" ' +
+      'onclick="navegar(&quot;plano&quot;)">fazer upgrade →</span>';
+
+    // Substituir grid de usuários por banner de upgrade
+    const grid = $('usuariosGrid');
+    if (grid) {
+      grid.innerHTML = '<div style="background:var(--accent-light);border:1.5px dashed var(--accent-mid);border-radius:12px;padding:28px;text-align:center">' +
+        '<div style="font-size:2rem;margin-bottom:10px">🔒</div>' +
+        '<div style="font-weight:700;font-size:.96rem;margin-bottom:6px">Gestão de usuários disponível no plano Pro</div>' +
+        '<div style="font-size:.84rem;color:var(--text-muted);margin-bottom:16px">No plano Pro você pode criar até 3 usuários com perfis diferentes (Gerente, Financeiro, Estoquista, Vendedor) e controlar o acesso de cada um.</div>' +
+        '<button class="btn btn-primary" onclick="navegar(\'plano\')">✨ Fazer upgrade para Pro — R$ 99/mês</button>' +
+        '</div>';
+    }
+  }
+}
+
 async function adminCarregar() {
   // ── Supabase ativo: carrega dados reais do banco ──────
   if (_sb && currentCompany?.id !== 'demo_company') {
@@ -4016,6 +4388,7 @@ async function adminCarregar() {
     }));
     adminRenderKPIs();
     adminRender();
+    setTimeout(adminControlarSecaoUsuarios, 100);
     return;
   }
 
@@ -4052,6 +4425,7 @@ async function adminCarregar() {
 
   adminRenderKPIs();
   adminRender();
+  setTimeout(adminControlarSecaoUsuarios, 100);
 }
 
 function adminGerarDemoData() {
@@ -4417,8 +4791,11 @@ function aplicarMarcaEmpresa() {
     const icon = document.querySelector('.brand-icon');
     if (icon) icon.innerHTML = `<img src="${marca.logo}" style="width:28px;height:28px;object-fit:contain;border-radius:6px">`;
   }
-  // Aplicar nome personalizado
-  if (marca.nome) {
+  // Aplicar nome personalizado — admins sempre veem "Nexos"
+  if (isAdmin()) {
+    const h1 = document.querySelector('.brand-text h1');
+    // wordmark é span, não h1 — não precisa sobrescrever
+  } else if (marca.nome) {
     const h1 = document.querySelector('.brand-text h1');
     if (h1) h1.textContent = marca.nome;
   }
