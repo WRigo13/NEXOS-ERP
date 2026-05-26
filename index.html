@@ -771,24 +771,28 @@
         <div class="login-logo" style="background:none;width:auto;height:auto;margin-bottom:6px;display:flex;justify-content:center">
           <svg viewBox="0 0 200 200" width="88" height="88" xmlns="http://www.w3.org/2000/svg" style="display:block">
             <defs>
-              <linearGradient id="ng88" x1="0%" y1="0%" x2="80%" y2="100%">
-                <stop offset="0%" stop-color="#60CAFF"/>
-                <stop offset="45%" stop-color="#2979F5"/>
-                <stop offset="100%" stop-color="#1035A0"/>
+              <linearGradient id="ng88a" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#60B8FF"/>
+                <stop offset="100%" stop-color="#0040E0"/>
               </linearGradient>
-              <linearGradient id="ns88" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="rgba(0,20,80,.45)"/>
-                <stop offset="100%" stop-color="rgba(0,20,80,.0)"/>
+              <linearGradient id="ng88b" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#0050FF"/>
+                <stop offset="100%" stop-color="#002BB0"/>
+              </linearGradient>
+              <linearGradient id="ng88c" x1="100%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#4090FF"/>
+                <stop offset="100%" stop-color="#0035C0"/>
               </linearGradient>
             </defs>
-            <!-- Coluna esquerda -->
-            <rect x="18" y="18" width="38" height="164" rx="8" fill="url(#ng88)"/>
-            <!-- Coluna direita -->
-            <rect x="144" y="18" width="38" height="164" rx="8" fill="url(#ng88)"/>
+            <!-- Coluna esquerda (face frontal) -->
+            <rect x="22" y="22" width="44" height="156" rx="10" fill="url(#ng88a)"/>
+            <!-- Coluna direita (face frontal) -->
+            <rect x="134" y="22" width="44" height="156" rx="10" fill="url(#ng88b)"/>
             <!-- Diagonal principal -->
-            <polygon points="56,18 94,18 144,182 106,182" fill="url(#ng88)"/>
-            <!-- Sombra na diagonal para profundidade -->
-            <polygon points="56,18 94,18 144,182 106,182" fill="url(#ns88)"/>
+            <polygon points="66,22 100,22 156,178 122,178" fill="url(#ng88c)"/>
+            <!-- Sombra/profundidade na diagonal -->
+            <polygon points="66,22 100,22 116,68 82,68" fill="rgba(0,20,120,0.3)"/>
+            <polygon points="122,178 156,178 140,132 106,132" fill="rgba(0,20,120,0.2)"/>
           </svg>
         </div>
         <h2 style="font-size:1.6rem;letter-spacing:-0.5px">Nexos</h2>
@@ -857,15 +861,19 @@
         <div class="brand-icon" style="background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.2);overflow:hidden;padding:2px">
           <svg viewBox="0 0 200 200" width="32" height="32" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
               <defs>
-                <linearGradient id="ng32" x1="0%" y1="0%" x2="80%" y2="100%">
-                  <stop offset="0%" stop-color="#60CAFF"/>
-                  <stop offset="45%" stop-color="#2979F5"/>
-                  <stop offset="100%" stop-color="#1035A0"/>
+                <linearGradient id="ng32a" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#60B8FF"/>
+                  <stop offset="100%" stop-color="#0040E0"/>
+                </linearGradient>
+                <linearGradient id="ng32b" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#0050FF"/>
+                  <stop offset="100%" stop-color="#002BB0"/>
                 </linearGradient>
               </defs>
-              <rect x="18" y="18" width="38" height="164" rx="8" fill="url(#ng32)"/>
-              <rect x="144" y="18" width="38" height="164" rx="8" fill="url(#ng32)"/>
-              <polygon points="56,18 94,18 144,182 106,182" fill="url(#ng32)"/>
+              <rect x="22" y="22" width="44" height="156" rx="10" fill="url(#ng32a)"/>
+              <rect x="134" y="22" width="44" height="156" rx="10" fill="url(#ng32b)"/>
+              <polygon points="66,22 100,22 156,178 122,178" fill="url(#ng32a)"/>
+              <polygon points="66,22 100,22 116,68 82,68" fill="rgba(0,20,120,0.3)"/>
             </svg>
         </div>
         <div class="brand-text">
@@ -2739,8 +2747,16 @@ window._syncTudo = async function _syncTudo() {
       }));
       localStorage.setItem(getKey('produtos'), JSON.stringify(produtos));
     }
-    // Vendas
-    if (v.data) { vendas = v.data; localStorage.setItem(getKey('vendas'), JSON.stringify(vendas)); }
+    // Vendas — normalizar items/itens
+    if (v.data) {
+      vendas = v.data.map(x => ({
+        ...x,
+        id:     String(x.id),
+        items:  x.items || x.itens || [],
+        forma:  x.forma || x.pagamento || 'dinheiro',
+      }));
+      localStorage.setItem(getKey('vendas'), JSON.stringify(vendas));
+    }
     // Movimentações
     if (m.data) { movimentacoes = m.data; localStorage.setItem(getKey('movimentacoes'), JSON.stringify(movimentacoes)); }
 
@@ -3659,10 +3675,13 @@ function vendConfirmar() {
   salvar('produtos', produtos);
 
   const venda = {
-    id: uid(), company_id: currentCompany.id,
-    data: new Date().toISOString(),
-    itens: carrinho.map(c => ({ id:c.id, nome:c.nome, qtd:c.qtd, preco:c.preco })),
-    total, forma, cliente
+    id:         uid(),
+    company_id: currentCompany.id,
+    data:       new Date().toISOString(),
+    items:      carrinho.map(c => ({ id:c.id, nome:c.nome, qtd:c.qtd, preco:c.preco })),
+    total,
+    forma,
+    cliente,
   };
   vendas.unshift(venda);
   salvar('vendas', vendas);
@@ -3699,7 +3718,7 @@ function vendRenderHistorico() {
   pagRender(lista, 'vendHistorico', v => {
     const d  = new Date(v.data);
     const dt = `${d.toLocaleDateString('pt-BR')} ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`;
-    const its= v.itens.map(i => `${i.qtd}× ${i.nome}`).join(', ');
+    const its= v.items||v.itens.map(i => `${i.qtd}× ${i.nome}`).join(', ');
     return `<tr>
       <td class="mono" style="font-size:0.76rem;white-space:nowrap">${dt}</td>
       <td style="font-size:0.78rem">${esc(v.cliente||'—')}</td>
@@ -3784,7 +3803,7 @@ function dashAtualizar() {
     : vendas.slice(0,6).map(v => {
         const d = new Date(v.data);
         const dt = d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-        const lbl= v.cliente || v.itens.map(i => i.nome).join(', ');
+        const lbl= v.cliente || v.items||v.itens.map(i => i.nome).join(', ');
         return `<div class="list-item">
           <div class="list-item-info"><strong>${esc(lbl.length>28?lbl.slice(0,28)+'…':lbl)}</strong><small>${dt} · ${esc(v.forma)}</small></div>
           <div class="list-item-val" style="color:var(--success)">${moeda(v.total)}</div>
@@ -4074,15 +4093,14 @@ function vendaDiretaSalvar() {
 
   // Criar registro de venda direta
   const venda = {
-    id:          uid(),
-    company_id:  currentCompany.id,
-    tipo:        'direta',
-    items:       [{ nome: item, qtd, preco: valor }],
+    id:         uid(),
+    company_id: currentCompany.id,
+    tipo:       'direta',
+    items:      [{ nome: item, qtd, preco: valor }],
     total,
-    cliente:     'Venda direta',
-    pagamento:   'dinheiro',
-    data:        agora.toISOString(),
-    hora:        agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+    cliente:    'Venda direta',
+    forma:      'dinheiro',
+    data:       agora.toISOString(),
   };
 
   vendas.unshift(venda);
