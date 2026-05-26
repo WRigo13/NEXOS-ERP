@@ -4494,43 +4494,160 @@ async function checkoutFinalizar() {
 // ── Mercado Pago: PIX e Boleto ──────────────────────────────
 async function checkoutViaMercadoPago(plano, cfg) {
   $('modalCheckout').classList.remove('open');
-  toast('⏳ Gerando link de pagamento...', 3000);
+  const forma = checkoutFormaSelecionada;
+  toast('⏳ Gerando pagamento...', 3000);
 
-  // Se Edge Function não estiver deployada ainda, abre link direto do MP
   try {
     const res = await fetch(`${PAGAMENTO_CONFIG.EDGE_URL}/criar-pagamento-mp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         plano,
-        preco: cfg.preco,
+        forma,
+        preco:      cfg.preco,
         company_id: currentCompany.id,
-        email: currentUser.email,
-        nome: currentUser.name
+        email:      currentUser.email,
+        nome:       currentUser.name || currentUser.email,
       })
     });
 
-    if (!res.ok) throw new Error('Edge Function não disponível');
+    if (!res.ok) throw new Error(await res.text());
     const data = await res.json();
+    if (data.error) throw new Error(data.message);
 
+    // ── PIX: mostrar QR Code na tela ──────────────────────
+    if (data.tipo === 'pix' && data.qr_code) {
+      _mostrarPIX(data, plano, cfg.preco);
+      return;
+    }
+
+    // ── BOLETO: mostrar código de barras + link ────────────
+    if (data.tipo === 'boleto' && data.boleto_url) {
+      _mostrarBoleto(data, plano, cfg.preco);
+      return;
+    }
+
+    // ── CHECKOUT PRO: redirecionar ─────────────────────────
     if (data.checkout_url) {
-      toast(`🔀 Redirecionando para o Mercado Pago...`, 2000);
+      toast('🔀 Redirecionando para o Mercado Pago...', 2000);
       setTimeout(() => window.open(data.checkout_url, '_blank'), 500);
       return;
     }
-  } catch(e) {
-    // Fallback: instruções manuais enquanto Edge Function não está no ar
-    console.warn('MP Edge Function offline, usando fallback:', e.message);
-  }
 
-  // Fallback visual enquanto as Edge Functions não estão deployadas
-  const forma = checkoutFormaSelecionada;
-  if (forma === 'pix') {
-    toast('🔳 PIX: R$ ' + cfg.preco + ' — chave: ' + (currentUser?.email || 'seu@email.com') + ' — envie comprovante para ativar!', 6000);
-  } else {
-    toast('📄 Boleto será enviado para ' + currentUser?.email + ' em até 5 minutos.', 5000);
+    throw new Error('Resposta inesperada do servidor');
+
+  } catch(e) {
+    console.error('MP pagamento falhou:', e.message);
+    // Fallback PIX manual
+    if (forma === 'pix') {
+      _mostrarPIXManual(plano, cfg.preco);
+    } else {
+      toast('❌ Erro ao gerar boleto: ' + e.message + '. Tente novamente ou use PIX.', 6000);
+    }
   }
 }
+
+function _mostrarPIX(data, plano, preco) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+  overlay.innerHTML = `
+    <div style="background:white;border-radius:20px;padding:28px;max-width:380px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.25)">
+      <div style="font-size:1.2rem;font-weight:800;color:var(--text);margin-bottom:4px">📱 Pague via PIX</div>
+      <div style="font-size:.82rem;color:var(--text-muted);margin-bottom:16px">Plano ${plano} — R$ ${preco}/mês</div>
+
+      ${data.qr_code_base64 ? `<img src="data:image/png;base64,${data.qr_code_base64}"
+        style="width:180px;height:180px;border-radius:12px;border:1px solid var(--border);margin-bottom:14px">` : ''}
+
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+        padding:11px;font-family:monospace;font-size:.72rem;word-break:break-all;
+        text-align:left;margin-bottom:12px;max-height:80px;overflow:auto">
+        ${data.qr_code || 'Código não disponível'}
+      </div>
+
+      <button onclick="navigator.clipboard.writeText('${(data.qr_code||'').replace(/'/g,"\'")}').then(()=>nexosToast('✅ Código copiado!'))"
+        style="width:100%;padding:12px;background:var(--accent);color:white;border:none;
+        border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer;margin-bottom:8px">
+        📋 Copiar código PIX
+      </button>
+
+      <div style="font-size:.74rem;color:var(--text-muted);margin-bottom:14px">
+        Após o pagamento, seu plano será ativado automaticamente em até 1 minuto.
+      </div>
+
+      <button onclick="this.closest('[style*=fixed]').remove()"
+        style="width:100%;padding:10px;background:var(--surface2);border:1px solid var(--border);
+        border-radius:10px;font-size:.85rem;cursor:pointer">
+        Fechar
+      </button>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+
+function _mostrarPIXManual(plano, preco) {
+  const chave = 'contato@nexoserp.com.br';
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+  overlay.innerHTML = `
+    <div style="background:white;border-radius:20px;padding:28px;max-width:360px;width:100%;text-align:center">
+      <div style="font-size:1.1rem;font-weight:800;color:var(--text);margin-bottom:4px">📱 PIX Manual</div>
+      <div style="font-size:.82rem;color:var(--text-muted);margin-bottom:16px">Plano ${plano} — R$ ${preco}/mês</div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+        padding:14px;font-family:monospace;font-size:.95rem;font-weight:700;margin-bottom:12px">
+        ${chave}
+      </div>
+      <button onclick="navigator.clipboard.writeText('${chave}').then(()=>nexosToast('✅ Chave copiada!'))"
+        style="width:100%;padding:12px;background:var(--accent);color:white;border:none;
+        border-radius:10px;font-weight:700;cursor:pointer;margin-bottom:8px">
+        📋 Copiar chave PIX
+      </button>
+      <div style="font-size:.74rem;color:var(--text-muted);margin-bottom:14px">
+        Envie R$ ${preco} e o comprovante para contato@nexoserp.com.br para ativar o plano.
+      </div>
+      <button onclick="this.closest('[style*=fixed]').remove()"
+        style="width:100%;padding:10px;background:var(--surface2);border:1px solid var(--border);
+        border-radius:10px;font-size:.85rem;cursor:pointer">Fechar</button>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+
+function _mostrarBoleto(data, plano, preco) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+  const venc = data.date_of_expiration ? new Date(data.date_of_expiration).toLocaleDateString('pt-BR') : '3 dias';
+  overlay.innerHTML = `
+    <div style="background:white;border-radius:20px;padding:28px;max-width:420px;width:100%;text-align:center">
+      <div style="font-size:1.1rem;font-weight:800;color:var(--text);margin-bottom:4px">📄 Boleto Bancário</div>
+      <div style="font-size:.82rem;color:var(--text-muted);margin-bottom:16px">Plano ${plano} — R$ ${preco} · Vence em ${venc}</div>
+
+      ${data.barcode ? `
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+        padding:11px;font-family:monospace;font-size:.72rem;word-break:break-all;
+        text-align:left;margin-bottom:10px">
+        ${data.barcode}
+      </div>
+      <button onclick="navigator.clipboard.writeText('${(data.barcode||'').replace(/'/g,"\'")}').then(()=>nexosToast('✅ Código copiado!'))"
+        style="width:100%;padding:11px;background:var(--surface2);border:1px solid var(--border);
+        border-radius:10px;font-weight:600;font-size:.85rem;cursor:pointer;margin-bottom:8px">
+        📋 Copiar linha digitável
+      </button>` : ''}
+
+      <a href="${data.boleto_url}" target="_blank"
+        style="display:block;width:100%;padding:12px;background:var(--accent);color:white;
+        border-radius:10px;font-weight:700;font-size:.9rem;text-decoration:none;margin-bottom:8px;box-sizing:border-box">
+        🖨️ Abrir / Imprimir boleto
+      </a>
+
+      <div style="font-size:.74rem;color:var(--text-muted);margin-bottom:14px">
+        Após compensação (1-2 dias úteis), seu plano será ativado automaticamente.
+      </div>
+      <button onclick="this.closest('[style*=fixed]').remove()"
+        style="width:100%;padding:10px;background:var(--surface2);border:1px solid var(--border);
+        border-radius:10px;font-size:.85rem;cursor:pointer">Fechar</button>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+
+function nexosToast(msg) { toast(msg, 3000); }
 
 // ── Stripe: Cartão de crédito ───────────────────────────────
 async function checkoutViaStripe(plano, cfg) {
