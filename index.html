@@ -2309,17 +2309,25 @@ function salvar(mod, data) {
 async function _salvarSupabase(mod, data) {
   if (!_sb || !currentCompany?.id) return;
   const cid = currentCompany.id;
-  // Deletar registros antigos do módulo desta empresa e reinserir
-  // (upsert por id é mais seguro — evita duplicatas)
   const arr = Array.isArray(data) ? data : [];
-  if (!arr.length) {
-    await _sb.from(mod).delete().eq('company_id', cid);
-    return;
-  }
-  // Upsert em lotes de 50
-  const comCid = arr.map(r => ({ ...r, company_id: cid }));
-  for (let i = 0; i < comCid.length; i += 50) {
-    await _sb.from(mod).upsert(comCid.slice(i, i+50), { onConflict: 'id' });
+  if (!arr.length) return; // não deletar — apenas não inserir
+
+  // Mapear apenas campos válidos por módulo
+  const limpar = {
+    receitas:      r => ({ id: r.id, company_id: cid, descricao: r.descricao||'', valor: Number(r.valor)||0, categoria: r.categoria||'', status: r.status||'pago', data: r.data||null }),
+    despesas:      r => ({ id: r.id, company_id: cid, descricao: r.descricao||'', valor: Number(r.valor)||0, categoria: r.categoria||'', status: r.status||'pago', data: r.data||null }),
+    clientes:      r => ({ id: r.id, company_id: cid, nome: r.nome||'', email: r.email||'', telefone: r.telefone||'', cpf: r.cpf||'', endereco: r.endereco||'' }),
+    produtos:      r => ({ id: r.id, company_id: cid, nome: r.nome||'', categoria: r.categoria||'', preco: Number(r.preco)||0, estoque: Number(r.estoque)||0, estoque_min: Number(r.estoque_min||r.minimo)||5 }),
+    vendas:        r => ({ id: r.id, company_id: cid, total: Number(r.total)||0, forma: r.forma||'', cliente: r.cliente||'', items: r.items||r.carrinho||[], data: r.data||new Date().toISOString() }),
+    movimentacoes: r => ({ id: r.id, company_id: cid, produto_id: r.produto_id||'', produto_nome: r.produto_nome||r.nome||'', tipo: r.tipo||'', qtd: Number(r.qtd)||0, motivo: r.motivo||'' }),
+  };
+
+  const fn = limpar[mod];
+  const rows = fn ? arr.filter(r => r.id).map(fn) : arr.filter(r => r.id).map(r => ({ ...r, company_id: cid }));
+
+  for (let i = 0; i < rows.length; i += 50) {
+    const { error } = await _sb.from(mod).upsert(rows.slice(i, i+50), { onConflict: 'id' });
+    if (error) console.error(`[Nexos] upsert ${mod} falhou:`, error.message);
   }
 }
 
@@ -4654,65 +4662,101 @@ async function checkoutViaMercadoPago(plano, cfg) {
 }
 
 function _mostrarPIX(data, plano, preco) {
+  // Remover overlay anterior se existir
+  document.querySelectorAll('.nexos-pix-overlay').forEach(e => e.remove());
+
   const overlay = document.createElement('div');
+  overlay.className = 'nexos-pix-overlay';
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
-  overlay.innerHTML = `
-    <div style="background:white;border-radius:20px;padding:28px;max-width:380px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.25)">
-      <div style="font-size:1.2rem;font-weight:800;color:var(--text);margin-bottom:4px">📱 Pague via PIX</div>
-      <div style="font-size:.82rem;color:var(--text-muted);margin-bottom:16px">Plano ${plano} — R$ ${preco}/mês</div>
 
-      ${data.qr_code_base64 ? `<img src="data:image/png;base64,${data.qr_code_base64}"
-        style="width:180px;height:180px;border-radius:12px;border:1px solid var(--border);margin-bottom:14px">` : ''}
+  const box = document.createElement('div');
+  box.style.cssText = 'background:white;border-radius:20px;padding:28px;max-width:380px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.25)';
 
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;
-        padding:11px;font-family:monospace;font-size:.72rem;word-break:break-all;
-        text-align:left;margin-bottom:12px;max-height:80px;overflow:auto">
-        ${data.qr_code || 'Código não disponível'}
-      </div>
+  // Título
+  const titulo = document.createElement('div');
+  titulo.style.cssText = 'font-size:1.2rem;font-weight:800;color:#0d1b3e;margin-bottom:4px';
+  titulo.textContent = '📱 Pague via PIX';
+  box.appendChild(titulo);
 
-      <button onclick="navigator.clipboard.writeText('${(data.qr_code||'').replace(/'/g,"\'")}').then(()=>nexosToast('✅ Código copiado!'))"
-        style="width:100%;padding:12px;background:var(--accent);color:white;border:none;
-        border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer;margin-bottom:8px">
-        📋 Copiar código PIX
-      </button>
+  const sub = document.createElement('div');
+  sub.style.cssText = 'font-size:.82rem;color:#3d5480;margin-bottom:16px';
+  sub.textContent = `Plano ${plano} — R$ ${preco}/mês`;
+  box.appendChild(sub);
 
-      <div style="font-size:.74rem;color:var(--text-muted);margin-bottom:14px">
-        Após o pagamento, seu plano será ativado automaticamente em até 1 minuto.
-      </div>
+  // QR Code (se disponível)
+  if (data.qr_code_base64) {
+    const img = document.createElement('img');
+    img.src = 'data:image/png;base64,' + data.qr_code_base64;
+    img.style.cssText = 'width:180px;height:180px;border-radius:12px;border:1px solid #c8d6ee;margin-bottom:14px;display:block;margin-left:auto;margin-right:auto';
+    img.alt = 'QR Code PIX';
+    box.appendChild(img);
+  }
 
-      <button onclick="this.closest('[style*=fixed]').remove()"
-        style="width:100%;padding:10px;background:var(--surface2);border:1px solid var(--border);
-        border-radius:10px;font-size:.85rem;cursor:pointer">
-        Fechar
-      </button>
-    </div>`;
+  // Código copia e cola
+  if (data.qr_code) {
+    const cod = document.createElement('div');
+    cod.style.cssText = 'background:#e8eef8;border:1px solid #c8d6ee;border-radius:10px;padding:11px;font-family:monospace;font-size:.72rem;word-break:break-all;text-align:left;margin-bottom:12px;max-height:80px;overflow:auto';
+    cod.textContent = data.qr_code;
+    box.appendChild(cod);
+  }
+
+  // Botão copiar
+  const btnCopiar = document.createElement('button');
+  btnCopiar.style.cssText = 'width:100%;padding:12px;background:#1e4f9f;color:white;border:none;border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer;margin-bottom:8px;font-family:inherit';
+  btnCopiar.textContent = '📋 Copiar código PIX';
+  btnCopiar.onclick = () => {
+    navigator.clipboard.writeText(data.qr_code || '').then(() => {
+      btnCopiar.textContent = '✅ Copiado!';
+      setTimeout(() => { btnCopiar.textContent = '📋 Copiar código PIX'; }, 2000);
+    });
+  };
+  box.appendChild(btnCopiar);
+
+  // Nota
+  const nota = document.createElement('div');
+  nota.style.cssText = 'font-size:.74rem;color:#3d5480;margin-bottom:14px';
+  nota.textContent = 'Após o pagamento, seu plano será ativado automaticamente em até 1 minuto.';
+  box.appendChild(nota);
+
+  // Botão fechar
+  const btnFechar = document.createElement('button');
+  btnFechar.style.cssText = 'width:100%;padding:10px;background:#e8eef8;border:1px solid #c8d6ee;border-radius:10px;font-size:.85rem;cursor:pointer;font-family:inherit';
+  btnFechar.textContent = 'Fechar';
+  btnFechar.onclick = () => overlay.remove();
+  box.appendChild(btnFechar);
+
+  overlay.appendChild(box);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
   document.body.appendChild(overlay);
 }
 
 function _mostrarPIXManual(plano, preco) {
   const chave = 'contato@nexoserp.com.br';
+  document.querySelectorAll('.nexos-pix-overlay').forEach(e => e.remove());
   const overlay = document.createElement('div');
+  overlay.className = 'nexos-pix-overlay';
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
-  overlay.innerHTML = `
-    <div style="background:white;border-radius:20px;padding:28px;max-width:360px;width:100%;text-align:center">
-      <div style="font-size:1.1rem;font-weight:800;color:var(--text);margin-bottom:4px">📱 PIX Manual</div>
-      <div style="font-size:.82rem;color:var(--text-muted);margin-bottom:16px">Plano ${plano} — R$ ${preco}/mês</div>
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;
-        padding:14px;font-family:monospace;font-size:.95rem;font-weight:700;margin-bottom:12px">
-        ${chave}
-      </div>
-      <button onclick="navigator.clipboard.writeText('${chave}').then(()=>nexosToast('✅ Chave copiada!'))"
-        style="width:100%;padding:12px;background:var(--accent);color:white;border:none;
-        border-radius:10px;font-weight:700;cursor:pointer;margin-bottom:8px">
-        📋 Copiar chave PIX
-      </button>
-      <div style="font-size:.74rem;color:var(--text-muted);margin-bottom:14px">
-        Envie R$ ${preco} e o comprovante para contato@nexoserp.com.br para ativar o plano.
-      </div>
-      <button onclick="this.closest('[style*=fixed]').remove()"
-        style="width:100%;padding:10px;background:var(--surface2);border:1px solid var(--border);
-        border-radius:10px;font-size:.85rem;cursor:pointer">Fechar</button>
-    </div>`;
+  const box = document.createElement('div');
+  box.style.cssText = 'background:white;border-radius:20px;padding:28px;max-width:360px;width:100%;text-align:center';
+  box.innerHTML = '<div style="font-size:1.1rem;font-weight:800;color:#0d1b3e;margin-bottom:4px">📱 Pagamento via PIX</div>'
+    + '<div style="font-size:.82rem;color:#3d5480;margin-bottom:16px">Plano ' + plano + ' — R$ ' + preco + '/mês</div>'
+    + '<div style="background:#e8eef8;border:1px solid #c8d6ee;border-radius:10px;padding:14px;font-family:monospace;font-size:.95rem;font-weight:700;margin-bottom:12px">' + chave + '</div>';
+  const btnC = document.createElement('button');
+  btnC.style.cssText = 'width:100%;padding:12px;background:#1e4f9f;color:white;border:none;border-radius:10px;font-weight:700;cursor:pointer;margin-bottom:8px;font-family:inherit';
+  btnC.textContent = '📋 Copiar chave PIX';
+  btnC.onclick = () => navigator.clipboard.writeText(chave).then(() => { btnC.textContent = '✅ Copiado!'; setTimeout(() => { btnC.textContent = '📋 Copiar chave PIX'; }, 2000); });
+  box.appendChild(btnC);
+  const nota = document.createElement('div');
+  nota.style.cssText = 'font-size:.74rem;color:#3d5480;margin-bottom:14px';
+  nota.textContent = 'Envie R$ ' + preco + ' e o comprovante para contato@nexoserp.com.br para ativar o plano.';
+  box.appendChild(nota);
+  const btnF = document.createElement('button');
+  btnF.style.cssText = 'width:100%;padding:10px;background:#e8eef8;border:1px solid #c8d6ee;border-radius:10px;font-size:.85rem;cursor:pointer;font-family:inherit';
+  btnF.textContent = 'Fechar';
+  btnF.onclick = () => overlay.remove();
+  box.appendChild(btnF);
+  overlay.appendChild(box);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
   document.body.appendChild(overlay);
 }
 
