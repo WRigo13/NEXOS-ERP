@@ -4674,7 +4674,13 @@ async function checkoutViaMercadoPago(plano, cfg) {
       return;
     }
 
-    // ── BOLETO: mostrar código de barras + link ────────────
+    // ── BOLETO: abrir Checkout Pro do MP (só boleto) ────────
+    if (data.tipo === 'boleto' && data.checkout_url) {
+      toast('📄 Abrindo página de boleto...', 2000);
+      setTimeout(() => window.open(data.checkout_url, '_blank'), 500);
+      return;
+    }
+    // Fallback: boleto com URL direta
     if (data.tipo === 'boleto' && data.boleto_url) {
       _mostrarBoleto(data, plano, cfg.preco);
       return;
