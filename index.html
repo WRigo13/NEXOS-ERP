@@ -2335,7 +2335,7 @@ async function _salvarSupabase(mod, data) {
     despesas:      r => ({ id: String(r.id), company_id: cid, descricao: r.descricao||'', valor: Number(r.valor)||0, categoria: r.categoria||'', status: r.status||'pago', data: r.data||null }),
     clientes:      r => ({ id: String(r.id), company_id: cid, nome: r.nome||'', email: r.email||'', telefone: r.telefone||'', cpf: r.cpf||'', endereco: r.endereco||'' }),
     produtos:      r => ({ id: String(r.id), company_id: cid, nome: r.nome||'', categoria: r.categoria||'', preco: Number(r.preco)||0, quantidade: Number(r.quantidade??r.estoque)||0, minimo: Number(r.minimo??r.estoque_min)||5 }),
-    vendas:        r => ({ id: String(r.id), company_id: cid, total: Number(r.total)||0, forma: r.forma||'', cliente: r.cliente||'', items: r.items||r.carrinho||[], data: r.data||new Date().toISOString() }),
+    vendas:        r => ({ id: String(r.id), company_id: cid, total: Number(r.total)||0, forma_pagto: r.forma_pagto||r.forma||r.pagamento||'dinheiro', cliente: r.cliente||r.cliente_nome||'', cliente_nome: r.cliente||r.cliente_nome||'', items: r.items||r.itens||[], status: r.status||'concluido' }),
     movimentacoes: r => ({ id: String(r.id), company_id: cid, produto_id: String(r.produto_id||''), produto_nome: r.produto_nome||r.nome||'', tipo: r.tipo||'', qtd: Number(r.qtd)||0, motivo: r.motivo||'' }),
   };
 
@@ -2747,13 +2747,15 @@ window._syncTudo = async function _syncTudo() {
       }));
       localStorage.setItem(getKey('produtos'), JSON.stringify(produtos));
     }
-    // Vendas — normalizar items/itens
+    // Vendas — normalizar campos do banco para o app
     if (v.data) {
       vendas = v.data.map(x => ({
         ...x,
-        id:     String(x.id),
-        items:  x.items || x.itens || [],
-        forma:  x.forma || x.pagamento || 'dinheiro',
+        id:      String(x.id),
+        items:   x.items || x.itens || [],
+        forma:   x.forma_pagto || x.forma || x.pagamento || 'dinheiro',
+        cliente: x.cliente || x.cliente_nome || '',
+        data:    x.created_at || x.data || new Date().toISOString(),
       }));
       localStorage.setItem(getKey('vendas'), JSON.stringify(vendas));
     }
@@ -3675,13 +3677,16 @@ function vendConfirmar() {
   salvar('produtos', produtos);
 
   const venda = {
-    id:         uid(),
-    company_id: currentCompany.id,
-    data:       new Date().toISOString(),
-    items:      carrinho.map(c => ({ id:c.id, nome:c.nome, qtd:c.qtd, preco:c.preco })),
+    id:          uid(),
+    company_id:  currentCompany.id,
+    items:       carrinho.map(c => ({ id:c.id, nome:c.nome, qtd:c.qtd, preco:c.preco })),
     total,
-    forma,
-    cliente,
+    forma_pagto: forma,
+    forma:       forma,
+    cliente:     cliente,
+    cliente_nome:cliente,
+    status:      'concluido',
+    data:        new Date().toISOString(),
   };
   vendas.unshift(venda);
   salvar('vendas', vendas);
@@ -3742,8 +3747,9 @@ function vendExcluir(id) {
 function vendStats() {
   const hj  = hoje();
   const mes = mesAtual();
-  const totalHoje = vendas.filter(v => v.data.startsWith(hj)).reduce((s,v) => s+v.total, 0);
-  const totalMes  = vendas.filter(v => v.data.startsWith(mes)).reduce((s,v) => s+v.total, 0);
+  const getDataVenda = v => (v.data||v.created_at||'').substring(0,10);
+  const totalHoje = vendas.filter(v => getDataVenda(v) === hj).reduce((s,v)  => s+(Number(v.total)||0), 0);
+  const totalMes  = vendas.filter(v => getDataVenda(v).startsWith(mes)).reduce((s,v) => s+(Number(v.total)||0), 0);
   $('vendHoje').textContent = moeda(totalHoje);
   $('vendMes').textContent  = moeda(totalMes);
 }
@@ -3759,10 +3765,11 @@ function dashAtualizar() {
   const despTotal = despesas.filter(d => d.status === 'pago').reduce((s,d) => s+d.valor, 0);
   const saldo     = recTotal - despTotal;
 
-  const vendasHoje = vendas.filter(v => v.data.startsWith(hj));
-  const vendasMes  = vendas.filter(v => v.data.startsWith(mes));
-  const totalHoje  = vendasHoje.reduce((s,v) => s+v.total, 0);
-  const totalMes   = vendasMes.reduce((s,v)  => s+v.total, 0);
+  const _dvData = v => (v.data||v.created_at||'').substring(0,10);
+  const vendasHoje = vendas.filter(v => _dvData(v) === hj);
+  const vendasMes  = vendas.filter(v => _dvData(v).startsWith(mes));
+  const totalHoje  = vendasHoje.reduce((s,v) => s+(Number(v.total)||0), 0);
+  const totalMes   = vendasMes.reduce((s,v)  => s+(Number(v.total)||0), 0);
 
   const alertas = produtos.filter(p => p.quantidade <= p.minimo);
   const valEst  = produtos.reduce((s,p) => s+p.quantidade*p.preco, 0);
@@ -4093,14 +4100,16 @@ function vendaDiretaSalvar() {
 
   // Criar registro de venda direta
   const venda = {
-    id:         uid(),
-    company_id: currentCompany.id,
-    tipo:       'direta',
-    items:      [{ nome: item, qtd, preco: valor }],
+    id:          uid(),
+    company_id:  currentCompany.id,
+    items:       [{ nome: item, qtd, preco: valor }],
     total,
-    cliente:    'Venda direta',
-    forma:      'dinheiro',
-    data:       agora.toISOString(),
+    cliente:     'Venda direta',
+    cliente_nome:'Venda direta',
+    forma_pagto: 'dinheiro',
+    forma:       'dinheiro',
+    status:      'concluido',
+    data:        agora.toISOString(),
   };
 
   vendas.unshift(venda);
