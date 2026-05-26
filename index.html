@@ -723,10 +723,14 @@
     // CONFIGURE AQUI — Settings → API Keys → Publishable key
     // ════════════════════════════════════════
     const SUPABASE_URL = 'https://awdgnxwmzestfdfuabcb.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_MBRQAkBFZG-QvtdiQ2_Itw_7CIt3GCN';
+    // IMPORTANTE: Use a anon/public key do painel Settings → API
+    // Deve começar com eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3ZGdueHdtemVzdGZkZnVhYmNiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5NjIxMDQsImV4cCI6MjA5NDUzODEwNH0.NeFqVTqf7gSkfneH2GOJoYTVWi808vKM73Rvau6Z4ds';
     const _sb = (SUPABASE_KEY && !SUPABASE_KEY.startsWith('COLE_'))
       ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
       : null;
+    if (!_sb) console.warn('[Nexos] Supabase não inicializado — dados ficam só no localStorage!');
+    else console.log('[Nexos] Supabase conectado ✅');
 
     // ════════════════════════════════════════
     // GATEWAYS DE PAGAMENTO
@@ -2300,9 +2304,11 @@ function getKey(mod) {
 function salvar(mod, data) {
   // 1. Salvar local imediatamente (UI responsiva)
   try { localStorage.setItem(getKey(mod), JSON.stringify(data)); } catch(e) {}
-  // 2. Persistir no Supabase em background (sincronização)
+  // 2. Persistir no Supabase em background
   if (_sb && currentCompany?.id && currentCompany.id !== 'demo_company') {
-    _salvarSupabase(mod, data).catch(() => {});
+    _salvarSupabase(mod, data).catch(e => console.error('[Nexos] Falha ao salvar no Supabase:', e));
+  } else {
+    if (!_sb) console.warn('[Nexos] _sb é null — dado salvo só no localStorage:', mod);
   }
 }
 
