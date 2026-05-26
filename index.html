@@ -2211,7 +2211,26 @@
     </div>
   </div>
 </div>
-<div id="toast"></div>
+
+    <!-- Banner de Migração de Dados -->
+    <div id="btnMigrar" style="display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+      z-index:800;background:var(--warning-bg);border:2px solid var(--warning);
+      border-radius:14px;padding:14px 20px;box-shadow:0 8px 32px rgba(0,0,0,.15);
+      align-items:center;gap:12px;max-width:420px;width:calc(100% - 32px)">
+      <span style="font-size:1.4rem">⚠️</span>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:.88rem;color:var(--warning)">Dados locais não sincronizados</div>
+        <div style="font-size:.76rem;color:var(--text-muted);margin-top:2px">Envie seus dados para a nuvem para não perdê-los.</div>
+      </div>
+      <button onclick="migrarParaSupabase()"
+        style="background:var(--warning);color:white;border:none;padding:9px 16px;
+        border-radius:9px;font-weight:700;font-size:.82rem;cursor:pointer;white-space:nowrap">
+        ☁️ Migrar agora
+      </button>
+      <button onclick="this.parentElement.style.display='none'"
+        style="background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--text-muted);padding:4px">✕</button>
+    </div>
+    <div id="toast"></div>
 
 <!-- Banner PWA Install -->
 <div id="installBanner">
@@ -2658,6 +2677,32 @@ function seedDemo() {
 /* ═══════════════════════════════════════════
    NAVEGAÇÃO
 ═══════════════════════════════════════════ */
+
+async function _syncTudo() {
+  if (!_sb || !currentCompany?.id || currentCompany.id === 'demo_company') return;
+  const cid = currentCompany.id;
+  try {
+    const [r, d, c, p, v] = await Promise.all([
+      _sb.from('receitas').select('*').eq('company_id', cid),
+      _sb.from('despesas').select('*').eq('company_id', cid),
+      _sb.from('clientes').select('*').eq('company_id', cid),
+      _sb.from('produtos').select('*').eq('company_id', cid),
+      _sb.from('vendas').select('*').eq('company_id', cid),
+    ]);
+    let changed = false;
+    if (r.data?.length) { receitas = r.data; localStorage.setItem(getKey('receitas'), JSON.stringify(receitas)); changed = true; }
+    if (d.data?.length) { despesas = d.data; localStorage.setItem(getKey('despesas'), JSON.stringify(despesas)); changed = true; }
+    if (c.data?.length) { clientes = c.data; localStorage.setItem(getKey('clientes'), JSON.stringify(clientes)); changed = true; }
+    if (p.data?.length) { produtos  = p.data; localStorage.setItem(getKey('produtos'),  JSON.stringify(produtos));  changed = true; }
+    if (v.data?.length) { vendas    = v.data; localStorage.setItem(getKey('vendas'),    JSON.stringify(vendas));    changed = true; }
+    if (changed) {
+      recRender(); despRender(); cliRender(); prodRender();
+      vendRenderCatalogo(); vendRenderHistorico(); vendStats();
+      fluxoRender(); dashAtualizar();
+    }
+  } catch(e) { console.warn('[Nexos] sync falhou:', e.message); }
+}
+
 function navegar(page) {
   // Verificar permissão (exceto páginas sempre liberadas)
   const semRestricao = ['plano','admin'];
@@ -4262,6 +4307,67 @@ function cfgRenderUsers() {
   }
 
   container.innerHTML = html;
+}
+
+/* ═══════════════════════════════════════════
+   MIGRAÇÃO localStorage → Supabase
+═══════════════════════════════════════════ */
+async function migrarParaSupabase() {
+  if (!_sb || !currentCompany?.id || currentCompany.id === 'demo_company') {
+    toast('⚠️ Supabase não disponível.'); return;
+  }
+  const cid = currentCompany.id;
+  const modulos = ['receitas','despesas','clientes','produtos','vendas','movimentacoes'];
+  let total = 0;
+  let erros = 0;
+
+  toast('⏳ Migrando dados para a nuvem...', 10000);
+
+  for (const mod of modulos) {
+    try {
+      const raw = localStorage.getItem(`erp_${cid}_${mod}`);
+      if (!raw) continue;
+      const arr = JSON.parse(raw);
+      if (!Array.isArray(arr) || !arr.length) continue;
+
+      const comCid = arr.map(r => ({ ...r, company_id: cid }));
+      for (let i = 0; i < comCid.length; i += 50) {
+        const { error } = await _sb.from(mod)
+          .upsert(comCid.slice(i, i+50), { onConflict: 'id' });
+        if (error) { erros++; console.error(mod, error.message); }
+        else total += Math.min(50, comCid.length - i);
+      }
+    } catch(e) { erros++; console.error(mod, e.message); }
+  }
+
+  if (erros === 0) {
+    toast(`✅ Migração concluída! ${total} registros salvos na nuvem.`, 5000);
+    localStorage.setItem(`nexos_migrado_${cid}`, '1');
+    // Esconder botão de migração
+    const btn = document.getElementById('btnMigrar');
+    if (btn) btn.style.display = 'none';
+  } else {
+    toast(`⚠️ Migração com ${erros} erro(s). ${total} registros salvos.`, 6000);
+  }
+}
+
+// Verificar se há dados locais não migrados
+function verificarMigracao() {
+  if (!currentCompany?.id || currentCompany.id === 'demo_company') return;
+  const cid = currentCompany.id;
+  if (localStorage.getItem(`nexos_migrado_${cid}`)) return; // já migrou
+
+  const modulos = ['receitas','despesas','clientes','produtos','vendas'];
+  let temDados = false;
+  for (const mod of modulos) {
+    const raw = localStorage.getItem(`erp_${cid}_${mod}`);
+    if (raw && JSON.parse(raw || '[]').length > 0) { temDados = true; break; }
+  }
+  if (!temDados) return;
+
+  // Mostrar banner de migração
+  const btn = document.getElementById('btnMigrar');
+  if (btn) btn.style.display = 'flex';
 }
 /* ═══════════════════════════════════════════
    CONTROLE DE PLANOS
