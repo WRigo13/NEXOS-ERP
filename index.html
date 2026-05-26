@@ -2323,12 +2323,12 @@ async function _salvarSupabase(mod, data) {
 
   // Mapear apenas campos válidos por módulo
   const limpar = {
-    receitas:      r => ({ id: r.id, company_id: cid, descricao: r.descricao||'', valor: Number(r.valor)||0, categoria: r.categoria||'', status: r.status||'pago', data: r.data||null }),
-    despesas:      r => ({ id: r.id, company_id: cid, descricao: r.descricao||'', valor: Number(r.valor)||0, categoria: r.categoria||'', status: r.status||'pago', data: r.data||null }),
-    clientes:      r => ({ id: r.id, company_id: cid, nome: r.nome||'', email: r.email||'', telefone: r.telefone||'', cpf: r.cpf||'', endereco: r.endereco||'' }),
-    produtos:      r => ({ id: r.id, company_id: cid, nome: r.nome||'', categoria: r.categoria||'', preco: Number(r.preco)||0, quantidade: Number(r.quantidade??r.estoque)||0, minimo: Number(r.minimo??r.estoque_min)||5 }),
-    vendas:        r => ({ id: r.id, company_id: cid, total: Number(r.total)||0, forma: r.forma||'', cliente: r.cliente||'', items: r.items||r.carrinho||[], data: r.data||new Date().toISOString() }),
-    movimentacoes: r => ({ id: r.id, company_id: cid, produto_id: r.produto_id||'', produto_nome: r.produto_nome||r.nome||'', tipo: r.tipo||'', qtd: Number(r.qtd)||0, motivo: r.motivo||'' }),
+    receitas:      r => ({ id: String(r.id), company_id: cid, descricao: r.descricao||'', valor: Number(r.valor)||0, categoria: r.categoria||'', status: r.status||'pago', data: r.data||null }),
+    despesas:      r => ({ id: String(r.id), company_id: cid, descricao: r.descricao||'', valor: Number(r.valor)||0, categoria: r.categoria||'', status: r.status||'pago', data: r.data||null }),
+    clientes:      r => ({ id: String(r.id), company_id: cid, nome: r.nome||'', email: r.email||'', telefone: r.telefone||'', cpf: r.cpf||'', endereco: r.endereco||'' }),
+    produtos:      r => ({ id: String(r.id), company_id: cid, nome: r.nome||'', categoria: r.categoria||'', preco: Number(r.preco)||0, quantidade: Number(r.quantidade??r.estoque)||0, minimo: Number(r.minimo??r.estoque_min)||5 }),
+    vendas:        r => ({ id: String(r.id), company_id: cid, total: Number(r.total)||0, forma: r.forma||'', cliente: r.cliente||'', items: r.items||r.carrinho||[], data: r.data||new Date().toISOString() }),
+    movimentacoes: r => ({ id: String(r.id), company_id: cid, produto_id: String(r.produto_id||''), produto_nome: r.produto_nome||r.nome||'', tipo: r.tipo||'', qtd: Number(r.qtd)||0, motivo: r.motivo||'' }),
   };
 
   const fn = limpar[mod];
@@ -2724,15 +2724,16 @@ window._syncTudo = async function _syncTudo() {
     ]);
 
     // Receitas
-    if (r.data) { receitas = r.data; localStorage.setItem(getKey('receitas'), JSON.stringify(receitas)); }
+    if (r.data) { receitas = r.data.map(x=>({...x,id:String(x.id)})); localStorage.setItem(getKey('receitas'), JSON.stringify(receitas)); }
     // Despesas
-    if (d.data) { despesas = d.data; localStorage.setItem(getKey('despesas'), JSON.stringify(despesas)); }
+    if (d.data) { despesas = d.data.map(x=>({...x,id:String(x.id)})); localStorage.setItem(getKey('despesas'), JSON.stringify(despesas)); }
     // Clientes
-    if (c.data) { clientes = c.data; localStorage.setItem(getKey('clientes'), JSON.stringify(clientes)); }
-    // Produtos — normalizar campos quantidade/estoque e minimo/estoque_min
+    if (c.data) { clientes = c.data.map(x=>({...x,id:String(x.id)})); localStorage.setItem(getKey('clientes'), JSON.stringify(clientes)); }
+    // Produtos — normalizar campos
     if (p.data) {
       produtos = p.data.map(prod => ({
         ...prod,
+        id:         String(prod.id),
         quantidade: prod.quantidade ?? prod.estoque ?? 0,
         minimo:     prod.minimo     ?? prod.estoque_min ?? 5,
       }));
