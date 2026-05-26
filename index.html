@@ -2306,9 +2306,12 @@ function salvar(mod, data) {
   try { localStorage.setItem(getKey(mod), JSON.stringify(data)); } catch(e) {}
   // 2. Persistir no Supabase em background
   if (_sb && currentCompany?.id && currentCompany.id !== 'demo_company') {
-    _salvarSupabase(mod, data).catch(e => console.error('[Nexos] Falha ao salvar no Supabase:', e));
-  } else {
-    if (!_sb) console.warn('[Nexos] _sb é null — dado salvo só no localStorage:', mod);
+    _salvarSupabase(mod, data).catch(e => {
+      console.error('[Nexos] Falha ao salvar no Supabase:', e);
+      // Não exibir toast para não incomodar a cada save — só logar
+    });
+  } else if (!_sb) {
+    console.warn('[Nexos] Supabase não disponível — salvo só localmente:', mod);
   }
 }
 
@@ -2323,7 +2326,7 @@ async function _salvarSupabase(mod, data) {
     receitas:      r => ({ id: r.id, company_id: cid, descricao: r.descricao||'', valor: Number(r.valor)||0, categoria: r.categoria||'', status: r.status||'pago', data: r.data||null }),
     despesas:      r => ({ id: r.id, company_id: cid, descricao: r.descricao||'', valor: Number(r.valor)||0, categoria: r.categoria||'', status: r.status||'pago', data: r.data||null }),
     clientes:      r => ({ id: r.id, company_id: cid, nome: r.nome||'', email: r.email||'', telefone: r.telefone||'', cpf: r.cpf||'', endereco: r.endereco||'' }),
-    produtos:      r => ({ id: r.id, company_id: cid, nome: r.nome||'', categoria: r.categoria||'', preco: Number(r.preco)||0, estoque: Number(r.estoque)||0, estoque_min: Number(r.estoque_min||r.minimo)||5 }),
+    produtos:      r => ({ id: r.id, company_id: cid, nome: r.nome||'', categoria: r.categoria||'', preco: Number(r.preco)||0, quantidade: Number(r.quantidade??r.estoque)||0, minimo: Number(r.minimo??r.estoque_min)||5 }),
     vendas:        r => ({ id: r.id, company_id: cid, total: Number(r.total)||0, forma: r.forma||'', cliente: r.cliente||'', items: r.items||r.carrinho||[], data: r.data||new Date().toISOString() }),
     movimentacoes: r => ({ id: r.id, company_id: cid, produto_id: r.produto_id||'', produto_nome: r.produto_nome||r.nome||'', tipo: r.tipo||'', qtd: Number(r.qtd)||0, motivo: r.motivo||'' }),
   };
@@ -2585,7 +2588,7 @@ function verificarSessao() {
   return false;
 }
 
-function iniciarApp(user, company) {
+async function iniciarApp(user, company) {
   currentUser    = user;
   currentCompany = company;
 
@@ -2598,29 +2601,45 @@ function iniciarApp(user, company) {
   $('userEmail').textContent      = user.email;
   $('userAvatar').textContent     = (user.name||'U')[0].toUpperCase();
 
-  // Carregar dados da empresa
-  receitas = carregar('receitas');
-  despesas = carregar('despesas');
-  clientes = carregar('clientes');
-  produtos = carregar('produtos');
-  vendas        = carregar('vendas');
-    movimentacoes = carregar('movimentacoes');
+  // ── PRIORIDADE 1: Carregar do Supabase (fonte da verdade) ──
+  if (_sb && company.id !== 'demo_company') {
+    await window._syncTudo();
+  }
 
-  // Seed demo
+  // ── PRIORIDADE 2: Fallback localStorage se Supabase vazio ──
+  if (!receitas.length) receitas = carregar('receitas');
+  if (!despesas.length) despesas = carregar('despesas');
+  if (!clientes.length) clientes = carregar('clientes');
+  if (!produtos.length)  produtos  = carregar('produtos');
+  if (!vendas.length)    vendas    = carregar('vendas');
+  if (!movimentacoes.length) movimentacoes = carregar('movimentacoes');
+
+  // ── Seed demo ──
   if (company.id === 'demo_company') seedDemo();
 
-  // Init admin, perfil e planos
+  // ── Migração automática: dados locais → Supabase ──
+  if (_sb && company.id !== 'demo_company') {
+    const migKey = 'nexos_migrado_' + company.id;
+    const temLocal = receitas.length || despesas.length || produtos.length || clientes.length;
+    if (!localStorage.getItem(migKey) && temLocal) {
+      toast('☁️ Sincronizando dados com a nuvem...', 3000);
+      await migrarParaSupabase();
+      localStorage.setItem(migKey, '1');
+    }
+  }
+
+  // ── Init admin, perfil e planos ──
   adminInit();
   aplicarMarcaEmpresa();
 
-  // Definir perfil do usuário logado
+  // ── Perfil do usuário ──
   const todosUsers = getUsers();
   const meUser = todosUsers.find(u => u.email === user.email);
   currentPerfil = meUser?.perfil || (isAdmin() ? 'admin' : 'vendedor');
   aplicarPermissoes();
 
-  // Buscar perfil real do Supabase (sobrepõe localStorage se existir)
-  if (_sb && user.id && currentCompany?.id !== 'demo_company') {
+  // Buscar perfil real do Supabase
+  if (_sb && user.id && company.id !== 'demo_company') {
     _sb.from('profiles').select('role').eq('id', user.id).single()
       .then(({ data: prof }) => {
         if (prof?.role && prof.role !== currentPerfil) {
@@ -2631,14 +2650,14 @@ function iniciarApp(user, company) {
   }
   planoAtualizarUI();
 
-  // Init módulos
+  // ── Renderizar todos os módulos ──
   recInit(); despInit(); cliInit(); prodInit();
   recRender(); despRender(); cliRender(); prodRender();
   vendRenderCatalogo(); vendRenderHistorico(); vendStats();
   fluxoPopularMeses(); fluxoRender();
   dashAtualizar();
 
-  // Registrar nav
+  // ── Nav ──
   document.querySelectorAll('.nav-item').forEach(btn => {
     btn.addEventListener('click', () => {
       navegar(btn.dataset.page);
@@ -2646,7 +2665,6 @@ function iniciarApp(user, company) {
     });
   });
 
-  // Data header
   $('loginEmail').value = '';
   $('loginPass').value  = '';
 }
@@ -2692,30 +2710,44 @@ function seedDemo() {
    NAVEGAÇÃO
 ═══════════════════════════════════════════ */
 
-async function _syncTudo() {
+window._syncTudo = async function _syncTudo() {
   if (!_sb || !currentCompany?.id || currentCompany.id === 'demo_company') return;
   const cid = currentCompany.id;
   try {
-    const [r, d, c, p, v] = await Promise.all([
+    const [r, d, c, p, v, m] = await Promise.all([
       _sb.from('receitas').select('*').eq('company_id', cid),
       _sb.from('despesas').select('*').eq('company_id', cid),
       _sb.from('clientes').select('*').eq('company_id', cid),
       _sb.from('produtos').select('*').eq('company_id', cid),
       _sb.from('vendas').select('*').eq('company_id', cid),
+      _sb.from('movimentacoes').select('*').eq('company_id', cid),
     ]);
-    let changed = false;
-    if (r.data?.length) { receitas = r.data; localStorage.setItem(getKey('receitas'), JSON.stringify(receitas)); changed = true; }
-    if (d.data?.length) { despesas = d.data; localStorage.setItem(getKey('despesas'), JSON.stringify(despesas)); changed = true; }
-    if (c.data?.length) { clientes = c.data; localStorage.setItem(getKey('clientes'), JSON.stringify(clientes)); changed = true; }
-    if (p.data?.length) { produtos  = p.data; localStorage.setItem(getKey('produtos'),  JSON.stringify(produtos));  changed = true; }
-    if (v.data?.length) { vendas    = v.data; localStorage.setItem(getKey('vendas'),    JSON.stringify(vendas));    changed = true; }
-    if (changed) {
-      recRender(); despRender(); cliRender(); prodRender();
-      vendRenderCatalogo(); vendRenderHistorico(); vendStats();
-      fluxoRender(); dashAtualizar();
+
+    // Receitas
+    if (r.data) { receitas = r.data; localStorage.setItem(getKey('receitas'), JSON.stringify(receitas)); }
+    // Despesas
+    if (d.data) { despesas = d.data; localStorage.setItem(getKey('despesas'), JSON.stringify(despesas)); }
+    // Clientes
+    if (c.data) { clientes = c.data; localStorage.setItem(getKey('clientes'), JSON.stringify(clientes)); }
+    // Produtos — normalizar campos quantidade/estoque e minimo/estoque_min
+    if (p.data) {
+      produtos = p.data.map(prod => ({
+        ...prod,
+        quantidade: prod.quantidade ?? prod.estoque ?? 0,
+        minimo:     prod.minimo     ?? prod.estoque_min ?? 5,
+      }));
+      localStorage.setItem(getKey('produtos'), JSON.stringify(produtos));
     }
-  } catch(e) { console.warn('[Nexos] sync falhou:', e.message); }
-}
+    // Vendas
+    if (v.data) { vendas = v.data; localStorage.setItem(getKey('vendas'), JSON.stringify(vendas)); }
+    // Movimentações
+    if (m.data) { movimentacoes = m.data; localStorage.setItem(getKey('movimentacoes'), JSON.stringify(movimentacoes)); }
+
+  } catch(e) {
+    console.error('[Nexos] _syncTudo falhou:', e);
+    toast('⚠️ Erro ao sincronizar com a nuvem.', 3000);
+  }
+};
 
 function navegar(page) {
   // Verificar permissão (exceto páginas sempre liberadas)
