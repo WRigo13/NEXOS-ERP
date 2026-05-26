@@ -4,10 +4,10 @@
 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Nexos — Gestão Empresarial</title>
+  <title>Nexos — Gestão Empresarial (Verde)</title>
 
   <!-- PWA -->
-  <link rel="manifest" id="pwaManifest">
+  <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1e4f9f">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -38,11 +38,11 @@
       --accent-light:  #dde8f8;
       --accent-mid:    #8aaad8;
       /* tons da paleta de bolinhas */
-      --blue-deep:     #1e4f9f;
-      --blue-mid:      #2d63b8;
-      --blue-soft:     #4a7fcb;
-      --blue-light:    #7aaae0;
-      --blue-pale:     #b3cef0;
+      --verde:         #1e4f9f;
+      --verde-mid:     #2d63b8;
+      --verde-soft:    #4a7fcb;
+      --verde-light:   #7aaae0;
+      --verde-pale:    #b3cef0;
       --danger:        #c0392b;
       --danger-bg:     #fff0ef;
       --danger-border: #f5c6c2;
@@ -50,13 +50,13 @@
       --warning-bg:    #fff8ec;
       --warning-border:#fce3ab;
       --success:       #1a7a3e;
-      --success-bg:    #eafaf1;
-      --info:          #1e4f9f;
-      --info-bg:       #dde8f8;
+      --success-bg:    #e8f5ef;
+      --info:          #1565c0;
+      --info-bg:       #e3f2fd;
       --radius:        14px;
       --radius-sm:     9px;
-      --shadow:        0 2px 12px rgba(30,79,159,0.08), 0 1px 3px rgba(30,79,159,0.05);
-      --shadow-lg:     0 8px 40px rgba(30,79,159,0.14);
+      --shadow:        0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+      --shadow-lg:     0 8px 40px rgba(0,0,0,0.10);
       --mono:          'DM Mono', monospace;
       --sidebar-w:     220px;
     }
@@ -81,7 +81,7 @@
     .sidebar {
       width: var(--sidebar-w);
       min-height: 100vh;
-      background: linear-gradient(180deg, #1a3f8a 0%, #1e4f9f 60%, #2d63b8 100%);
+      background: linear-gradient(180deg, #0e3d2a 0%, #1e4f9f 100%);
       display: flex;
       flex-direction: column;
       position: fixed;
@@ -174,7 +174,7 @@
     .topbar {
       display: none;
       position: fixed; top: 0; left: 0; right: 0; z-index: 99;
-      background: #1a3f8a;
+      background: #0e3d2a;
       padding: 12px 16px;
       align-items: center; justify-content: space-between;
       border-bottom: 1px solid rgba(255,255,255,0.1);
@@ -353,7 +353,7 @@
     #toast {
       position: fixed; bottom: 26px; left: 50%;
       transform: translateX(-50%) translateY(16px);
-      background: #0e1f18; color: white;
+      background: #0d1b3e; color: white;
       padding: 10px 22px; border-radius: 999px;
       font-size: 0.82rem; font-weight: 500; font-family: 'DM Sans', sans-serif;
       z-index: 9999; pointer-events: none;
@@ -388,7 +388,7 @@
     .login-wrap {
       width: 100%; min-height: 100vh;
       display: flex; align-items: center; justify-content: center;
-      background: linear-gradient(135deg, #0d2a6e 0%, #1e4f9f 55%, #2d63b8 100%);
+      background: linear-gradient(135deg, #0e3d2a 0%, #1e4f9f 60%, #2d63b8 100%);
       padding: 20px;
     }
     .login-card {
@@ -603,7 +603,7 @@
        FINANCEIRO — FLUXO DE CAIXA
     ═══════════════════════════════════════════ */
     .cashflow-card {
-      background: linear-gradient(135deg, #1e4f9f 0%, #1a3f8a 100%);
+      background: linear-gradient(135deg, #1a3f8a 0%, #0e3d2a 100%);
       border-radius: var(--radius); padding: 22px 24px;
       color: white; margin-bottom: 20px;
     }
@@ -690,10 +690,10 @@
       .page { padding: 12px 12px 40px; }
       .section-top { margin-bottom: 14px; }
     }
-  
+
     /* ── PAGINAÇÃO ── */
-    .pag-wrap { display:flex;align-items:center;gap:4px;padding:10px 0 2px;flex-wrap:wrap;justify-content:center; }
-    .pag-btn { min-width:32px;height:32px;border:1px solid var(--border);background:var(--surface);
+    .pag-wrap { display:flex;align-items:center;gap:4px;padding:10px 0 4px;flex-wrap:wrap;justify-content:center; }
+    .pag-btn  { min-width:32px;height:32px;border:1px solid var(--border);background:var(--surface);
       color:var(--text);border-radius:7px;font-size:.8rem;font-weight:600;cursor:pointer;
       font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;
       justify-content:center;padding:0 8px; }
@@ -701,18 +701,14 @@
     .pag-btn[disabled] { opacity:.35;cursor:default; }
     .pag-btn.pag-ativa { background:var(--accent);color:#fff;border-color:var(--accent); }
     .pag-ellipsis { color:var(--text-muted);font-size:.8rem;padding:0 3px; }
-    .pag-label { font-size:.74rem;color:var(--text-muted);margin-left:8px;white-space:nowrap; }
+    .pag-label    { font-size:.74rem;color:var(--text-muted);margin-left:8px;white-space:nowrap; }
 
-  
     .nexos-wordmark {
       display: block;
       font-family: 'Barlow', 'Arial Black', sans-serif;
-      font-size: 1.12rem;
-      font-weight: 800;
-      color: white;
-      letter-spacing: .40em;
-      text-transform: uppercase;
-      line-height: 1;
+      font-size: 1.12rem; font-weight: 800;
+      color: white; letter-spacing: .42em;
+      text-transform: uppercase; line-height: 1;
       margin-bottom: 3px;
     }
   </style>
@@ -732,20 +728,16 @@
     // GATEWAYS DE PAGAMENTO
     // ════════════════════════════════════════
     const PAGAMENTO_CONFIG = {
-      // Mercado Pago — Public Key (pode ficar no frontend)
-      MP_PUBLIC_KEY: 'APP_USR-f7d51962-159d-425c-a8b4-eb35ace2bda6',
-      // MP_ACCESS_TOKEN fica no Supabase Secrets — nunca no frontend
+      // Mercado Pago — trocar por APP_USR-... em produção
+      MP_ACCESS_TOKEN: '', // ← fica no Supabase Secrets (nunca no frontend)
 
-      // Stripe — chaves ficam no Supabase Secrets
-      STRIPE_SECRET_KEY: '', // ← nunca no frontend
+      // Stripe — trocar por sk_live_... em produção
+      STRIPE_SECRET_KEY: '', // ← fica no Supabase Secrets (nunca no frontend)
       STRIPE_PRICE_IDS: {
         basic:      'price_1TYuQZCVpW5d3wGItmu8wD4O',
         pro:        'price_1TYuQuCVpW5d3wGIK0xYJEoa',
         enterprise: 'price_1TYuRHCVpW5d3wGIVDFJI6uq'
       },
-
-      // URL do app (produção)
-      APP_URL: 'https://nexos-erp-blush.vercel.app',
 
       // URL das Edge Functions no Supabase
       EDGE_URL: 'https://awdgnxwmzestfdfuabcb.supabase.co/functions/v1',
@@ -765,25 +757,21 @@
     <div class="login-card">
       <div class="login-header">
         <div class="login-logo" style="background:none;width:auto;height:auto;margin-bottom:6px;display:flex;justify-content:center">
-          <svg viewBox="0 0 200 200" width="88" height="88" xmlns="http://www.w3.org/2000/svg" style="display:block">
+          <svg viewBox="0 0 200 200" width="88" height="88" xmlns="http://www.w3.org/2000/svg" style="display:block;filter:drop-shadow(0 6px 18px rgba(26,79,159,.5))">
             <defs>
-              <linearGradient id="ng88" x1="0%" y1="0%" x2="80%" y2="100%">
-                <stop offset="0%" stop-color="#60CAFF"/>
-                <stop offset="45%" stop-color="#2979F5"/>
+              <linearGradient id="ng88" x1="15%" y1="0%" x2="85%" y2="100%">
+                <stop offset="0%"   stop-color="#60CAFF"/>
+                <stop offset="50%"  stop-color="#2979F5"/>
                 <stop offset="100%" stop-color="#1035A0"/>
               </linearGradient>
               <linearGradient id="ns88" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="rgba(0,20,80,.45)"/>
-                <stop offset="100%" stop-color="rgba(0,20,80,.0)"/>
+                <stop offset="0%" stop-color="rgba(0,10,60,.5)"/>
+                <stop offset="100%" stop-color="rgba(0,10,60,0)"/>
               </linearGradient>
             </defs>
-            <!-- Coluna esquerda -->
-            <rect x="18" y="18" width="38" height="164" rx="8" fill="url(#ng88)"/>
-            <!-- Coluna direita -->
-            <rect x="144" y="18" width="38" height="164" rx="8" fill="url(#ng88)"/>
-            <!-- Diagonal principal -->
+            <rect x="18" y="18" width="38" height="164" rx="7" fill="url(#ng88)"/>
+            <rect x="144" y="18" width="38" height="164" rx="7" fill="url(#ng88)"/>
             <polygon points="56,18 94,18 144,182 106,182" fill="url(#ng88)"/>
-            <!-- Sombra na diagonal para profundidade -->
             <polygon points="56,18 94,18 144,182 106,182" fill="url(#ns88)"/>
           </svg>
         </div>
@@ -853,14 +841,14 @@
         <div class="brand-icon" style="background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.2);overflow:hidden;padding:2px">
           <svg viewBox="0 0 200 200" width="32" height="32" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
               <defs>
-                <linearGradient id="ng32" x1="0%" y1="0%" x2="80%" y2="100%">
-                  <stop offset="0%" stop-color="#60CAFF"/>
-                  <stop offset="45%" stop-color="#2979F5"/>
+                <linearGradient id="ng32" x1="15%" y1="0%" x2="85%" y2="100%">
+                  <stop offset="0%"   stop-color="#60CAFF"/>
+                  <stop offset="50%"  stop-color="#2979F5"/>
                   <stop offset="100%" stop-color="#1035A0"/>
                 </linearGradient>
               </defs>
-              <rect x="18" y="18" width="38" height="164" rx="8" fill="url(#ng32)"/>
-              <rect x="144" y="18" width="38" height="164" rx="8" fill="url(#ng32)"/>
+              <rect x="18" y="18" width="38" height="164" rx="7" fill="url(#ng32)"/>
+              <rect x="144" y="18" width="38" height="164" rx="7" fill="url(#ng32)"/>
               <polygon points="56,18 94,18 144,182 106,182" fill="url(#ng32)"/>
             </svg>
         </div>
@@ -908,7 +896,6 @@
       <button class="nav-item" data-page="plano" id="navPlanoBtn">
         <span class="nav-ico">💎</span> Meu Plano
       </button>
-
       <button class="nav-item admin-item" data-page="admin" id="navAdminBtn" style="display:none">
         <span class="nav-ico">🛡️</span> Painel Admin
       </button>
@@ -919,10 +906,7 @@
         <div class="user-avatar" id="userAvatar">U</div>
         <div>
           <div class="user-name" id="userName">—</div>
-          <div style="display:flex;align-items:center;gap:5px;margin-top:2px">
-            <span class="user-email" id="userEmail" style="font-size:.62rem"></span>
-            <span id="userPerfilBadge" class="perfil-badge perfil-admin" style="font-size:.58rem;padding:1px 6px"></span>
-          </div>
+          <div class="user-email" id="userEmail">—</div>
         </div>
       </div>
       <button class="btn-logout" onclick="fazerLogout()">
@@ -1054,14 +1038,14 @@
       <div class="toolbar">
         <div class="search-box">
           <span class="search-ico">🔍</span>
-          <input type="text" id="recSearch" placeholder="Buscar descrição…" oninput="pagReset('rec');recRender()">
+          <input type="text" id="recSearch" placeholder="Buscar descrição…" oninput="recRender();pagReset('rec')">
         </div>
-        <select class="toolbar-select" id="recFiltroStatus" onchange="pagReset('rec');recRender()">
+        <select class="toolbar-select" id="recFiltroStatus" onchange="recRender();pagReset('rec')">
           <option value="">Todos</option>
           <option value="pago">Recebido</option>
           <option value="pendente">Pendente</option>
         </select>
-        <select class="toolbar-select" id="recFiltroCateg" onchange="pagReset('rec');recRender()">
+        <select class="toolbar-select" id="recFiltroCateg" onchange="recRender();pagReset('rec')">
           <option value="">Todas categorias</option>
         </select>
       </div>
@@ -1078,12 +1062,12 @@
               <th>Ações</th>
             </tr>
           </thead>
-          <tbody id="recTbody"></div>></tbody>
+          <tbody id="recTbody"></tbody>
         </table>
           <div class="pag-wrap" id="rec_pag"></div>
       </div>
       <div class="tbl-footer">
-        <button class="btn btn-secondary btn-sm" id="btnCsvReceitas" onclick="exportCSV(receitas,'receitas')">⬇ Exportar CSV</button>
+        <button class="btn btn-secondary btn-sm" onclick="exportCSV(receitas,'receitas')">⬇ Exportar CSV</button>
       </div>
     </section>
 
@@ -1156,14 +1140,14 @@
       <div class="toolbar">
         <div class="search-box">
           <span class="search-ico">🔍</span>
-          <input type="text" id="despSearch" placeholder="Buscar descrição…" oninput="pagReset('desp');despRender()">
+          <input type="text" id="despSearch" placeholder="Buscar descrição…" oninput="despRender();pagReset('desp')">
         </div>
-        <select class="toolbar-select" id="despFiltroStatus" onchange="pagReset('desp');despRender()">
+        <select class="toolbar-select" id="despFiltroStatus" onchange="despRender();pagReset('desp')">
           <option value="">Todos</option>
           <option value="pago">Pago</option>
           <option value="pendente">Pendente</option>
         </select>
-        <select class="toolbar-select" id="despFiltroCateg" onchange="pagReset('desp');despRender()">
+        <select class="toolbar-select" id="despFiltroCateg" onchange="despRender();pagReset('desp')">
           <option value="">Todas categorias</option>
         </select>
       </div>
@@ -1180,12 +1164,12 @@
               <th>Ações</th>
             </tr>
           </thead>
-          <tbody id="despTbody"></div>></tbody>
+          <tbody id="despTbody"></tbody>
         </table>
           <div class="pag-wrap" id="desp_pag"></div>
       </div>
       <div class="tbl-footer">
-        <button class="btn btn-secondary btn-sm" id="btnCsvDespesas" onclick="exportCSV(despesas,'despesas')">⬇ Exportar CSV</button>
+        <button class="btn btn-secondary btn-sm" onclick="exportCSV(despesas,'despesas')">⬇ Exportar CSV</button>
       </div>
     </section>
 
@@ -1197,7 +1181,7 @@
           <p>Cálculo automático de receitas menos despesas</p>
         </div>
         <div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap;">
-          <select class="toolbar-select" id="fluxoMes" onchange="pagReset('fluxo');fluxoRender()">
+          <select class="toolbar-select" id="fluxoMes" onchange="fluxoRender()">
             <option value="">Todos os períodos</option>
           </select>
           <button class="btn btn-secondary btn-sm" onclick="fluxoRender()">🔄 Atualizar</button>
@@ -1237,7 +1221,6 @@
           </thead>
           <tbody id="fluxoTbody"></tbody>
         </table>
-          <div class="pag-wrap" id="fluxo_pag"></div>
       </div>
     </section>
 
@@ -1296,7 +1279,7 @@
       <div class="toolbar">
         <div class="search-box">
           <span class="search-ico">🔍</span>
-          <input type="text" id="cliSearch" placeholder="Buscar por nome, e-mail ou telefone…" oninput="pagReset('cli');cliRender()">
+          <input type="text" id="cliSearch" placeholder="Buscar por nome, e-mail ou telefone…" oninput="cliRender();pagReset('cli')">
         </div>
       </div>
 
@@ -1311,12 +1294,12 @@
               <th>Ações</th>
             </tr>
           </thead>
-          <tbody id="cliTbody"></div>></tbody>
+          <tbody id="cliTbody"></tbody>
         </table>
           <div class="pag-wrap" id="cli_pag"></div>
       </div>
       <div class="tbl-footer">
-        <button class="btn btn-secondary btn-sm" id="btnCsvClientes" onclick="exportCSV(clientes,'clientes')">⬇ Exportar CSV</button>
+        <button class="btn btn-secondary btn-sm" onclick="exportCSV(clientes,'clientes')">⬇ Exportar CSV</button>
       </div>
     </section>
 
@@ -1394,12 +1377,12 @@
       <div class="toolbar">
         <div class="search-box">
           <span class="search-ico">🔍</span>
-          <input type="text" id="prodSearch" placeholder="Buscar produto…" oninput="pagReset('prod');prodRender()">
+          <input type="text" id="prodSearch" placeholder="Buscar produto…" oninput="prodRender();pagReset('prod')">
         </div>
-        <select class="toolbar-select" id="prodFiltroCateg" onchange="pagReset('prod');prodRender()">
+        <select class="toolbar-select" id="prodFiltroCateg" onchange="prodRender();pagReset('prod')">
           <option value="">Todas categorias</option>
         </select>
-        <select class="toolbar-select" id="prodOrdem" onchange="pagReset('prod');prodRender()">
+        <select class="toolbar-select" id="prodOrdem" onchange="prodRender();pagReset('prod')">
           <option value="nome">Nome A→Z</option>
           <option value="qtd_asc">Qtd (menor)</option>
           <option value="qtd_desc">Qtd (maior)</option>
@@ -1420,35 +1403,12 @@
               <th>Ações</th>
             </tr>
           </thead>
-          <tbody id="prodTbody"></div>></tbody>
+          <tbody id="prodTbody"></tbody>
         </table>
           <div class="pag-wrap" id="prod_pag"></div>
       </div>
       <div class="tbl-footer">
-        <button class="btn btn-secondary btn-sm" id="btnCsvProdutos" onclick="exportCSV(produtos,'produtos')">⬇ Exportar CSV</button>
-        <button class="btn btn-secondary btn-sm" onclick="exportCSV(movimentacoes,'movimentacoes')">⬇ Histórico CSV</button>
-      </div>
-
-      <!-- Histórico de movimentações -->
-      <div style="margin-top:24px">
-        <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
-          📋 Histórico de movimentações
-          <button class="btn btn-ghost btn-sm" onclick="prodHistoricoRender()">🔄</button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Data/Hora</th>
-                <th>Produto</th>
-                <th>Tipo</th>
-                <th>Qtd</th>
-                <th>Motivo</th>
-              </tr>
-            </thead>
-            <tbody id="prodHistoricoTbody"></tbody>
-          </table>
-        </div>
+        <button class="btn btn-secondary btn-sm" onclick="exportCSV(produtos,'produtos')">⬇ Exportar CSV</button>
       </div>
     </section>
 
@@ -1468,51 +1428,6 @@
             <div class="stat-label">📅 Mês</div>
             <div class="stat-value green" id="vendMes" style="font-size:1.1rem">R$ 0</div>
           </div>
-        </div>
-      </div>
-
-      <!-- ── VENDA DIRETA ── -->
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:18px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
-          <span style="font-size:1rem">⚡</span>
-          <span style="font-size:.88rem;font-weight:700;color:var(--text)">Venda Direta</span>
-          <span style="font-size:.75rem;color:var(--text-muted);margin-left:2px">— sem produto cadastrado</span>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:end" id="vendaDiretaForm">
-          <div>
-            <label style="font-size:.7rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:3px">Item / Descrição</label>
-            <input type="text" id="vdItem" placeholder="Ex: Coxinha, Refrigerante..."
-              style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;
-              font-size:.85rem;font-family:inherit;outline:none;box-sizing:border-box"
-              onfocus="this.style.borderColor='var(--accent)'"
-              onblur="this.style.borderColor='var(--border)'"
-              onkeydown="if(event.key==='Enter')$('vdQtd').focus()">
-          </div>
-          <div>
-            <label style="font-size:.7rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:3px">Qtd</label>
-            <input type="number" id="vdQtd" value="1" min="1"
-              style="width:70px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;
-              font-size:.85rem;font-family:inherit;outline:none;text-align:center"
-              onfocus="this.style.borderColor='var(--accent)'"
-              onblur="this.style.borderColor='var(--border)'"
-              oninput="vendaDiretaAtualizar()" onkeydown="if(event.key==='Enter')$('vdValor').focus()">
-          </div>
-          <div>
-            <label style="font-size:.7rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:3px">Valor unit. (R$)</label>
-            <input type="number" id="vdValor" placeholder="0,00" min="0" step="0.01"
-              style="width:110px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;
-              font-size:.85rem;font-family:inherit;outline:none"
-              onfocus="this.style.borderColor='var(--accent)'"
-              onblur="this.style.borderColor='var(--border)'"
-              oninput="vendaDiretaAtualizar()" onkeydown="if(event.key==='Enter')vendaDiretaSalvar()">
-          </div>
-        </div>
-        <!-- Total preview -->
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;flex-wrap:wrap;gap:8px">
-          <div id="vdTotal" style="font-size:.85rem;color:var(--text-muted)">Total: R$ 0,00</div>
-          <button class="btn btn-primary btn-sm" onclick="vendaDiretaSalvar()" style="gap:6px">
-            💾 Registrar venda
-          </button>
         </div>
       </div>
 
@@ -1551,8 +1466,8 @@
                 <select id="vendForma">
                   <option>PIX</option>
                   <option>Dinheiro</option>
-                  <option>Cartão de débito</option>
-                  <option>Cartão de crédito</option>
+                  
+                  
                   <option>Fiado</option>
                 </select>
               </div>
@@ -1575,8 +1490,8 @@
               <option value="">Todas formas</option>
               <option>PIX</option>
               <option>Dinheiro</option>
-              <option>Cartão de débito</option>
-              <option>Cartão de crédito</option>
+              
+              
               <option>Fiado</option>
             </select>
             <button class="btn btn-secondary btn-sm" onclick="exportCSV(vendas,'vendas')">⬇ Exportar</button>
@@ -1612,7 +1527,7 @@
       </div>
 
       <!-- Status atual -->
-      <div id="planoAtualCard" style="background:linear-gradient(135deg,#1e4f9f,#1a3f8a);border-radius:var(--radius);padding:22px 24px;color:white;margin-bottom:24px">
+      <div id="planoAtualCard" style="background:linear-gradient(135deg,#1e4f9f,#0e3d2a);border-radius:var(--radius);padding:22px 24px;color:white;margin-bottom:24px">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
           <div>
             <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;opacity:.55;margin-bottom:4px">Plano atual</div>
@@ -1766,48 +1681,7 @@
           <tbody id="adminTbody"></tbody>
         </table>
       </div>
-
-      <!-- USUARIOS DA EMPRESA -->
-      <div style="margin-top:32px;padding-top:24px;border-top:1px solid var(--border)" id="secaoUsuarios">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
-          <div>
-            <h3 style="font-size:.95rem;font-weight:700">👤 Usuários da empresa</h3>
-            <p style="font-size:.76rem;color:var(--text-muted);margin-top:2px" id="subtituloUsuarios">Crie e gerencie acessos por perfil</p>
-          </div>
-          <button class="btn btn-primary btn-sm" id="btnNovoUsuarioAdmin" onclick="usuarioAbrirNovo()">+ Novo usuário</button>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:16px">
-          <div class="perfil-card-click" onclick="perfilVerUsuarios('admin')" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-            <div style="margin-bottom:4px"><span class="perfil-badge perfil-admin">Admin</span></div>
-            <div style="font-size:.72rem;color:var(--text-muted)">Acesso total</div>
-            <div style="font-size:.68rem;color:var(--accent);margin-top:4px">👆 Ver usuários</div>
-          </div>
-          <div class="perfil-card-click" onclick="perfilVerUsuarios('gerente')" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-            <div style="margin-bottom:4px"><span class="perfil-badge perfil-gerente">Gerente</span></div>
-            <div style="font-size:.72rem;color:var(--text-muted)">Comercial + financeiro leitura</div>
-            <div style="font-size:.68rem;color:var(--accent);margin-top:4px">👆 Ver usuários</div>
-          </div>
-          <div class="perfil-card-click" onclick="perfilVerUsuarios('financeiro')" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-            <div style="margin-bottom:4px"><span class="perfil-badge perfil-financeiro">Financeiro</span></div>
-            <div style="font-size:.72rem;color:var(--text-muted)">Dashboard + financeiro</div>
-            <div style="font-size:.68rem;color:var(--accent);margin-top:4px">👆 Ver usuários</div>
-          </div>
-          <div class="perfil-card-click" onclick="perfilVerUsuarios('estoquista')" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-            <div style="margin-bottom:4px"><span class="perfil-badge perfil-estoquista">Estoquista</span></div>
-            <div style="font-size:.72rem;color:var(--text-muted)">Somente produtos</div>
-            <div style="font-size:.68rem;color:var(--accent);margin-top:4px">👆 Ver usuários</div>
-          </div>
-          <div class="perfil-card-click" onclick="perfilVerUsuarios('vendedor')" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-            <div style="margin-bottom:4px"><span class="perfil-badge perfil-vendedor">Vendedor</span></div>
-            <div style="font-size:.72rem;color:var(--text-muted)">Vendas + cadastrar clientes</div>
-            <div style="font-size:.68rem;color:var(--accent);margin-top:4px">👆 Ver usuários</div>
-          </div>
-        </div>
-        <div class="users-grid" id="usuariosGrid"></div>
-      </div>
-
     </section>
-
 
   </main><!-- /main-content -->
 </div><!-- /appShell -->
@@ -1856,28 +1730,9 @@
 
 <!-- Modal: Detalhes empresa (Admin) -->
 <div class="modal-overlay" id="modalEmpresaAdmin">
-  <div class="modal" style="max-width:520px;max-height:90vh;overflow-y:auto;position:relative">
-    <!-- Botão fechar -->
-    <button onclick="$('modalEmpresaAdmin').classList.remove('open')"
-      title="Fechar sem salvar"
-      style="position:sticky;top:0;float:right;margin:-4px -4px 0 0;
-      background:rgba(0,0,0,.06);border:none;width:32px;height:32px;
-      border-radius:50%;font-size:1.1rem;cursor:pointer;z-index:10;
-      display:flex;align-items:center;justify-content:center;
-      transition:background .15s;flex-shrink:0"
-      onmouseover="this.style.background='rgba(0,0,0,.14)'"
-      onmouseout="this.style.background='rgba(0,0,0,.06)'">✕</button>
-    <!-- Nome da empresa editável -->
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-      <div style="flex:1;min-width:0">
-        <label style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-light);display:block;margin-bottom:4px">Nome da empresa</label>
-        <input type="text" id="modalEmpresaNomeInput" placeholder="Nome da empresa"
-          style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:9px;font-size:.96rem;font-weight:700;font-family:inherit;outline:none;box-sizing:border-box;transition:border-color .15s"
-          onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
-      </div>
-      <button class="btn btn-primary btn-sm" style="flex-shrink:0;margin-top:16px" onclick="adminSalvarNomeEmpresa()">✓ Salvar</button>
-    </div>
-    <div class="admin-detail-grid" id="modalEmpresaDetalhes" style="overflow-y:auto;max-height:calc(100vh - 100px)"></div>
+  <div class="modal" style="max-height:90vh;overflow-y:auto;position:relative" style="max-width:520px">
+    <h3 id="modalEmpresaNome">Empresa</h3>
+    <div class="admin-detail-grid" id="modalEmpresaDetalhes"></div>
     <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
     <div style="font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:10px">Alterar plano</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
@@ -1910,7 +1765,7 @@
         <div style="display:flex;align-items:center;gap:8px">
           <input type="color" id="adminBrandBg" value="#f0f4fb"
             style="width:40px;height:36px;border:1px solid var(--border);border-radius:8px;padding:2px;cursor:pointer;background:none">
-          <input type="text" id="adminBrandBgHex" placeholder="#eef2ef" maxlength="7"
+          <input type="text" id="adminBrandBgHex" placeholder="#f0f4fb" maxlength="7"
             style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:.82rem;font-family:inherit;outline:none">
         </div>
       </div>
@@ -1928,7 +1783,7 @@
           <div style="font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:4px" id="logoNomeArquivo">Nenhum arquivo selecionado</div>
           <div style="font-size:.7rem;color:var(--text-muted)">PNG, JPG ou SVG · Máx 500KB</div>
         </div>
-        <button class="btn btn-secondary btn-sm" onclick="logoTriggerUpload()" style="flex-shrink:0">
+        <button class="btn btn-secondary btn-sm" onclick="$('adminLogoUpload').click()" style="flex-shrink:0">
           📁 Escolher
         </button>
       </div>
@@ -2001,7 +1856,7 @@
     <!-- PIX -->
     <div id="payAreaPix" style="display:none;text-align:center;padding:16px">
       <div style="font-size:.82rem;color:var(--text-muted);margin-bottom:12px">Chave PIX para pagamento:</div>
-      <div style="font-family:var(--mono);font-size:1rem;font-weight:700;background:var(--surface2);padding:12px;border-radius:9px;border:1px solid var(--border);word-break:break-all" id="pixKey">financeiro@erpmei.com.br</div>
+      <div style="font-family:var(--mono);font-size:1rem;font-weight:700;background:var(--surface2);padding:12px;border-radius:9px;border:1px solid var(--border);word-break:break-all" id="pixKey">contato@nexoserp.com.br</div>
       <button class="btn btn-secondary btn-sm" style="margin-top:10px" onclick="navigator.clipboard.writeText(document.getElementById('pixKey').textContent);toast('📋 Chave PIX copiada!')">📋 Copiar chave</button>
       <div style="font-size:.75rem;color:var(--text-muted);margin-top:10px">Após o pagamento, envie o comprovante por e-mail para ativar o plano.</div>
     </div>
@@ -2047,73 +1902,6 @@
   </div>
 </div>
 
-<!-- Modal: Criar/Editar Usuário -->
-<div class="modal-overlay" id="modalUsuario">
-  <div class="modal" style="max-width:420px">
-    <h3 id="modalUsuarioTitulo">👤 Novo usuário</h3>
-    <input type="hidden" id="usuarioEditId">
-    <div style="display:flex;flex-direction:column;gap:13px">
-      <div class="field">
-        <label>Nome completo</label>
-        <input type="text" id="usuarioNome" placeholder="Ex: João Silva"
-          style="padding:9px 12px;border:1px solid var(--border);border-radius:9px;font-size:.86rem;font-family:inherit;outline:none;width:100%">
-      </div>
-      <div class="field">
-        <label>E-mail</label>
-        <input type="email" id="usuarioEmail" placeholder="joao@empresa.com"
-          style="padding:9px 12px;border:1px solid var(--border);border-radius:9px;font-size:.86rem;font-family:inherit;outline:none;width:100%">
-      </div>
-      <div class="field">
-        <label>Senha (mínimo 6 caracteres)</label>
-        <input type="password" id="usuarioSenha" placeholder="••••••••"
-          style="padding:9px 12px;border:1px solid var(--border);border-radius:9px;font-size:.86rem;font-family:inherit;outline:none;width:100%">
-      </div>
-      <div class="field">
-        <label>Perfil de acesso</label>
-        <select id="usuarioPerfil"
-          style="padding:9px 12px;border:1px solid var(--border);border-radius:9px;font-size:.86rem;font-family:inherit;outline:none;width:100%">
-          <option value="gerente">👔 Gerente — dashboard + comercial + financeiro leitura</option>
-          <option value="financeiro">💰 Financeiro — dashboard + receitas + despesas + fluxo</option>
-          <option value="estoquista">📦 Estoquista — somente produtos e estoque</option>
-          <option value="vendedor">🛒 Vendedor — somente vendas + clientes leitura</option>
-        </select>
-      </div>
-      <!-- Preview de permissões -->
-      <div id="perfilPreview" style="background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:12px">
-        <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:8px">Módulos liberados</div>
-        <div id="perfilPreviewList" style="display:flex;flex-wrap:wrap;gap:5px"></div>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="$('modalUsuario').classList.remove('open')">Cancelar</button>
-      <button class="btn btn-primary" onclick="usuarioSalvar()">💾 Salvar</button>
-    </div>
-  </div>
-</div>
-
-
-<!-- Modal: Usuários por Perfil -->
-<div class="modal-overlay" id="modalPerfilUsuarios">
-  <div class="modal" style="max-width:500px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <h3 id="modalPerfilTitulo" style="margin:0">👤 Usuários</h3>
-      <button class="btn btn-primary btn-sm" id="btnNovoPerfilUsuario" onclick="">➕ Novo usuário neste perfil</button>
-    </div>
-
-    <!-- Módulos liberados -->
-    <div id="modalPerfilModulos" style="background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:11px 14px;margin-bottom:16px">
-      <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:8px">Módulos liberados</div>
-      <div id="modalPerfilModulosList" style="display:flex;flex-wrap:wrap;gap:5px"></div>
-    </div>
-
-    <!-- Lista de usuários com credenciais -->
-    <div id="modalPerfilUsersList" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto"></div>
-
-    <div class="modal-actions" style="margin-top:14px">
-      <button class="btn btn-secondary" onclick="$('modalPerfilUsuarios').classList.remove('open')">Fechar</button>
-    </div>
-  </div>
-</div>
 <div id="toast"></div>
 
 <!-- Banner PWA Install -->
@@ -2141,7 +1929,6 @@ let clientes  = [];
 let produtos  = [];
 let vendas    = [];
 let carrinho  = [];
-let movimentacoes = []; // histórico de entradas/saídas de estoque
 
 // Edição
 let recEdit   = null;
@@ -2181,53 +1968,12 @@ function toast(msg, dur=2800) {
 function getKey(mod) {
   return `erp_${currentCompany?.id || 'guest'}_${mod}`;
 }
-function salvar(mod, data) {
-  // 1. Salvar local imediatamente (UI responsiva)
-  try { localStorage.setItem(getKey(mod), JSON.stringify(data)); } catch(e) {}
-  // 2. Persistir no Supabase em background (sincronização)
-  if (_sb && currentCompany?.id && currentCompany.id !== 'demo_company') {
-    _salvarSupabase(mod, data).catch(() => {});
-  }
-}
-
-async function _salvarSupabase(mod, data) {
-  if (!_sb || !currentCompany?.id) return;
-  const cid = currentCompany.id;
-  // Deletar registros antigos do módulo desta empresa e reinserir
-  // (upsert por id é mais seguro — evita duplicatas)
-  const arr = Array.isArray(data) ? data : [];
-  if (!arr.length) {
-    await _sb.from(mod).delete().eq('company_id', cid);
-    return;
-  }
-  // Upsert em lotes de 50
-  const comCid = arr.map(r => ({ ...r, company_id: cid }));
-  for (let i = 0; i < comCid.length; i += 50) {
-    await _sb.from(mod).upsert(comCid.slice(i, i+50), { onConflict: 'id' });
-  }
-}
 
 function carregar(mod) {
   try {
     const d = localStorage.getItem(getKey(mod));
     return d ? JSON.parse(d) : [];
   } catch(e) { return []; }
-}
-
-// Carregar dados do Supabase e sincronizar com localStorage
-async function carregarDoSupabase(mod) {
-  if (!_sb || !currentCompany?.id || currentCompany.id === 'demo_company') return null;
-  try {
-    const { data, error } = await _sb
-      .from(mod)
-      .select('*')
-      .eq('company_id', currentCompany.id)
-      .order('created_at', { ascending: false });
-    if (error || !data) return null;
-    // Atualizar localStorage com dados do Supabase
-    localStorage.setItem(getKey(mod), JSON.stringify(data));
-    return data;
-  } catch(e) { return null; }
 }
 
 /* ═══════════════════════════════════════════
@@ -2473,22 +2219,14 @@ function iniciarApp(user, company) {
   despesas = carregar('despesas');
   clientes = carregar('clientes');
   produtos = carregar('produtos');
-  vendas        = carregar('vendas');
-    movimentacoes = carregar('movimentacoes');
+  vendas   = carregar('vendas');
 
   // Seed demo
   if (company.id === 'demo_company') seedDemo();
 
-  // Init admin, perfil e planos
+  // Init admin e planos
   adminInit();
   aplicarMarcaEmpresa();
-
-  // Definir perfil do usuário logado
-  const todosUsers = getUsers();
-  const meUser = todosUsers.find(u => u.email === user.email);
-  currentPerfil = meUser?.perfil || (isAdmin() ? 'admin' : 'vendedor');
-  aplicarPermissoes();
-  planoAtualizarUI();
 
   // Init módulos
   recInit(); despInit(); cliInit(); prodInit();
@@ -2496,6 +2234,11 @@ function iniciarApp(user, company) {
   vendRenderCatalogo(); vendRenderHistorico(); vendStats();
   fluxoPopularMeses(); fluxoRender();
   dashAtualizar();
+
+  // Sincronizar com Supabase (dados reais sobrepõem cache local)
+  if (_sb && currentCompany?.id !== 'demo_company') {
+    setTimeout(_syncTudo, 800);
+  }
 
   // Registrar nav
   document.querySelectorAll('.nav-item').forEach(btn => {
@@ -2550,26 +2293,115 @@ function seedDemo() {
 /* ═══════════════════════════════════════════
    NAVEGAÇÃO
 ═══════════════════════════════════════════ */
-function navegar(page) {
-  // Verificar permissão (exceto páginas sempre liberadas)
-  const semRestricao = ['plano','admin'];
-  if (!semRestricao.includes(page) && typeof temAcesso === 'function' && !temAcesso(page)) {
-    currentPage = page;
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    const pag = $('page' + page.charAt(0).toUpperCase() + page.slice(1));
-    if (pag) {
-      pag.classList.add('active');
-      pag.innerHTML = `<div class="acesso-negado">
-        <span class="ico">🔒</span>
-        <h3>Acesso restrito</h3>
-        <p>Seu perfil <strong>${typeof getPerfil === 'function' ? getPerfil().label : ''}</strong> não tem permissão para acessar este módulo.</p>
-        <p style="margin-top:8px;font-size:.78rem">Solicite acesso ao administrador da empresa.</p>
-      </div>`;
-    }
-    return;
-  }
 
+/* ═══════════════════════════════════════════
+   PAGINAÇÃO GLOBAL
+═══════════════════════════════════════════ */
+const PAGINAS = {};
+const POR_PAG = 10;
+
+function pagGet(id) { return PAGINAS[id] || 1; }
+function pagSet(id, p) { PAGINAS[id] = p; }
+function pagReset(id) { PAGINAS[id] = 1; }
+
+function pagControle(total, pid) {
+  const ctrl = document.getElementById(pid + '_pag');
+  if (!ctrl) return;
+  const pag = pagGet(pid);
+  const totPags = Math.ceil(total / POR_PAG);
+  if (total <= POR_PAG) { ctrl.style.display = 'none'; return; }
+  ctrl.style.display = 'flex';
+  let h = '';
+  h += `<button class="pag-btn" onclick="pagIr('${pid}',${pag-1},${totPags})" ${pag<=1?'disabled':''}>‹</button>`;
+  for (let i=1; i<=totPags; i++) {
+    if (totPags > 7 && i!==1 && i!==totPags && Math.abs(i-pag)>1) {
+      if (i===2 || i===totPags-1) h += '<span class="pag-ellipsis">…</span>';
+      continue;
+    }
+    h += `<button class="pag-btn ${i===pag?'pag-ativa':''}" onclick="pagIr('${pid}',${i},${totPags})">${i}</button>`;
+  }
+  h += `<button class="pag-btn" onclick="pagIr('${pid}',${pag+1},${totPags})" ${pag>=totPags?'disabled':''}>›</button>`;
+  h += `<span class="pag-label">${(pag-1)*POR_PAG+1}–${Math.min(pag*POR_PAG,total)} de ${total}</span>`;
+  ctrl.innerHTML = h;
+}
+
+function pagIr(id, p, total) {
+  if (p < 1 || p > total) return;
+  pagSet(id, p);
+  ({rec:recRender, desp:despRender, cli:cliRender, prod:prodRender,
+    vhist:vendRenderHistorico, fluxo:fluxoRender})[id]?.();
+}
+
+function pagSlice(lista, id) {
+  const p = pagGet(id);
+  return lista.slice((p-1)*POR_PAG, p*POR_PAG);
+}
+
+
+/* ═══════════════════════════════════════════
+   SINCRONIZAÇÃO SUPABASE — FONTE DA VERDADE
+═══════════════════════════════════════════ */
+function salvar(mod, data) {
+  // Salvar local imediatamente (UI responsiva)
+  try { localStorage.setItem(getKey(mod), JSON.stringify(data)); } catch(e) {}
+  // Persistir no Supabase em background
+  if (_sb && currentCompany?.id && currentCompany.id !== 'demo_company') {
+    _upsertSupabase(mod, data).catch(() => {});
+  }
+}
+
+async function _upsertSupabase(mod, data) {
+  if (!_sb || !currentCompany?.id) return;
+  const arr = Array.isArray(data) ? data : [];
+  const cid = currentCompany.id;
+  const comCid = arr.map(r => ({ ...r, company_id: cid }));
+  for (let i = 0; i < comCid.length; i += 50) {
+    await _sb.from(mod).upsert(comCid.slice(i, i+50), { onConflict: 'id' });
+  }
+}
+
+async function _syncTudo() {
+  if (!_sb || !currentCompany?.id || currentCompany.id === 'demo_company') return;
+  const cid = currentCompany.id;
+  try {
+    const [r, d, c, p, v] = await Promise.all([
+      _sb.from('receitas').select('*').eq('company_id', cid),
+      _sb.from('despesas').select('*').eq('company_id', cid),
+      _sb.from('clientes').select('*').eq('company_id', cid),
+      _sb.from('produtos').select('*').eq('company_id', cid),
+      _sb.from('vendas').select('*').eq('company_id', cid),
+    ]);
+    let changed = false;
+    if (r.data) { receitas = r.data; localStorage.setItem(getKey('receitas'), JSON.stringify(receitas)); changed = true; }
+    if (d.data) { despesas = d.data; localStorage.setItem(getKey('despesas'), JSON.stringify(despesas)); changed = true; }
+    if (c.data) { clientes = c.data; localStorage.setItem(getKey('clientes'), JSON.stringify(clientes)); changed = true; }
+    if (p.data) { produtos  = p.data; localStorage.setItem(getKey('produtos'),  JSON.stringify(produtos));  changed = true; }
+    if (v.data) { vendas    = v.data; localStorage.setItem(getKey('vendas'),    JSON.stringify(vendas));    changed = true; }
+    if (changed) {
+      recRender(); despRender(); cliRender(); prodRender();
+      vendRenderCatalogo(); vendRenderHistorico(); vendStats();
+      fluxoRender(); dashAtualizar();
+    }
+  } catch(e) { console.warn('[Nexos] sync falhou:', e.message); }
+}
+
+
+function exportFluxoCSV() {
+  if (!planoTemRecurso('csv')) { toastUpgrade('csv'); return; }
+  const mes = $('fluxoMes')?.value || '';
+  const filtra = x => !mes || (x.data||'').startsWith(mes);
+  const rows = [['Tipo','Descricao','Categoria','Data','Valor','Status'],
+    ...receitas.filter(x=>x.company_id===currentCompany.id&&filtra(x)).map(x=>['Receita',x.descricao||'',x.categoria||'',x.data||'',x.valor||0,x.status||'']),
+    ...despesas.filter(x=>x.company_id===currentCompany.id&&filtra(x)).map(x=>['Despesa',x.descricao||'',x.categoria||'',x.data||'',-(x.valor||0),x.status||'']),
+  ];
+  const csv = rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+  a.download = 'fluxo'+(mes?'-'+mes:'')+'.csv'; a.click();
+  toast('✅ CSV exportado!');
+}
+
+function navegar(page) {
   currentPage = page;
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -2581,12 +2413,24 @@ function navegar(page) {
   if (page === 'receitas')    recRender();
   if (page === 'despesas')    despRender();
   if (page === 'clientes')    cliRender();
-  if (page === 'produtos')    { prodRender(); prodHistoricoRender(); }
+  if (page === 'produtos')    prodRender();
   if (page === 'vendas')      { vendRenderCatalogo(); vendRenderHistorico(); vendStats(); }
   if (page === 'plano')       planoRenderPagina();
   if (page === 'admin')       adminCarregar();
-  // Atualizar UI de restrições em todas as telas
-  planoAtualizarUI();
+
+  // Sincronizar com Supabase ao abrir módulo (garante dados atualizados)
+  if (_sb && currentCompany?.id && currentCompany.id !== 'demo_company') {
+    const tbl = {receitas:'receitas',despesas:'despesas',clientes:'clientes',produtos:'produtos',vendas:'vendas'}[page];
+    if (tbl) _sb.from(tbl).select('*').eq('company_id', currentCompany.id).then(({data,error}) => {
+      if (error || !data) return;
+      localStorage.setItem(getKey(tbl), JSON.stringify(data));
+      if (page==='receitas') { receitas=data; recRender(); dashAtualizar(); }
+      if (page==='despesas') { despesas=data; despRender(); fluxoRender(); dashAtualizar(); }
+      if (page==='clientes') { clientes=data; cliRender(); }
+      if (page==='produtos')  { produtos=data;  prodRender(); vendRenderCatalogo(); }
+      if (page==='vendas')    { vendas=data;    vendRenderHistorico(); vendStats(); dashAtualizar(); }
+    });
+  }
 }
 
 function toggleSidebar() {
@@ -2596,64 +2440,6 @@ function toggleSidebar() {
 function closeSidebar() {
   $('sidebar').classList.remove('open');
   $('sidebarOverlay').classList.remove('open');
-}
-
-
-function prodHistoricoRender() {
-  const tbody = $('prodHistoricoTbody');
-  if (!tbody) return;
-
-  const lista = [...movimentacoes]
-    .sort((a, b) => b.data.localeCompare(a.data))
-    .slice(0, 50);
-
-  if (!lista.length) {
-    tbody.innerHTML = `<tr><td colspan="5" class="empty-state"><span class="empty-ico">📋</span><p>Nenhuma movimentação registrada.</p></td></tr>`;
-    return;
-  }
-
-  const tipoLabel = {
-    entrada: '<span class="badge badge-ok">📥 Entrada</span>',
-    saida:   '<span class="badge badge-vencido">📤 Saída</span>',
-    venda:   '<span class="badge badge-info">🛒 Venda</span>',
-    ajuste:  '<span class="badge badge-pendente">🔧 Ajuste</span>',
-  };
-
-  tbody.innerHTML = lista.map(m => {
-    const d   = new Date(m.data);
-    const dt  = d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
-    const cor = m.qtd > 0 ? 'var(--success)' : 'var(--danger)';
-    const sinal = m.qtd > 0 ? '+' : '';
-    return `<tr>
-      <td class="mono" style="font-size:.75rem;white-space:nowrap">${dt}</td>
-      <td style="font-size:.82rem;font-weight:500">${esc(m.produto)}</td>
-      <td>${tipoLabel[m.tipo] || m.tipo}</td>
-      <td class="mono" style="font-weight:700;color:${cor}">${sinal}${m.qtd}</td>
-      <td style="font-size:.78rem;color:var(--text-muted)">${esc(m.motivo||'—')}</td>
-    </tr>`;
-  }).join('');
-
-  // Controle de paginação do fluxo
-  const _ctrlF = $('fluxo_pag');
-  if (_ctrlF) {
-    if (movComSaldo.length <= POR_PAG) {
-      _ctrlF.style.display = 'none';
-    } else {
-      _ctrlF.style.display = 'flex';
-      let btns = '';
-      btns += `<button class="pag-btn" onclick="pagIr('fluxo',${_pagF-1},${_totF})" ${_pagF<=1?'disabled':''}>‹</button>`;
-      for (let i=1;i<=_totF;i++){
-        if(_totF>7 && i!==1 && i!==_totF && Math.abs(i-_pagF)>1){
-          if(i===2||i===_totF-1) btns+=`<span class="pag-ellipsis">…</span>`;
-          continue;
-        }
-        btns+=`<button class="pag-btn ${i===_pagF?'pag-ativa':''}" onclick="pagIr('fluxo',${i},${_totF})">${i}</button>`;
-      }
-      btns += `<button class="pag-btn" onclick="pagIr('fluxo',${_pagF+1},${_totF})" ${_pagF>=_totF?'disabled':''}>›</button>`;
-      btns += `<span class="pag-label">${(_pagF-1)*POR_PAG+1}–${Math.min(_pagF*POR_PAG,movComSaldo.length)} de ${movComSaldo.length}</span>`;
-      _ctrlF.innerHTML = btns;
-    }
-  }
 }
 
 /* ═══════════════════════════════════════════
@@ -2753,9 +2539,10 @@ function recRender() {
     tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><span class="empty-ico">📈</span><p>Nenhuma receita encontrada.</p></td></tr>`;
     return;
   }
-
-  // ── Paginação rec ──
-  pagRender(lista, 'recTbody', r => `
+  
+  pagControle(lista.length, 'rec');
+  const listaPag = pagSlice(lista, 'rec');
+  tbody.innerHTML = listaPag.map(r => `
     <tr>
       <td>${esc(r.descricao)}</td>
       <td><span class="badge badge-info">${esc(r.categoria)}</span></td>
@@ -2766,7 +2553,7 @@ function recRender() {
         <button class="btn btn-secondary btn-icon btn-sm" onclick="recEditar('${r.id}')" title="Editar">✏️</button>
         <button class="btn btn-danger btn-icon btn-sm" onclick="recExcluir('${r.id}')" title="Excluir">🗑</button>
       </div></td>
-    </tr>`, 'rec');
+    </tr>`).join('');
 }
 
 // Carregar receitas do Supabase
@@ -2897,9 +2684,10 @@ function despRender() {
     tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><span class="empty-ico">📉</span><p>Nenhuma despesa encontrada.</p></td></tr>`;
     return;
   }
-
-  // ── Paginação desp ──
-  pagRender(lista, 'despTbody', d => `
+  
+  pagControle(lista.length, 'desp');
+  const listaPag = pagSlice(lista, 'desp');
+  tbody.innerHTML = listaPag.map(d => `
     <tr>
       <td>${esc(d.descricao)}</td>
       <td><span class="badge badge-info">${esc(d.categoria)}</span></td>
@@ -2910,7 +2698,7 @@ function despRender() {
         <button class="btn btn-secondary btn-icon btn-sm" onclick="despEditar('${d.id}')" title="Editar">✏️</button>
         <button class="btn btn-danger btn-icon btn-sm" onclick="despExcluir('${d.id}')" title="Excluir">🗑</button>
       </div></td>
-    </tr>`, 'desp');
+    </tr>`).join('');
 }
 
 /* ═══════════════════════════════════════════
@@ -2960,29 +2748,16 @@ function fluxoRender() {
     ...despFilt.map(d => ({ ...d, tipo: 'despesa' }))
   ].sort((a,b) => a.data.localeCompare(b.data));
 
+  let saldoAcum = 0;
   const tbody = $('fluxoTbody');
   if (!movimentos.length) {
     tbody.innerHTML = `<tr><td colspan="7" class="empty-state"><span class="empty-ico">💰</span><p>Sem movimentações no período.</p></td></tr>`;
-    if ($('fluxo_pag')) $('fluxo_pag').style.display = 'none';
     return;
   }
-
-  // Calcular saldo acumulado COMPLETO (pré-computado para paginar corretamente)
-  let saldoAcum = 0;
-  const movComSaldo = movimentos.map(m => {
+  tbody.innerHTML = movimentos.map(m => {
     const pago = m.status === 'pago';
     if (pago) saldoAcum += m.tipo === 'receita' ? m.valor : -m.valor;
-    return { ...m, saldoAcum: pago ? saldoAcum : null };
-  });
-
-  // Paginação
-  const _pagF  = pagGet('fluxo');
-  const _totF  = Math.ceil(movComSaldo.length / POR_PAG);
-  const _slice = movComSaldo.slice((_pagF-1)*POR_PAG, _pagF*POR_PAG);
-
-  tbody.innerHTML = _slice.map(m => {
-    const pago = m.status === 'pago';
-    const corSaldo = (m.saldoAcum||0) >= 0 ? 'var(--success)' : 'var(--danger)';
+    const corSaldo = saldoAcum >= 0 ? 'var(--success)' : 'var(--danger)';
     return `<tr>
       <td class="mono" style="white-space:nowrap">${new Date(m.data+'T00:00').toLocaleDateString('pt-BR')}</td>
       <td>${m.tipo==='receita' ? '<span class="badge badge-ok">📈 Receita</span>' : '<span class="badge badge-vencido">📉 Despesa</span>'}</td>
@@ -2990,7 +2765,7 @@ function fluxoRender() {
       <td><span class="badge badge-info">${esc(m.categoria)}</span></td>
       <td><span class="badge badge-${m.status}">${m.status==='pago'?'Pago':'Pendente'}</span></td>
       <td class="mono" style="font-weight:700;color:${m.tipo==='receita'?'var(--success)':'var(--danger)'}">${m.tipo==='receita'?'+':'-'}${moeda(m.valor)}</td>
-      <td class="mono" style="font-weight:700;color:${corSaldo}">${pago?moeda(m.saldoAcum):'—'}</td>
+      <td class="mono" style="font-weight:700;color:${corSaldo}">${pago?moeda(saldoAcum):'—'}</td>
     </tr>`;
   }).join('');
 }
@@ -3066,9 +2841,10 @@ function cliRender() {
     tbody.innerHTML = `<tr><td colspan="5" class="empty-state"><span class="empty-ico">👥</span><p>Nenhum cliente encontrado.</p></td></tr>`;
     return;
   }
-
-  // ── Paginação cli ──
-  pagRender(lista, 'cliTbody', c => `
+  
+  pagControle(lista.length, 'cli');
+  const listaPag = pagSlice(lista, 'cli');
+  tbody.innerHTML = listaPag.map(c => `
     <tr>
       <td>
         <div class="client-info">
@@ -3086,7 +2862,7 @@ function cliRender() {
         <button class="btn btn-secondary btn-icon btn-sm" onclick="cliEditar('${c.id}')" title="Editar">✏️</button>
         <button class="btn btn-danger btn-icon btn-sm" onclick="cliExcluir('${c.id}')" title="Excluir">🗑</button>
       </div></td>
-    </tr>`, 'cli');
+    </tr>`).join('');
 }
 
 /* ═══════════════════════════════════════════
@@ -3121,42 +2897,14 @@ function prodSalvar() {
   if (!nome) { toast('⚠️ Informe o nome do produto.'); return; }
 
   if (prodEdit) {
-    // Edição direta (via Ajuste Manual) — atualiza tudo
-    const antes = prodEdit.quantidade;
     Object.assign(prodEdit, { nome, categoria:categ, quantidade:qtd, preco, minimo:min });
-    // Registrar movimentação se quantidade mudou
-    if (qtd !== antes) {
-      prodRegistrarMov(prodEdit.id, nome, qtd - antes, 'ajuste', 'Ajuste manual');
-    }
     prodEdit = null;
     $('prodFormTitle').textContent = '➕ Novo produto';
     $('prodCancelarBtn').style.display = 'none';
     toast('✅ Produto atualizado!');
   } else {
-    // Novo produto — verificar se já existe com mesmo nome
-    const normalizar = s => s.toLowerCase().trim().replace(/\s+/g,' ');
-    const existente = produtos.find(p =>
-      normalizar(p.nome) === normalizar(nome)
-    );
-
-    if (existente) {
-      // Produto já existe — somar estoque em vez de duplicar
-      const antes = existente.quantidade;
-      existente.quantidade += qtd;
-      // Atualizar preço e mínimo se informados
-      if (preco > 0) existente.preco = preco;
-      if (min  > 0) existente.minimo = min;
-      if (categ) existente.categoria = categ;
-      // Registrar entrada no histórico
-      prodRegistrarMov(existente.id, existente.nome, qtd, 'entrada', 'Nova entrada de estoque');
-      toast(`✅ Entrada registrada! "${nome}": ${antes} → ${existente.quantidade} unidades`);
-    } else {
-      // Produto realmente novo
-      const novoProd = { id:uid(), company_id:currentCompany.id, nome, categoria:categ, quantidade:qtd, preco, minimo:min };
-      produtos.push(novoProd);
-      if (qtd > 0) prodRegistrarMov(novoProd.id, nome, qtd, 'entrada', 'Estoque inicial');
-      toast('✅ Produto cadastrado!');
-    }
+    produtos.push({ id:uid(), company_id:currentCompany.id, nome, categoria:categ, quantidade:qtd, preco, minimo:min });
+    toast('✅ Produto adicionado!');
   }
   salvar('produtos', produtos);
   prodLimparForm();
@@ -3164,21 +2912,6 @@ function prodSalvar() {
   prodAtualizarFiltroCateg();
   vendRenderCatalogo();
   dashAtualizar();
-}
-
-// Registrar movimentação de estoque com data/hora
-function prodRegistrarMov(prodId, prodNome, qtd, tipo, motivo) {
-  movimentacoes.push({
-    id:         uid(),
-    company_id: currentCompany.id,
-    produto_id: prodId,
-    produto:    prodNome,
-    qtd:        qtd,
-    tipo:       tipo,       // 'entrada', 'saida', 'ajuste', 'venda'
-    motivo:     motivo,
-    data:       new Date().toISOString(),
-  });
-  salvar('movimentacoes', movimentacoes);
 }
 function prodLimparForm() {
   $('prodNome').value  = '';
@@ -3268,12 +3001,9 @@ function prodConfirmarMovimentacao() {
   }
 
   salvar('produtos', produtos);
-  // Registrar no histórico
-  prodRegistrarMov(id, p.nome, tipo === 'entrada' ? qtd : -qtd, tipo,
-    $('movMotivo').value.trim() || (tipo === 'entrada' ? 'Entrada manual' : 'Saída manual'));
   $('modalMovimentacao').classList.remove('open');
 
-  const label = tipo === 'entrada' ? '📥 Entrada' : '📤 Saída';
+  const label = tipo === 'entrada' ? 'Entrada' : 'Saída';
   toast(`✅ ${label} de ${qtd} un. registrada. Estoque: ${antes} → ${p.quantidade}`);
   prodRender();
   vendRenderCatalogo();
@@ -3333,9 +3063,10 @@ function prodRender() {
     tbody.innerHTML = `<tr><td colspan="7" class="empty-state"><span class="empty-ico">📦</span><p>Nenhum produto encontrado.</p></td></tr>`;
     return;
   }
-
-  // ── Paginação prod ──
-  pagRender(lista, 'prodTbody', p => {
+  
+  pagControle(lista.length, 'prod');
+  const listaPag = pagSlice(lista, 'prod');
+  tbody.innerHTML = listaPag.map(p => {
     const pct   = p.minimo > 0 ? Math.min(100, Math.round(p.quantidade/p.minimo*100/2)) : (p.quantidade>0?100:0);
     const estBadge = p.quantidade === 0 ? 'badge-empty' : p.quantidade <= p.minimo ? 'badge-low' : 'badge-ok';
     const estLabel = p.quantidade === 0 ? 'Sem estoque' : p.quantidade <= p.minimo ? 'Estoque baixo' : 'OK';
@@ -3355,7 +3086,7 @@ function prodRender() {
         <button class="btn btn-danger btn-icon btn-sm" onclick="prodExcluir('${p.id}')" title="Excluir">🗑</button>
       </div></td>
     </tr>`;
-  }, 'prod');
+  }).join('');
 }
 
 /* ═══════════════════════════════════════════
@@ -3489,9 +3220,9 @@ function vendRenderHistorico() {
     tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><span class="empty-ico">🕐</span><p>Nenhuma venda registrada.</p></td></tr>`;
     return;
   }
-
-  // ── Paginação vhist ──
-  pagRender(lista, 'vendHistorico', v => {
+  pagControle(lista.length, 'vhist');
+  const listaPag = pagSlice(lista, 'vhist');
+  tbody.innerHTML = listaPag.map(v => {
     const d  = new Date(v.data);
     const dt = `${d.toLocaleDateString('pt-BR')} ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`;
     const its= v.itens.map(i => `${i.qtd}× ${i.nome}`).join(', ');
@@ -3503,7 +3234,7 @@ function vendRenderHistorico() {
       <td class="mono" style="font-weight:700;color:var(--success)">${moeda(v.total)}</td>
       <td><button class="btn btn-danger btn-icon btn-sm" onclick="vendExcluir('${v.id}')" title="Excluir">🗑</button></td>
     </tr>`;
-  }, 'vhist');
+  }).join('');
 }
 
 function vendExcluir(id) {
@@ -3591,11 +3322,6 @@ function dashAtualizar() {
    EXPORT CSV
 ═══════════════════════════════════════════ */
 function exportCSV(lista, nome) {
-  // Bloquear para plano Free
-  if (!planoTemRecurso('csv')) {
-    toastUpgrade('csv');
-    return;
-  }
   if (!lista.length) { toast('Nenhum dado para exportar.'); return; }
   const keys = Object.keys(lista[0]).filter(k => k !== 'company_id');
   const linhas = [
@@ -3635,374 +3361,14 @@ $('btnInstall')?.addEventListener('click', async () => {
 });
 
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
-  // Manifest dinâmico — não depende de arquivo externo
-  const _manifest = {
-    name: 'Nexos — Gestão Empresarial',
-    short_name: 'Nexos',
-    description: 'ERP completo para MEI e pequenas empresas',
-    start_url: '/',
-    display: 'standalone',
-    background_color: '#1e4f9f',
-    theme_color: '#1e4f9f',
-    orientation: 'portrait-primary',
-    lang: 'pt-BR',
-    categories: ['business','finance','productivity'],
-    icons: [
-      { src: 'https://nexos-erp-blush.vercel.app/logo.png', sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
-      { src: 'https://nexos-erp-blush.vercel.app/logo.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
-    ]
-  };
-  const _mBlob = new Blob([JSON.stringify(_manifest)], { type: 'application/manifest+json' });
-  const _mURL  = URL.createObjectURL(_mBlob);
-  const _mLink = document.getElementById('pwaManifest');
-  if (_mLink) _mLink.href = _mURL;
-
-  // Service Worker inline — não depende de service-worker.js no servidor
-  const _swSrc = [
-    "const CACHE='nexos-v2';",
-    "self.addEventListener('install',e=>{",
-    "  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/','/']).catch(()=>{})).then(()=>self.skipWaiting()));",
-    "});",
-    "self.addEventListener('activate',e=>{",
-    "  e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));",
-    "});",
-    "self.addEventListener('fetch',e=>{",
-    "  if(e.request.method!=='GET')return;",
-    "  e.respondWith(fetch(e.request).then(r=>{",
-    "    if(r&&r.status===200){const cl=r.clone();caches.open(CACHE).then(c=>c.put(e.request,cl));}",
-    "    return r;",
-    "  }).catch(()=>caches.match(e.request).then(r=>r||new Response('',{status:408}))));",
-    "});"
-  ].join('\n');
-  const _swBlob = new Blob([_swSrc], { type: 'application/javascript' });
-  const _swURL  = URL.createObjectURL(_swBlob);
-
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register(_swURL)
-      .then(() => console.log('SW inline registrado ✅'))
+    navigator.serviceWorker.register('./service-worker.js')
+      .then(() => console.log('SW registrado ✅'))
       .catch(() => {}); // silencia erro em dev/local
   });
 }
 
 
-
-/* ═══════════════════════════════════════════
-   CONTROLE DE UI POR PLANO
-═══════════════════════════════════════════ */
-function planoAtualizarUI() {
-  const temCSV   = planoTemRecurso('csv');
-  const temMarca = planoTemRecurso('marca');
-  const limUsr   = planoLimiteUsuarios();
-
-  // Botões CSV — mostrar com cadeado se plano Free
-  ['btnCsvReceitas','btnCsvDespesas','btnCsvClientes','btnCsvProdutos'].forEach(id => {
-    const btn = $(id);
-    if (!btn) return;
-    if (!temCSV) {
-      btn.innerHTML  = '🔒 Exportar CSV';
-      btn.title      = `Disponível a partir do plano Basic (R$ 49/mês)`;
-      btn.style.opacity = '0.55';
-    } else {
-      btn.innerHTML  = '⬇ Exportar CSV';
-      btn.title      = '';
-      btn.style.opacity = '1';
-    }
-  });
-
-  // Badge de limite de usuários no botão "+ Novo usuário"
-  const atual   = getUsers().filter(u => u.company_id === currentCompany?.id).length;
-  const btnUsr  = document.querySelector('[onclick="usuarioAbrirNovo()"]');
-  if (btnUsr) {
-    btnUsr.title = `${atual}/${limUsr} usuários (plano ${planoAtualNome()})`;
-    if (atual >= limUsr) {
-      btnUsr.innerHTML = `🔒 + Novo usuário (${atual}/${limUsr})`;
-      btnUsr.style.opacity = '0.65';
-    } else {
-      btnUsr.innerHTML = `+ Novo usuário (${atual}/${limUsr})`;
-      btnUsr.style.opacity = '1';
-    }
-  }
-
-  // Botão "Salvar personalização" — ocultar se plano da empresa não tem
-  // (verificado no adminSalvarMarca, não precisa ocultar o botão)
-}
-
-function perfilVerUsuarios(perfil) {
-  const cfg = PERMISSOES[perfil];
-  if (!cfg) return;
-
-  // Título e badge
-  const badges = {
-    admin:      'perfil-admin',
-    gerente:    'perfil-gerente',
-    financeiro: 'perfil-financeiro',
-    estoquista: 'perfil-estoquista',
-    vendedor:   'perfil-vendedor',
-  };
-  document.getElementById('modalPerfilTitulo').innerHTML =
-    `<span class="perfil-badge ${badges[perfil]}" style="font-size:.8rem">${cfg.label}</span>
-     <span style="font-size:.9rem;font-weight:600;margin-left:8px">— Usuários cadastrados</span>`;
-
-  // Módulos liberados
-  const mList = document.getElementById('modalPerfilModulosList');
-  if (mList) {
-    mList.innerHTML = cfg.paginas.map(p =>
-      `<span style="background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:2px 9px;font-size:.72rem">${MODULO_LABELS[p]||p}</span>`
-    ).join('');
-  }
-
-  // Botão novo usuário pré-selecionando o perfil
-  const btnNovo = document.getElementById('btnNovoPerfilUsuario');
-  if (btnNovo) {
-    btnNovo.onclick = () => {
-      $('modalPerfilUsuarios').classList.remove('open');
-      usuarioAbrirNovo();
-      setTimeout(() => {
-        if ($('usuarioPerfil')) {
-          $('usuarioPerfil').value = perfil;
-          usuarioAtualizarPreview();
-        }
-      }, 100);
-    };
-  }
-
-  // Usuários com este perfil na empresa selecionada
-  const companyId = adminEmpresaSel?.id || currentCompany?.id;
-  const todos     = getUsers().filter(u =>
-    u.company_id === companyId && (u.perfil || 'vendedor') === perfil
-  );
-
-  const lista = document.getElementById('modalPerfilUsersList');
-  if (!lista) return;
-
-  if (!todos.length) {
-    lista.innerHTML = `
-      <div style="text-align:center;padding:24px 0;color:var(--text-muted)">
-        <div style="font-size:1.8rem;margin-bottom:8px">👤</div>
-        <div style="font-size:.86rem">Nenhum usuário com perfil <b>${cfg.label}</b> cadastrado.</div>
-        <div style="font-size:.78rem;color:var(--text-light);margin-top:4px">Clique em "Novo usuário neste perfil" para adicionar.</div>
-      </div>`;
-  } else {
-    const cores = { admin:'#c62828', gerente:'#283593', financeiro:'#1b5e20', estoquista:'#f57f17', vendedor:'#0d47a1' };
-    lista.innerHTML = todos.map(u => `
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px 15px">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-          <div style="width:36px;height:36px;border-radius:50%;background:${cores[perfil]||'#555'};
-            display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:.9rem;flex-shrink:0">
-            ${(u.name||u.email)[0].toUpperCase()}
-          </div>
-          <div>
-            <div style="font-weight:600;font-size:.9rem">${esc(u.name||'—')}</div>
-            <div style="font-size:.75rem;color:var(--text-muted)">${esc(u.email)}</div>
-          </div>
-        </div>
-        <!-- Credenciais de acesso -->
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
-          <div style="font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
-            color:var(--text-light);margin-bottom:8px">🔐 Credenciais de acesso</div>
-          <div style="display:flex;flex-direction:column;gap:5px">
-            <div style="display:flex;align-items:center;gap:8px">
-              <span style="font-size:.72rem;color:var(--text-muted);min-width:48px">Login</span>
-              <code style="font-size:.78rem;background:var(--surface2);padding:3px 8px;
-                border-radius:5px;flex:1;word-break:break-all">${esc(u.email)}</code>
-              <button class="btn btn-secondary btn-icon btn-sm" style="padding:3px 8px;font-size:.7rem"
-                onclick="navigator.clipboard.writeText('${esc(u.email)}').then(()=>toast('📋 E-mail copiado!'))">
-                📋
-              </button>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <span style="font-size:.72rem;color:var(--text-muted);min-width:48px">Senha</span>
-              <code id="pw_${u.id}" style="font-size:.78rem;background:var(--surface2);padding:3px 8px;
-                border-radius:5px;flex:1;letter-spacing:2px">••••••••</code>
-              <button class="btn btn-secondary btn-icon btn-sm" style="padding:3px 8px;font-size:.7rem"
-                onclick="toggleSenha('${u.id}','${esc(u.password||'')}')">
-                👁
-              </button>
-              ${u.password ? `<button class="btn btn-secondary btn-icon btn-sm" style="padding:3px 8px;font-size:.7rem"
-                onclick="navigator.clipboard.writeText('${esc(u.password||'')}').then(()=>toast('📋 Senha copiada!'))">
-                📋
-              </button>` : ''}
-            </div>
-          </div>
-        </div>
-      </div>`).join('');
-  }
-
-  $('modalPerfilUsuarios').classList.add('open');
-}
-
-// Mostrar/ocultar senha
-function toggleSenha(id, senha) {
-  const el = document.getElementById('pw_' + id);
-  if (!el) return;
-  if (el.textContent === '••••••••') {
-    el.textContent = senha || '(senha não disponível)';
-    el.style.letterSpacing = 'normal';
-  } else {
-    el.textContent = '••••••••';
-    el.style.letterSpacing = '2px';
-  }
-}
-
-
-/* ═══════════════════════════════════════════
-   VENDA DIRETA
-═══════════════════════════════════════════ */
-function vendaDiretaAtualizar() {
-  const qtd   = parseFloat($('vdQtd')?.value)  || 0;
-  const valor = parseFloat($('vdValor')?.value) || 0;
-  const total = qtd * valor;
-  const el = $('vdTotal');
-  if (el) el.textContent = `Total: ${fmt(total)}`;
-}
-
-function vendaDiretaSalvar() {
-  const item  = $('vdItem')?.value.trim();
-  const qtd   = parseInt($('vdQtd')?.value)    || 1;
-  const valor = parseFloat($('vdValor')?.value) || 0;
-
-  if (!item)  { toast('⚠️ Informe o nome do item.'); $('vdItem')?.focus(); return; }
-  if (!valor) { toast('⚠️ Informe o valor unitário.'); $('vdValor')?.focus(); return; }
-
-  const total = qtd * valor;
-  const agora = new Date();
-
-  // Criar registro de venda direta
-  const venda = {
-    id:          uid(),
-    company_id:  currentCompany.id,
-    tipo:        'direta',
-    items:       [{ nome: item, qtd, preco: valor }],
-    total,
-    cliente:     'Venda direta',
-    pagamento:   'dinheiro',
-    data:        agora.toISOString(),
-    hora:        agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-  };
-
-  vendas.unshift(venda);
-  salvar('vendas', vendas);
-
-  // Também registrar como receita
-  receitas.unshift({
-    id:         uid(),
-    company_id: currentCompany.id,
-    descricao:  `Venda direta: ${qtd}x ${item}`,
-    valor:      total,
-    categoria:  'Vendas',
-    status:     'recebido',
-    data:       agora.toISOString().split('T')[0],
-  });
-  salvar('receitas', receitas);
-
-  // Limpar formulário
-  if ($('vdItem'))  { $('vdItem').value  = ''; }
-  if ($('vdQtd'))   { $('vdQtd').value   = '1'; }
-  if ($('vdValor')) { $('vdValor').value  = ''; }
-  if ($('vdTotal')) { $('vdTotal').textContent = 'Total: R$ 0,00'; }
-  $('vdItem')?.focus();
-
-  // Atualizar telas
-  vendRenderHistorico();
-  vendStats();
-  dashAtualizar();
-
-  toast(`✅ Venda registrada: ${qtd}x ${item} — ${fmt(total)}`);
-}
-
-/* ═══════════════════════════════════════════
-   PAGINAÇÃO GLOBAL
-═══════════════════════════════════════════ */
-const PAGINAS = {};  // { tabela_id: pagina_atual }
-const POR_PAG = 10; // linhas por página
-
-function pagGet(id) { return PAGINAS[id] || 1; }
-function pagSet(id, p) { PAGINAS[id] = p; }
-
-function pagRender(lista, tbodyId, renderFn, paginaId) {
-  const pag    = pagGet(paginaId);
-  const total  = Math.ceil(lista.length / POR_PAG);
-  const inicio = (pag - 1) * POR_PAG;
-  const fim    = inicio + POR_PAG;
-  const slice  = lista.slice(inicio, fim);
-
-  const tbody = $(tbodyId);
-  if (tbody) tbody.innerHTML = slice.map(renderFn).join('');
-
-  // Atualizar controles de paginação
-  const ctrl = $(paginaId + '_pag');
-  if (!ctrl) return;
-
-  if (lista.length <= POR_PAG) {
-    ctrl.style.display = 'none';
-    return;
-  }
-  ctrl.style.display = 'flex';
-
-  // Montar botões
-  let btns = '';
-  // Anterior
-  btns += `<button class="pag-btn" onclick="pagIr('${paginaId}',${pag-1},${total})"
-    ${pag <= 1 ? 'disabled' : ''}>‹</button>`;
-
-  // Páginas
-  for (let i = 1; i <= total; i++) {
-    if (total > 7) {
-      // Mostrar só: 1, ..., pag-1, pag, pag+1, ..., total
-      if (i !== 1 && i !== total && Math.abs(i - pag) > 1) {
-        if (i === 2 || i === total - 1) btns += `<span class="pag-ellipsis">…</span>`;
-        continue;
-      }
-    }
-    btns += `<button class="pag-btn ${i === pag ? 'pag-ativa' : ''}"
-      onclick="pagIr('${paginaId}',${i},${total})">${i}</button>`;
-  }
-
-  // Próximo
-  btns += `<button class="pag-btn" onclick="pagIr('${paginaId}',${pag+1},${total})"
-    ${pag >= total ? 'disabled' : ''}>›</button>`;
-
-  // Label
-  btns += `<span class="pag-label">${inicio+1}–${Math.min(fim,lista.length)} de ${lista.length}</span>`;
-
-  ctrl.innerHTML = btns;
-}
-
-function pagIr(id, p, total) {
-  if (p < 1 || p > total) return;
-  pagSet(id, p);
-  // Re-renderizar a tabela correspondente
-  const renders = {
-    'rec':    recRender,
-    'desp':   despRender,
-    'cli':    cliRender,
-    'prod':   prodRender,
-    'vhist':  vendRenderHistorico,
-    'fluxo':  fluxoRender,
-    'phistorico': prodHistoricoRender,
-  };
-  if (renders[id]) renders[id]();
-}
-
-function pagReset(id) { PAGINAS[id] = 1; }
-
-function exportFluxoCSV() {
-  if (!planoTemRecurso('csv')) { toastUpgrade('csv'); return; }
-  const mes = $('fluxoFiltroMes')?.value || '';
-  const r = receitas.filter(x => x.company_id === currentCompany.id && (!mes || (x.data||'').startsWith(mes)));
-  const d = despesas.filter(x => x.company_id === currentCompany.id && (!mes || (x.data||'').startsWith(mes)));
-  const rows = [
-    ['Tipo','Descricao','Categoria','Data','Valor','Status'],
-    ...r.map(x => ['Receita', x.descricao||'', x.categoria||'', x.data||'', x.valor||0, x.status||'']),
-    ...d.map(x => ['Despesa', x.descricao||'', x.categoria||'', x.data||'', -(x.valor||0), x.status||'']),
-  ];
-  const csv = rows.map(row => row.map(c => '"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
-  const a = document.createElement('a');
-  a.href = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(csv);
-  a.download = 'fluxo-caixa' + (mes ? '-'+mes : '') + '.csv';
-  a.click();
-  toast('✅ CSV do fluxo exportado!');
-}
 /* ═══════════════════════════════════════════
    CONTROLE DE PLANOS
 ═══════════════════════════════════════════ */
@@ -4015,41 +3381,11 @@ const PLANOS_CONFIG = {
 
 // Limites por plano
 const PLANO_LIMITES = {
-  free:       { produtos: 50,   clientes: 100, usuarios: 1,  csv: false, marca: false, pwa: false },
-  basic:      { produtos: 9999, clientes: 9999, usuarios: 1,  csv: true,  marca: false, pwa: false },
-  pro:        { produtos: 9999, clientes: 9999, usuarios: 3,  csv: true,  marca: true,  pwa: true  },
-  enterprise: { produtos: 9999, clientes: 9999, usuarios: 99, csv: true,  marca: true,  pwa: true  },
+  free:       { produtos: 50,  clientes: 100 },
+  basic:      { produtos: 9999, clientes: 9999 },
+  pro:        { produtos: 9999, clientes: 9999 },
+  enterprise: { produtos: 9999, clientes: 9999 },
 };
-
-// Verifica se o plano atual tem acesso a um recurso
-function planoTemRecurso(recurso) {
-  return PLANO_LIMITES[planoAtual()]?.[recurso] === true;
-}
-
-// Limite de usuários por plano
-function planoLimiteUsuarios() {
-  return PLANO_LIMITES[planoAtual()]?.usuarios || 1;
-}
-
-// Toast de upgrade contextual com preço
-function toastUpgrade(recurso) {
-  const proximo = {
-    free:  { plano: 'Basic',      preco: 'R$ 49/mês'  },
-    basic: { plano: 'Pro',        preco: 'R$ 99/mês'  },
-    pro:   { plano: 'Enterprise', preco: 'R$ 249/mês' },
-  }[planoAtual()];
-
-  const msgs = {
-    csv:      'Exportação CSV',
-    marca:    'Personalização de marca',
-    pwa:      'PWA instalável',
-    usuarios: 'Mais usuários',
-  };
-
-  if (!proximo) return;
-  const msg = msgs[recurso] || recurso;
-  toast(`🔒 ${msg} disponível no plano ${proximo.plano} (${proximo.preco}). Acesse Meu Plano para fazer upgrade.`, 5000);
-}
 
 function planoAtual() {
   return currentCompany?.plan || 'free';
@@ -4062,23 +3398,11 @@ function planoAtualNome() {
 function planoVerificarLimite(tipo) {
   const limite = PLANO_LIMITES[planoAtual()];
   if (tipo === 'produtos' && produtos.length >= limite.produtos) {
-    const prox = planoAtual() === 'free' ? 'Basic (R$ 49/mês)' : 'Pro (R$ 99/mês)';
-    toast(
-      `🔒 Limite do plano ${planoAtualNome()}: ${limite.produtos} produtos. ` +
-      `Faça upgrade para o ${prox} e tenha produtos ilimitados. ` +
-      `<span style="cursor:pointer;text-decoration:underline" onclick="navegar('plano')">Ver planos →</span>`,
-      6000
-    );
+    toast(`⚠️ Limite do plano ${planoAtualNome()}: ${limite.produtos} produtos. Faça upgrade!`);
     return false;
   }
   if (tipo === 'clientes' && clientes.length >= limite.clientes) {
-    const prox = planoAtual() === 'free' ? 'Basic (R$ 49/mês)' : 'Pro (R$ 99/mês)';
-    toast(
-      `🔒 Limite do plano ${planoAtualNome()}: ${limite.clientes} clientes. ` +
-      `Faça upgrade para o ${prox} e tenha clientes ilimitados. ` +
-      `<span style="cursor:pointer;text-decoration:underline" onclick="navegar('plano')">Ver planos →</span>`,
-      6000
-    );
+    toast(`⚠️ Limite do plano ${planoAtualNome()}: ${limite.clientes} clientes. Faça upgrade!`);
     return false;
   }
   return true;
@@ -4301,18 +3625,10 @@ async function checkoutViaStripe(plano, cfg) {
 let adminEmpresas    = []; // dados carregados
 let adminEmpresaSel = null; // empresa selecionada no modal
 
-const ADMIN_EMAILS = [
-  'williamrigo1@outlook.com',   // William Rigo — CEO
-  'diasvictormaciel@gmail.com', // acesso legado
-];
-
-// Retrocompatibilidade
-const ADMIN_EMAIL = ADMIN_EMAILS[0];
+const ADMIN_EMAIL = 'diasvictormaciel@gmail.com'; // ← seu e-mail de admin
 
 function isAdmin() {
-  return ADMIN_EMAILS.includes(currentUser?.email) ||
-         currentUser?.role === 'admin' ||
-         currentPerfil === 'admin';
+  return currentUser?.email === ADMIN_EMAIL || currentUser?.role === 'admin';
 }
 
 function adminInit() {
@@ -4321,50 +3637,6 @@ function adminInit() {
     return;
   }
   $('navAdminBtn').style.display = '';
-}
-
-
-function adminControlarSecaoUsuarios() {
-  const secao   = $('secaoUsuarios');
-  const btnNovo = $('btnNovoUsuarioAdmin');
-  const sub     = $('subtituloUsuarios');
-  if (!secao) return;
-
-  // Admin global (William/diasvictormaciel) sempre vê tudo
-  if (isAdmin()) {
-    secao.style.display = '';
-    if (btnNovo) btnNovo.style.display = '';
-    return;
-  }
-
-  // Verificar plano da empresa selecionada ou da empresa atual
-  const planoEmp = adminEmpresaSel?.plano || currentCompany?.plan || 'free';
-  const temAcessoUsuarios = ['pro','enterprise'].includes(planoEmp);
-
-  if (temAcessoUsuarios) {
-    secao.style.display = '';
-    if (btnNovo) btnNovo.style.display = '';
-    if (sub) sub.textContent = 'Crie e gerencie acessos por perfil';
-  } else {
-    // Mostrar seção mas com aviso de upgrade
-    secao.style.display = '';
-    if (btnNovo) btnNovo.style.display = 'none';
-    if (sub) sub.innerHTML =
-      '🔒 Disponível no plano <strong>Pro (R$ 99/mês)</strong> — ' +
-      '<span style="color:var(--accent);cursor:pointer;text-decoration:underline" ' +
-      'onclick="navegar(&quot;plano&quot;)">fazer upgrade →</span>';
-
-    // Substituir grid de usuários por banner de upgrade
-    const grid = $('usuariosGrid');
-    if (grid) {
-      grid.innerHTML = '<div style="background:var(--accent-light);border:1.5px dashed var(--accent-mid);border-radius:12px;padding:28px;text-align:center">' +
-        '<div style="font-size:2rem;margin-bottom:10px">🔒</div>' +
-        '<div style="font-weight:700;font-size:.96rem;margin-bottom:6px">Gestão de usuários disponível no plano Pro</div>' +
-        '<div style="font-size:.84rem;color:var(--text-muted);margin-bottom:16px">No plano Pro você pode criar até 3 usuários com perfis diferentes (Gerente, Financeiro, Estoquista, Vendedor) e controlar o acesso de cada um.</div>' +
-        '<button class="btn btn-primary" onclick="navegar(\'plano\')">✨ Fazer upgrade para Pro — R$ 99/mês</button>' +
-        '</div>';
-    }
-  }
 }
 
 async function adminCarregar() {
@@ -4379,16 +3651,14 @@ async function adminCarregar() {
     adminEmpresas = (data || []).map(c => ({
       id:       c.id,
       nome:     c.name,
-      email:    c.owner_email || c.profiles?.[0]?.email || c.profiles?.[0]?.name || '—',
+      email:    c.profiles?.[0]?.name || '—',
       plano:    c.plan || 'free',
-      status:   c.active !== false ? 'ativo' : 'bloqueado',
+      status:   c.active ? 'ativo' : 'bloqueado',
       cadastro: c.created_at?.split('T')[0] || hoje(),
       usuarios: c.profiles?.length || 1,
-      plano_expires: c.plan_expires_at || null,
     }));
     adminRenderKPIs();
     adminRender();
-    setTimeout(adminControlarSecaoUsuarios, 100);
     return;
   }
 
@@ -4425,7 +3695,6 @@ async function adminCarregar() {
 
   adminRenderKPIs();
   adminRender();
-  setTimeout(adminControlarSecaoUsuarios, 100);
 }
 
 function adminGerarDemoData() {
@@ -4502,8 +3771,7 @@ function adminAbrirEmpresa(id) {
   if (!e) return;
   adminEmpresaSel = e;
 
-  // Preencher campo de nome editável
-  if ($('modalEmpresaNomeInput')) $('modalEmpresaNomeInput').value = e.nome || '';
+  $('modalEmpresaNome').textContent = e.nome;
   $('modalEmpresaDetalhes').innerHTML = `
     <div class="admin-detail-item"><div class="lbl">E-mail</div><div class="val">${esc(e.email)}</div></div>
     <div class="admin-detail-item"><div class="lbl">Plano</div><div class="val"><span class="plan-chip plan-${e.plano}">${PLANOS_CONFIG[e.plano]?.nome||e.plano}</span></div></div>
@@ -4575,62 +3843,32 @@ function syncColor(input) {
 
 // Upload de logo — converte para base64 e salva
 function logoHandleUpload(input) {
-  const file = input.files && input.files[0];
+  const file = input.files[0];
   if (!file) return;
 
   if (file.size > 512 * 1024) {
     toast('⚠️ Logo muito grande. Máximo 500KB.');
-    input.value = '';
     return;
   }
 
-  // Mostrar nome imediatamente
-  if ($('logoNomeArquivo')) $('logoNomeArquivo').textContent = '⏳ Carregando ' + file.name + '...';
-
   const reader = new FileReader();
-
-  reader.onerror = function() {
-    toast('❌ Erro ao ler o arquivo. Tente novamente.');
-    if ($('logoNomeArquivo')) $('logoNomeArquivo').textContent = 'Erro ao carregar';
-  };
-
-  reader.onload = function(ev) {
-    const base64 = ev.target.result;
+  reader.onload = function(e) {
+    const base64 = e.target.result;
 
     // Mostrar preview
     const img = $('logoPreviewImg');
     const ph  = $('logoPreviewPlaceholder');
-    const wrap= $('logoPreviewWrap');
+    if (img) { img.src = base64; img.style.display = 'block'; }
+    if (ph)  ph.style.display = 'none';
 
-    if (img) {
-      img.src = base64;
-      img.style.display = 'block';
-      // Forçar reflow para garantir renderização no mobile
-      img.offsetHeight;
-    }
-    if (ph)   ph.style.display = 'none';
-    if (wrap) wrap.style.borderStyle = 'solid';
-
-    // Salvar no campo de URL
+    // Atualizar campo URL com o base64
     if ($('adminBrandLogo')) $('adminBrandLogo').value = base64;
-    if ($('logoNomeArquivo')) $('logoNomeArquivo').textContent = '✅ ' + file.name;
+    if ($('logoNomeArquivo')) $('logoNomeArquivo').textContent = file.name;
 
     brandPreviewAtualizar();
-    toast('✅ Logo carregado! Clique em 💾 Salvar personalização.');
+    toast('✅ Logo carregado! Clique em Salvar.');
   };
-
   reader.readAsDataURL(file);
-}
-
-// Trigger alternativo para mobile (alguns Android não disparam onchange no input file)
-function logoTriggerUpload() {
-  const input = $('adminLogoUpload');
-  if (!input) return;
-  // Recriar o input para limpar cache de eventos
-  const novo = input.cloneNode(true);
-  novo.onchange = function() { logoHandleUpload(novo); };
-  input.parentNode.replaceChild(novo, input);
-  novo.click();
 }
 
 // Remover logo
@@ -4671,39 +3909,8 @@ function brandPreviewAtualizar() {
 }
 
 // Salvar personalização no localStorage (e Supabase)
-
-function adminSalvarNomeEmpresa() {
-  if (!adminEmpresaSel) return;
-  const novoNome = ($('modalEmpresaNomeInput')?.value || '').trim();
-  if (!novoNome) { toast('⚠️ Informe o nome da empresa.'); return; }
-
-  // Atualizar localmente
-  adminEmpresaSel.nome = novoNome;
-
-  // Atualizar no localStorage (companies local)
-  const companies = getCompanies();
-  const c = companies.find(x => x.id === adminEmpresaSel.id);
-  if (c) { c.name = novoNome; c.nome = novoNome; saveCompanies(companies); }
-
-  // Atualizar no Supabase
-  if (_sb && !adminEmpresaSel.id.startsWith('demo_')) {
-    _sb.from('companies').update({ name: novoNome }).eq('id', adminEmpresaSel.id).then(() => {});
-  }
-
-  // Atualizar na tabela do admin sem fechar o modal
-  adminRender();
-  toast(`✅ Nome alterado para "${novoNome}"`);
-}
 function adminSalvarMarca() {
   if (!adminEmpresaSel) return;
-
-  // Verificar se a empresa selecionada tem plano Pro+
-  const planoEmp = adminEmpresaSel.plano || 'free';
-  const temMarca = ['pro','enterprise'].includes(planoEmp);
-  if (!temMarca) {
-    toast(`🔒 Personalização de marca disponível apenas no plano Pro (R$ 99/mês) e Enterprise. Atualize o plano desta empresa primeiro.`, 5000);
-    return;
-  }
   const marca = {
     cor:  $('adminBrandColor')?.value || '#1e4f9f',
     bg:   $('adminBrandBg')?.value    || '#eef5fd',
@@ -4735,7 +3942,7 @@ function brandCarregarParaModal(empresa) {
   if ($('adminBrandColor')) $('adminBrandColor').value    = marca.cor || '#1e4f9f';
   if ($('adminBrandColorHex')) $('adminBrandColorHex').value = marca.cor || '#1e4f9f';
   if ($('adminBrandBg'))    $('adminBrandBg').value       = marca.bg  || '#f0f4fb';
-  if ($('adminBrandBgHex')) $('adminBrandBgHex').value    = marca.bg  || '#eef2ef';
+  if ($('adminBrandBgHex')) $('adminBrandBgHex').value    = marca.bg  || '#f0f4fb';
   if ($('adminBrandLogo'))  $('adminBrandLogo').value     = marca.logo || '';
   if ($('adminBrandNome'))  $('adminBrandNome').value     = marca.nome || empresa.nome || '';
 
@@ -4791,336 +3998,11 @@ function aplicarMarcaEmpresa() {
     const icon = document.querySelector('.brand-icon');
     if (icon) icon.innerHTML = `<img src="${marca.logo}" style="width:28px;height:28px;object-fit:contain;border-radius:6px">`;
   }
-  // Aplicar nome personalizado — admins sempre veem "Nexos"
-  if (isAdmin()) {
-    const h1 = document.querySelector('.brand-text h1');
-    // wordmark é span, não h1 — não precisa sobrescrever
-  } else if (marca.nome) {
+  // Aplicar nome personalizado
+  if (marca.nome) {
     const h1 = document.querySelector('.brand-text h1');
     if (h1) h1.textContent = marca.nome;
   }
-}
-
-/* ═══════════════════════════════════════════
-   SISTEMA DE PERMISSÕES POR PERFIL
-═══════════════════════════════════════════ */
-
-// Mapa de permissões por perfil
-const PERMISSOES = {
-  admin: {
-    label: 'Admin', cor: '#c62828', bg: '#fce4ec',
-    paginas: ['dashboard','receitas','despesas','fluxo','clientes','produtos','vendas','plano','admin','usuarios'],
-    podeEditar: ['receitas','despesas','clientes','produtos','vendas'],
-    podeCriarUsuarios: true,
-    dashboardCompleto: true,
-  },
-  gerente: {
-    label: 'Gerente', cor: '#283593', bg: '#e8eaf6',
-    paginas: ['dashboard','clientes','produtos','vendas'],
-    podeEditar: ['clientes','produtos','vendas'],
-    podeCriarUsuarios: false,
-    dashboardCompleto: true,
-  },
-  financeiro: {
-    label: 'Financeiro', cor: '#1b5e20', bg: '#e8f5e9',
-    paginas: ['dashboard','receitas','despesas','fluxo'],
-    podeEditar: ['receitas','despesas'],
-    podeCriarUsuarios: false,
-    dashboardCompleto: true,
-  },
-  estoquista: {
-    label: 'Estoquista', cor: '#f57f17', bg: '#fff8e1',
-    paginas: ['produtos'],
-    podeEditar: ['produtos'],
-    podeCriarUsuarios: false,
-    dashboardCompleto: false,
-  },
-  vendedor: {
-    label: 'Vendedor', cor: '#0d47a1', bg: '#e3f2fd',
-    paginas: ['dashboard','clientes','produtos','vendas'],
-    podeEditar: ['vendas','clientes'],
-    podeCriarUsuarios: false,
-    dashboardCompleto: false,
-  },
-};
-
-// Módulos com labels para preview
-const MODULO_LABELS = {
-  dashboard: '📊 Dashboard', receitas: '📈 Receitas',
-  despesas: '📉 Despesas', fluxo: '💰 Fluxo de Caixa',
-  clientes: '👥 Clientes', produtos: '📦 Produtos',
-  vendas: '🛒 Vendas', plano: '💎 Meu Plano',
-  admin: '🛡️ Admin', usuarios: '👤 Usuários',
-};
-
-// Perfil do usuário logado
-let currentPerfil = 'admin'; // default
-
-function getPerfil() {
-  return PERMISSOES[currentPerfil] || PERMISSOES.admin;
-}
-
-function temAcesso(pagina) {
-  return getPerfil().paginas.includes(pagina);
-}
-
-function podeEditar(modulo) {
-  return getPerfil().podeEditar.includes(modulo);
-}
-
-// Aplicar permissões na sidebar e no sistema
-function aplicarPermissoes() {
-  const perfil = getPerfil();
-
-  // Atualizar badge no footer
-  const badge = $('userPerfilBadge');
-  if (badge) {
-    badge.textContent = perfil.label;
-    badge.style.background = perfil.bg;
-    badge.style.color = perfil.cor;
-  }
-
-  // Mostrar/ocultar itens da sidebar
-  document.querySelectorAll('.nav-item[data-page]').forEach(btn => {
-    const page = btn.dataset.page;
-    if (page === 'admin') {
-      btn.style.display = isAdmin() ? '' : 'none';
-    } else if (page === 'usuarios') {
-      btn.style.display = perfil.podeCriarUsuarios ? '' : 'none';
-    } else if (page === 'plano') {
-      btn.style.display = '';
-    } else {
-      btn.style.display = perfil.paginas.includes(page) ? '' : 'none';
-    }
-  });
-
-  // Ocultar labels de seção se todos os itens estiverem ocultos
-  ['Financeiro','Comercial'].forEach(label => {
-    const labels = document.querySelectorAll('.nav-section-label');
-    labels.forEach(el => {
-      if (el.textContent.trim() === label) {
-        const next = el.nextElementSibling;
-        const algumVisivel = [...el.parentElement.children]
-          .filter(c => c.classList.contains('nav-item'))
-          .some(c => c.style.display !== 'none' &&
-            ['receitas','despesas','fluxo'].includes(c.dataset?.page) === (label === 'Financeiro'));
-        // simplificar: esconder label se nenhum filho visível
-      }
-    });
-  });
-
-  // Esconder botões de ação para quem não pode editar
-  aplicarRestricaoEdicao();
-}
-
-function aplicarRestricaoEdicao() {
-  const perfil = getPerfil();
-
-  // Botões de salvar em formulários
-  const btnsSalvar = {
-    recSalvarBtn:  'receitas',
-    despSalvarBtn: 'despesas',
-    cliSalvarBtn:  'clientes',
-    prodSalvarBtn: 'produtos',
-  };
-
-  Object.entries(btnsSalvar).forEach(([btnId, modulo]) => {
-    const btn = $(btnId);
-    if (btn) {
-      const pode = perfil.podeEditar.includes(modulo);
-      btn.style.display = pode ? '' : 'none';
-    }
-  });
-}
-
-// verificação de acesso incorporada na navegar principal
-
-/* ═══════════════════════════════════════════
-   GESTÃO DE USUÁRIOS
-═══════════════════════════════════════════ */
-let companyUsers = []; // usuários da empresa atual
-
-function usuariosInit() {
-  // Mostrar botão de usuários só para admin
-  const btn = $('navUsuariosBtn');
-  if (btn) btn.style.display = getPerfil().podeCriarUsuarios ? '' : 'none';
-}
-
-function usuariosCarregar() {
-  // Carrega usuários do localStorage (ou Supabase)
-  const todos = getUsers();
-  companyUsers = todos.filter(u => u.company_id === currentCompany.id);
-  usuariosRender();
-}
-
-function usuariosRender() {
-  const grid = $('usuariosGrid');
-  if (!grid) return;
-
-  if (!companyUsers.length) {
-    grid.innerHTML = `<div class="empty-state"><span class="empty-ico">👤</span><p>Nenhum usuário adicional cadastrado.</p></div>`;
-    return;
-  }
-
-  const cores = { admin:'#c62828', gerente:'#283593', financeiro:'#1b5e20', estoquista:'#f57f17', vendedor:'#0d47a1' };
-  const bgs   = { admin:'#fce4ec', gerente:'#e8eaf6', financeiro:'#e8f5e9', estoquista:'#fff8e1', vendedor:'#e3f2fd' };
-
-  grid.innerHTML = companyUsers.map(u => {
-    const perfil = u.perfil || 'vendedor';
-    const cfg    = PERMISSOES[perfil] || PERMISSOES.vendedor;
-    const isMe   = u.email === currentUser.email;
-    return `<div class="user-card">
-      <div class="user-card-av" style="background:${cores[perfil] || '#555'}">${(u.name||u.email)[0].toUpperCase()}</div>
-      <div class="user-card-info">
-        <div class="user-card-name">${esc(u.name || u.email)} ${isMe ? '<span style="font-size:.65rem;color:var(--text-light)">(você)</span>' : ''}</div>
-        <div class="user-card-email">${esc(u.email)}</div>
-        <div style="margin-top:4px"><span class="perfil-badge perfil-${perfil}">${cfg.label}</span></div>
-      </div>
-      <div style="display:flex;gap:6px;flex-shrink:0">
-        ${!isMe ? `<button class="btn btn-secondary btn-icon btn-sm" onclick="usuarioEditar('${u.id}')" title="Editar">✏️</button>` : ''}
-        ${!isMe ? `<button class="btn btn-danger btn-icon btn-sm" onclick="usuarioExcluir('${u.id}')" title="Remover">🗑</button>` : ''}
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function usuarioAbrirNovo() {
-  $('modalUsuarioTitulo').textContent = '👤 Novo usuário';
-  $('usuarioEditId').value = '';
-  $('usuarioNome').value   = '';
-  $('usuarioEmail').value  = '';
-  $('usuarioSenha').value  = '';
-  $('usuarioPerfil').value = 'vendedor';
-  usuarioAtualizarPreview();
-  $('modalUsuario').classList.add('open');
-  $('usuarioNome').focus();
-}
-
-function usuarioEditar(id) {
-  const u = companyUsers.find(x => x.id === id);
-  if (!u) return;
-  $('modalUsuarioTitulo').textContent = '✏️ Editar usuário';
-  $('usuarioEditId').value = u.id;
-  $('usuarioNome').value   = u.name || '';
-  $('usuarioEmail').value  = u.email || '';
-  $('usuarioSenha').value  = '';
-  $('usuarioPerfil').value = u.perfil || 'vendedor';
-  usuarioAtualizarPreview();
-  $('modalUsuario').classList.add('open');
-}
-
-function usuarioAtualizarPreview() {
-  const perfil = $('usuarioPerfil')?.value || 'vendedor';
-  const cfg    = PERMISSOES[perfil];
-  const list   = $('perfilPreviewList');
-  if (!list || !cfg) return;
-  list.innerHTML = cfg.paginas.map(p =>
-    `<span style="background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:2px 9px;font-size:.7rem">${MODULO_LABELS[p]||p}</span>`
-  ).join('');
-}
-
-// Listener para atualizar preview ao mudar perfil
-document.addEventListener('DOMContentLoaded', () => {
-  const sel = $('usuarioPerfil');
-  if (sel) sel.addEventListener('change', usuarioAtualizarPreview);
-});
-
-async function usuarioSalvar() {
-  const nome   = $('usuarioNome').value.trim();
-  const email  = $('usuarioEmail').value.trim();
-  const senha  = $('usuarioSenha').value;
-  const perfil = $('usuarioPerfil').value;
-  const editId = $('usuarioEditId').value;
-
-  if (!nome)  { toast('⚠️ Informe o nome.'); return; }
-  if (!email) { toast('⚠️ Informe o e-mail.'); return; }
-  if (!editId && senha.length < 6) { toast('⚠️ Senha mínima de 6 caracteres.'); return; }
-
-  // Verificar limite de usuários do plano (apenas ao criar novo)
-  if (!editId) {
-    const limite   = planoLimiteUsuarios();
-    const atual    = getUsers().filter(u => u.company_id === currentCompany.id).length;
-    if (atual >= limite) {
-      toastUpgrade('usuarios');
-      toast(
-        `🔒 Seu plano ${planoAtualNome()} permite até ${limite} usuário${limite > 1 ? 's' : ''}. ` +
-        `Você já tem ${atual}. Faça upgrade para adicionar mais.`, 6000
-      );
-      $('modalUsuario').classList.remove('open');
-      return;
-    }
-  }
-
-  // Sempre salvar no localStorage (funciona local e serve de cache)
-  const users = getUsers();
-
-  if (editId) {
-    // Editar usuário existente
-    const u = users.find(x => x.id === editId);
-    if (u) {
-      u.name   = nome;
-      u.perfil = perfil;
-      if (senha) u.password = senha;
-    }
-    saveUsers(users);
-    // Atualizar perfil no Supabase se disponível
-    if (_sb && editId.length === 36) {
-      await _sb.from('profiles')
-        .update({ name: nome, role: perfil })
-        .eq('id', editId)
-        .catch(() => {});
-    }
-    toast('✅ Usuário atualizado!');
-  } else {
-    // Criar novo usuário
-    if (users.find(u => u.email === email && u.company_id === currentCompany.id)) {
-      toast('⚠️ E-mail já cadastrado nesta empresa.'); return;
-    }
-
-    // Supabase: usar signUp normal (não admin API)
-    if (_sb && currentCompany.id !== 'demo_company') {
-      const { data, error } = await _sb.auth.signUp({
-        email,
-        password: senha,
-        options: {
-          data: {
-            name: nome,
-            company_id: currentCompany.id,
-            perfil
-          }
-        }
-      });
-
-      if (error) {
-        // Se email já existe no Supabase, ainda salva localmente
-        if (!error.message.includes('already registered')) {
-          toast('❌ ' + error.message); return;
-        }
-      }
-
-      // Salvar também localmente com o UUID do Supabase se disponível
-      const newId = data?.user?.id || uid();
-      users.push({ id: newId, email, password: senha, name: nome, company_id: currentCompany.id, perfil });
-      saveUsers(users);
-      toast('✅ Usuário criado! Ele receberá um e-mail para confirmar o acesso.');
-    } else {
-      // Modo local puro
-      users.push({ id: uid(), email, password: senha, name: nome, company_id: currentCompany.id, perfil });
-      saveUsers(users);
-      toast('✅ Usuário criado! Use o e-mail e senha para fazer login.');
-    }
-  }
-
-  $('modalUsuario').classList.remove('open');
-  usuariosCarregar();
-}
-
-function usuarioExcluir(id) {
-  if (!confirm('Remover este usuário?')) return;
-  const users = getUsers().filter(u => u.id !== id);
-  saveUsers(users);
-  usuariosCarregar();
-  toast('🗑 Usuário removido.');
 }
 /* ═══════════════════════════════════════════
    INIT
