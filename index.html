@@ -2702,14 +2702,14 @@ window._syncTudo = async function _syncTudo() {
       _sb.from('movimentacoes').select('*').eq('company_id', cid),
     ]);
 
-    // Receitas
-    if (r.data) { receitas = r.data.map(x=>({...x,id:String(x.id)})); localStorage.setItem(getKey('receitas'), JSON.stringify(receitas)); }
+    // Receitas — só sobrescreve local se banco tem dados
+    if (r.data && r.data.length > 0) { receitas = r.data.map(x=>({...x,id:String(x.id)})); localStorage.setItem(getKey('receitas'), JSON.stringify(receitas)); }
     // Despesas
-    if (d.data) { despesas = d.data.map(x=>({...x,id:String(x.id)})); localStorage.setItem(getKey('despesas'), JSON.stringify(despesas)); }
+    if (d.data && d.data.length > 0) { despesas = d.data.map(x=>({...x,id:String(x.id)})); localStorage.setItem(getKey('despesas'), JSON.stringify(despesas)); }
     // Clientes
-    if (c.data) { clientes = c.data.map(x=>({...x,id:String(x.id)})); localStorage.setItem(getKey('clientes'), JSON.stringify(clientes)); }
-    // Produtos — normalizar campos
-    if (p.data) {
+    if (c.data && c.data.length > 0) { clientes = c.data.map(x=>({...x,id:String(x.id)})); localStorage.setItem(getKey('clientes'), JSON.stringify(clientes)); }
+    // Produtos — normalizar campos (só sobrescreve se banco tem dados)
+    if (p.data && p.data.length > 0) {
       produtos = p.data.map(prod => ({
         ...prod,
         id:         String(prod.id),
@@ -2718,8 +2718,8 @@ window._syncTudo = async function _syncTudo() {
       }));
       localStorage.setItem(getKey('produtos'), JSON.stringify(produtos));
     }
-    // Vendas — normalizar campos do banco para o app
-    if (v.data) {
+    // Vendas — normalizar campos do banco para o app (só sobrescreve se banco tem dados)
+    if (v.data && v.data.length > 0) {
       vendas = v.data.map(x => ({
         ...x,
         id:      String(x.id),
@@ -2731,7 +2731,24 @@ window._syncTudo = async function _syncTudo() {
       localStorage.setItem(getKey('vendas'), JSON.stringify(vendas));
     }
     // Movimentações
-    if (m.data) { movimentacoes = m.data; localStorage.setItem(getKey('movimentacoes'), JSON.stringify(movimentacoes)); }
+    if (m.data && m.data.length > 0) { movimentacoes = m.data; localStorage.setItem(getKey('movimentacoes'), JSON.stringify(movimentacoes)); }
+
+    // Migração automática: se banco está vazio mas local tem dados, enviar pro banco
+    const migKey = 'nexos_sync_' + cid;
+    const bancoPossuiDados = (r.data && r.data.length) || (v.data && v.data.length) || (p.data && p.data.length);
+    if (!bancoPossuiDados && !localStorage.getItem(migKey)) {
+      const localRec  = JSON.parse(localStorage.getItem(getKey('receitas'))  || '[]');
+      const localDesp = JSON.parse(localStorage.getItem(getKey('despesas'))  || '[]');
+      const localVend = JSON.parse(localStorage.getItem(getKey('vendas'))    || '[]');
+      const localProd = JSON.parse(localStorage.getItem(getKey('produtos'))  || '[]');
+      const localCli  = JSON.parse(localStorage.getItem(getKey('clientes'))  || '[]');
+      const temLocal  = localRec.length || localDesp.length || localVend.length || localProd.length || localCli.length;
+      if (temLocal) {
+        console.log('[Nexos] Banco vazio, migrando dados locais...');
+        await migrarParaSupabase();
+        localStorage.setItem(migKey, '1');
+      }
+    }
 
   } catch(e) {
     console.error('[Nexos] _syncTudo falhou:', e);
