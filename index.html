@@ -2302,8 +2302,14 @@ async function _salvarSupabase(mod, data) {
 
   // Mapear apenas campos válidos por módulo
   const limpar = {
-    receitas:      r => ({ id: String(r.id), company_id: cid, descricao: r.descricao||'', valor: Number(r.valor)||0, categoria: ['Venda','Serviço','Comissão','Aluguel','Investimento','Outro'].includes(r.categoria) ? r.categoria : 'Outro', status: r.status||'pago', data: r.data||null }),
-    despesas:      r => ({ id: String(r.id), company_id: cid, descricao: r.descricao||'', valor: Number(r.valor)||0, categoria: r.categoria||'', status: r.status||'pago', data: r.data||null }),
+    receitas:      r => ({ id: String(r.id), company_id: cid, descricao: r.descricao||'', valor: Number(r.valor)||0,
+      categoria: ['Venda','Serviço','Comissão','Aluguel','Investimento','Outro'].includes(r.categoria) ? r.categoria : 'Outro',
+      status:    ['pago','pendente'].includes(r.status) ? r.status : 'pago',
+      data: r.data||null }),
+    despesas:      r => ({ id: String(r.id), company_id: cid, descricao: r.descricao||'', valor: Number(r.valor)||0,
+      categoria: ['Fornecedor','Aluguel','Salário','Imposto','Marketing','Equipamento','Serviço','Outro'].includes(r.categoria) ? r.categoria : 'Outro',
+      status:    ['pago','pendente'].includes(r.status) ? r.status : 'pago',
+      data: r.data||null }),
     clientes:      r => ({ id: String(r.id), company_id: cid, nome: r.nome||'', email: r.email||'', telefone: r.telefone||'', cpf: r.cpf||'', endereco: r.endereco||'' }),
     produtos:      r => ({ id: String(r.id), company_id: cid, nome: r.nome||'', categoria: r.categoria||'', preco: Number(r.preco)||0, quantidade: Number(r.quantidade??r.estoque)||0, minimo: Number(r.minimo??r.estoque_min)||5 }),
     vendas:        r => ({ id: String(r.id), company_id: cid, total: Number(r.total)||0, forma_pagto: r.forma_pagto||r.forma||r.pagamento||'dinheiro', cliente: r.cliente||r.cliente_nome||'', cliente_nome: r.cliente||r.cliente_nome||'', items: r.items||r.itens||[], status: r.status||'concluido' }),
