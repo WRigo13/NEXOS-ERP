@@ -81,7 +81,7 @@
     .sidebar {
       width: var(--sidebar-w);
       min-height: 100vh;
-      background: linear-gradient(180deg, #1a3f8a 0%, #1e4f9f 60%, #2d63b8 100%);
+      background: linear-gradient(160deg, #0f2544 0%, #1a3a6e 45%, #1e4f9f 100%);
       display: flex;
       flex-direction: column;
       position: fixed;
@@ -90,6 +90,36 @@
       transition: transform 0.25s ease;
       overflow-y: auto;
     }
+  .sidebar::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(96,160,255,.15) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .sidebar::after {
+    content: '';
+    position: absolute;
+    bottom: 80px; left: -50px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(59,130,246,.12) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .sidebar-mid-bubble {
+    position: absolute;
+    top: 45%; right: -30px;
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(147,197,253,.10) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
     .sidebar-brand {
       padding: 22px 18px 16px;
       border-bottom: 1px solid rgba(255,255,255,0.1);
@@ -174,7 +204,7 @@
     .topbar {
       display: none;
       position: fixed; top: 0; left: 0; right: 0; z-index: 99;
-      background: #1a3f8a;
+      background: linear-gradient(135deg, #0f2544 0%, #1e4f9f 100%);
       padding: 12px 16px;
       align-items: center; justify-content: space-between;
       border-bottom: 1px solid rgba(255,255,255,0.1);
