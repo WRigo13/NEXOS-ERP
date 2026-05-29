@@ -2302,7 +2302,7 @@ async function _salvarSupabase(mod, data) {
 
   // Mapear apenas campos válidos por módulo
   const limpar = {
-    receitas:      r => ({ id: String(r.id), company_id: cid, descricao: r.descricao||'', valor: Number(r.valor)||0, categoria: r.categoria||'', status: r.status||'pago', data: r.data||null }),
+    receitas:      r => ({ id: String(r.id), company_id: cid, descricao: r.descricao||'', valor: Number(r.valor)||0, categoria: ['Venda','Serviço','Comissão','Aluguel','Investimento','Outro'].includes(r.categoria) ? r.categoria : 'Outro', status: r.status||'pago', data: r.data||null }),
     despesas:      r => ({ id: String(r.id), company_id: cid, descricao: r.descricao||'', valor: Number(r.valor)||0, categoria: r.categoria||'', status: r.status||'pago', data: r.data||null }),
     clientes:      r => ({ id: String(r.id), company_id: cid, nome: r.nome||'', email: r.email||'', telefone: r.telefone||'', cpf: r.cpf||'', endereco: r.endereco||'' }),
     produtos:      r => ({ id: String(r.id), company_id: cid, nome: r.nome||'', categoria: r.categoria||'', preco: Number(r.preco)||0, quantidade: Number(r.quantidade??r.estoque)||0, minimo: Number(r.minimo??r.estoque_min)||5 }),
@@ -4109,7 +4109,7 @@ function vendaDiretaSalvar() {
     company_id: currentCompany.id,
     descricao:  'Venda direta: ' + qtd + 'x ' + item,
     valor:      total,
-    categoria:  'venda',
+    categoria:  'Venda',
     status:     'pago',
     data:       agora.toISOString().split('T')[0],
   };
@@ -4138,7 +4138,7 @@ function vendaDiretaSalvar() {
       company_id: currentCompany.id,
       descricao:  recDireta.descricao,
       valor:      Number(recDireta.valor) || 0,
-      categoria:  'venda',
+      categoria:  'Venda',
       status:     'pago',
       data:       recDireta.data,
     }, { onConflict: 'id' }).then(function(res) {
