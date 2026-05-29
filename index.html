@@ -2295,7 +2295,7 @@ function salvar(mod, data) {
 }
 
 async function _salvarSupabase(mod, data) {
-  if (!_sb || !currentCompany?.id) return;
+  if (!_sb || !currentCompany || !currentCompany.id) return;
   const cid = currentCompany.id;
   const arr = Array.isArray(data) ? data : [];
   if (!arr.length) return; // não deletar — apenas não inserir
@@ -4086,17 +4086,49 @@ function vendaDiretaSalvar() {
   vendas.unshift(venda);
   salvar('vendas', vendas);
 
-  // Também registrar como receita
-  receitas.unshift({
+  // Receita da venda direta
+  const recDireta = {
     id:         uid(),
     company_id: currentCompany.id,
-    descricao:  `Venda direta: ${qtd}x ${item}`,
+    descricao:  'Venda direta: ' + qtd + 'x ' + item,
     valor:      total,
-    categoria:  'Vendas',
-    status:     'recebido',
+    categoria:  'venda',
+    status:     'pago',
     data:       agora.toISOString().split('T')[0],
-  });
+  };
+  receitas.unshift(recDireta);
   salvar('receitas', receitas);
+
+  // Persistir IMEDIATAMENTE no Supabase (não esperar o batch)
+  if (_sb && currentCompany && currentCompany.id && currentCompany.id !== 'demo_company') {
+    // Salvar venda
+    _sb.from('vendas').upsert({
+      id:          String(venda.id),
+      company_id:  currentCompany.id,
+      total:       Number(venda.total) || 0,
+      forma_pagto: 'dinheiro',
+      cliente:     'Venda direta',
+      cliente_nome:'Venda direta',
+      items:       venda.items || [],
+      status:      'concluido',
+    }, { onConflict: 'id' }).then(function(res) {
+      if (res.error) console.error('[Nexos] venda direta Supabase erro:', res.error.message);
+      else console.log('[Nexos] venda direta salva no Supabase ✅');
+    });
+    // Salvar receita
+    _sb.from('receitas').upsert({
+      id:         String(recDireta.id),
+      company_id: currentCompany.id,
+      descricao:  recDireta.descricao,
+      valor:      Number(recDireta.valor) || 0,
+      categoria:  'venda',
+      status:     'pago',
+      data:       recDireta.data,
+    }, { onConflict: 'id' }).then(function(res) {
+      if (res.error) console.error('[Nexos] receita direta Supabase erro:', res.error.message);
+      else console.log('[Nexos] receita direta salva no Supabase ✅');
+    });
+  }
 
   // Limpar formulário
   if ($('vdItem'))  { $('vdItem').value  = ''; }
