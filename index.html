@@ -4691,6 +4691,70 @@ function checkoutSelecionarForma(forma) {
 }
 
 
+async function checkoutFinalizar() {
+  if (!checkoutFormaSelecionada) { toast('⚠️ Selecione PIX ou Boleto'); return; }
+
+  const plano = checkoutPlanoSelecionado;
+  const cfg   = PLANOS_CONFIG[plano];
+  const btn   = $('checkoutBtn');
+
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Processando...'; }
+  $('modalCheckout').classList.remove('open');
+
+  try {
+    const res = await fetch(PAGAMENTO_CONFIG.EDGE_URL + '/criar-pagamento-mp', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        plano,
+        forma:      checkoutFormaSelecionada,
+        preco:      cfg.preco,
+        company_id: currentCompany.id,
+        email:      currentUser.email,
+        nome:       currentUser.name || currentUser.email,
+      })
+    });
+
+    if (!res.ok) throw new Error('Erro HTTP ' + res.status);
+    const data = await res.json();
+    if (data.error) throw new Error(data.message || 'Erro na Edge Function');
+
+    // PIX → mostrar QR Code
+    if (data.tipo === 'pix' && data.qr_code) {
+      _mostrarPIX(data, plano, cfg.preco);
+      return;
+    }
+
+    // Boleto → abrir Checkout Pro do MP
+    if (data.tipo === 'boleto' && data.checkout_url) {
+      toast('📄 Abrindo página do boleto...', 2000);
+      setTimeout(function() { window.open(data.checkout_url, '_blank'); }, 500);
+      return;
+    }
+
+    // Checkout Pro genérico
+    if (data.checkout_url) {
+      toast('🔀 Redirecionando para o Mercado Pago...', 2000);
+      setTimeout(function() { window.open(data.checkout_url, '_blank'); }, 500);
+      return;
+    }
+
+    throw new Error('Resposta inesperada da Edge Function');
+
+  } catch(e) {
+    console.error('[Nexos] checkoutFinalizar erro:', e.message);
+    // Fallback: mostrar PIX manual
+    if (checkoutFormaSelecionada === 'pix') {
+      _mostrarPIXManual(plano, PLANOS_CONFIG[plano].preco);
+    } else {
+      toast('❌ Erro ao gerar boleto: ' + e.message, 5000);
+    }
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = checkoutFormaSelecionada === 'pix' ? '📱 Gerar QR Code PIX' : '📄 Gerar Boleto'; }
+  }
+}
+
+
 function _mostrarPIX(data, plano, preco) {
   // Remover overlay anterior se existir
   document.querySelectorAll('.nexos-pix-overlay').forEach(e => e.remove());
