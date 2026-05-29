@@ -998,7 +998,7 @@
             🕐 Últimas Vendas
             <span class="count" id="dashVendasCount">—</span>
           </div>
-          <div id="dashVendasRec"></div>
+          <div id="dashVendasRec"><div id="dashVendasList"></div><div class="pag-wrap" id="dashVend_pag"></div></div>
         </div>
       </div>
     </section>
@@ -1213,7 +1213,13 @@
           <p>Cálculo automático de receitas menos despesas</p>
         </div>
         <div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap;">
-          <select class="toolbar-select" id="fluxoMes" onchange="pagReset('fluxo');fluxoRender()">
+          <select class="toolbar-select" id="fluxoOrdem" onchange="pagReset('fluxo');fluxoRender()" style="min-width:140px">
+          <option value="data_desc">Data ↓ recente</option>
+          <option value="data_asc">Data ↑ antiga</option>
+          <option value="status">Status</option>
+          <option value="categoria">Categoria</option>
+        </select>
+        <select class="toolbar-select" id="fluxoMes" onchange="pagReset('fluxo');fluxoRender()">
             <option value="">Todos os períodos</option>
           </select>
           <button class="btn btn-secondary btn-sm" onclick="fluxoRender()">🔄 Atualizar</button>
@@ -2817,17 +2823,14 @@ function prodHistoricoRender() {
   if (!tbody) return;
 
   const lista = [...movimentacoes]
-    .filter(m => m.company_id === currentCompany?.id || !m.company_id)
-    .sort((a, b) => b.data.localeCompare(a.data));
+    .filter(m => !m.company_id || m.company_id === (currentCompany && currentCompany.id))
+    .sort((a, b) => (b.data||'').localeCompare(a.data||''));
 
   if (!lista.length) {
-    tbody.innerHTML = `<tr><td colspan="5" class="empty-state"><span class="empty-ico">📋</span><p>Nenhuma movimentação registrada.</p></td></tr>`;
-    if ($('mov_pag')) $('mov_pag').style.display = 'none';
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><span class="empty-ico">📋</span><p>Nenhuma movimentação registrada.</p></td></tr>';
+    const pag = $('mov_pag'); if (pag) pag.style.display = 'none';
     return;
   }
-
-  pagControle(lista.length, 'mov');
-  const listaPage = pagSlice(lista, 'mov');
 
   const tipoLabel = {
     entrada: '<span class="badge badge-ok">📥 Entrada</span>',
@@ -2836,41 +2839,21 @@ function prodHistoricoRender() {
     ajuste:  '<span class="badge badge-pendente">🔧 Ajuste</span>',
   };
 
-  tbody.innerHTML = lista.map(m => {
+  pagRender(lista, 'prodHistoricoTbody', function(m) {
     const d   = new Date(m.data);
     const dt  = d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
-    const cor = m.qtd > 0 ? 'var(--success)' : 'var(--danger)';
+    const cor   = m.qtd > 0 ? 'var(--success)' : 'var(--danger)';
     const sinal = m.qtd > 0 ? '+' : '';
-    return `<tr>
-      <td class="mono" style="font-size:.75rem;white-space:nowrap">${dt}</td>
-      <td style="font-size:.82rem;font-weight:500">${esc(m.produto)}</td>
-      <td>${tipoLabel[m.tipo] || m.tipo}</td>
-      <td class="mono" style="font-weight:700;color:${cor}">${sinal}${m.qtd}</td>
-      <td style="font-size:.78rem;color:var(--text-muted)">${esc(m.motivo||'—')}</td>
-    </tr>`;
-  }).join('');
+    return '<tr>'
+      + '<td class="mono" style="font-size:.75rem;white-space:nowrap">' + dt + '</td>'
+      + '<td style="font-size:.82rem;font-weight:500">' + esc(m.produto||m.produto_nome||'—') + '</td>'
+      + '<td>' + (tipoLabel[m.tipo] || m.tipo) + '</td>'
+      + '<td class="mono" style="font-weight:700;color:' + cor + '">' + sinal + m.qtd + '</td>'
+      + '<td style="font-size:.78rem;color:var(--text-muted)">' + esc(m.motivo||'—') + '</td>'
+      + '</tr>';
+  }, 'mov');
 
-  // Controle de paginação do fluxo
-  const _ctrlF = $('fluxo_pag');
-  if (_ctrlF) {
-    if (movComSaldo.length <= POR_PAG) {
-      _ctrlF.style.display = 'none';
-    } else {
-      _ctrlF.style.display = 'flex';
-      let btns = '';
-      btns += `<button class="pag-btn" onclick="pagIr('fluxo',${_pagF-1},${_totF})" ${_pagF<=1?'disabled':''}>‹</button>`;
-      for (let i=1;i<=_totF;i++){
-        if(_totF>7 && i!==1 && i!==_totF && Math.abs(i-_pagF)>1){
-          if(i===2||i===_totF-1) btns+=`<span class="pag-ellipsis">…</span>`;
-          continue;
-        }
-        btns+=`<button class="pag-btn ${i===_pagF?'pag-ativa':''}" onclick="pagIr('fluxo',${i},${_totF})">${i}</button>`;
-      }
-      btns += `<button class="pag-btn" onclick="pagIr('fluxo',${_pagF+1},${_totF})" ${_pagF>=_totF?'disabled':''}>›</button>`;
-      btns += `<span class="pag-label">${(_pagF-1)*POR_PAG+1}–${Math.min(_pagF*POR_PAG,movComSaldo.length)} de ${movComSaldo.length}</span>`;
-      _ctrlF.innerHTML = btns;
-    }
-  }
+
 }
 
 /* ═══════════════════════════════════════════
@@ -3175,7 +3158,17 @@ function fluxoRender() {
   const movimentos = [
     ...recFilt.map(r => ({ ...r, tipo: 'receita' })),
     ...despFilt.map(d => ({ ...d, tipo: 'despesa' }))
-  ].sort((a,b) => a.data.localeCompare(b.data));
+  ];
+
+  // Ordenação por select
+  const ordemFluxo = ($('fluxoOrdem') && $('fluxoOrdem').value) || 'data_desc';
+  movimentos.sort((a,b) => {
+    if (ordemFluxo === 'data_asc')   return (a.data||'').localeCompare(b.data||'');
+    if (ordemFluxo === 'data_desc')  return (b.data||'').localeCompare(a.data||'');
+    if (ordemFluxo === 'status')     return (a.status||'').localeCompare(b.status||'');
+    if (ordemFluxo === 'categoria')  return (a.categoria||'').localeCompare(b.categoria||'');
+    return (b.data||'').localeCompare(a.data||'');
+  });
 
   const tbody = $('fluxoTbody');
   if (!movimentos.length) {
@@ -3706,7 +3699,13 @@ function vendConfirmar() {
 
 function vendRenderHistorico() {
   const filtroForma = $('vendFiltroForma').value;
-  const lista = vendas.filter(v => !filtroForma || v.forma === filtroForma);
+  const ordem = ($('vendOrdem') && $('vendOrdem').value) || 'desc';
+  const lista = [...vendas]
+    .filter(v => !filtroForma || (v.forma_pagto||v.forma) === filtroForma)
+    .sort((a,b) => {
+      const da = a.data||a.created_at||'', db = b.data||b.created_at||'';
+      return ordem === 'asc' ? da.localeCompare(db) : db.localeCompare(da);
+    });
   const tbody = $('vendHistorico');
   if (!lista.length) {
     tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><span class="empty-ico">🕐</span><p>Nenhuma venda registrada.</p></td></tr>`;
@@ -3717,7 +3716,8 @@ function vendRenderHistorico() {
   pagRender(lista, 'vendHistorico', v => {
     const d  = new Date(v.data);
     const dt = `${d.toLocaleDateString('pt-BR')} ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`;
-    const its= v.items||v.itens.map(i => `${i.qtd}× ${i.nome}`).join(', ');
+    const _its = v.items || v.itens || [];
+    const its = _its.map(i => (i.qtd||1)+'× '+(i.nome||i.name||'')).join(', ') || v.cliente || '—';
     return `<tr>
       <td class="mono" style="font-size:0.76rem;white-space:nowrap">${dt}</td>
       <td style="font-size:0.78rem">${esc(v.cliente||'—')}</td>
@@ -3796,20 +3796,29 @@ function dashAtualizar() {
           <span class="badge ${p.quantidade===0?'badge-empty':'badge-low'}">${p.quantidade===0?'Zero':'Baixo'}</span>
         </div>`).join('');
 
-  // Últimas vendas
+  // Últimas vendas — ordem decrescente + paginação
   const vEl = $('dashVendasRec');
-  $('dashVendasCount').textContent = vendas.length ? `${vendas.length} total` : 'Nenhuma';
-  vEl.innerHTML = !vendas.length
-    ? `<div class="list-item"><div class="list-item-info"><strong>Sem vendas registradas</strong><small>Registre sua primeira venda!</small></div></div>`
-    : vendas.slice(0,6).map(v => {
-        const d = new Date(v.data);
-        const dt = d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-        const lbl= v.cliente || v.items||v.itens.map(i => i.nome).join(', ');
-        return `<div class="list-item">
-          <div class="list-item-info"><strong>${esc(lbl.length>28?lbl.slice(0,28)+'…':lbl)}</strong><small>${dt} · ${esc(v.forma)}</small></div>
-          <div class="list-item-val" style="color:var(--success)">${moeda(v.total)}</div>
-        </div>`;
-      }).join('');
+  const vendasOrd = [...vendas].sort((a,b) => {
+    const da = (a.data||a.created_at||''), db = (b.data||b.created_at||'');
+    return db.localeCompare(da);
+  });
+  $('dashVendasCount').textContent = vendasOrd.length ? vendasOrd.length + ' total' : 'Nenhuma';
+
+  if (!vendasOrd.length) {
+    vEl.innerHTML = '<div class="list-item"><div class="list-item-info"><strong>Sem vendas registradas</strong><small>Registre sua primeira venda!</small></div></div>';
+  } else {
+    pagRender(vendasOrd, 'dashVendasList', v => {
+      const d  = new Date(v.data||v.created_at);
+      const dt = d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+      const its = (v.items||v.itens||[]);
+      const lbl = (its.length ? its.map(i=>i.nome||i.name||'').filter(Boolean).join(', ') : '') || v.cliente || '—';
+      return '<div class="list-item">'
+        + '<div class="list-item-info"><strong>' + esc(lbl.length>30?lbl.slice(0,30)+'…':lbl) + '</strong>'
+        + '<small>' + dt + ' · ' + esc(v.forma_pagto||v.forma||'') + '</small></div>'
+        + '<div class="list-item-val" style="color:var(--success)">' + moeda(v.total) + '</div>'
+        + '</div>';
+    }, 'dashVend');
+  }
 }
 
 /* ═══════════════════════════════════════════
@@ -4237,6 +4246,7 @@ function pagIr(id, p, total) {
     'prod':   prodRender,
     'vhist':  vendRenderHistorico,
     'fluxo':  fluxoRender,
+    'dashVend': dashAtualizar,
     'mov':    prodHistoricoRender,
     'phistorico': prodHistoricoRender,
   };
@@ -4268,8 +4278,10 @@ function exportFluxoCSV() {
 ═══════════════════════════════════════════ */
 
 function cfgIniciar() {
-  const temMarca = planoTemRecurso('marca');
-  const temUsers = planoTemRecurso('usuarios') || ['pro','enterprise'].includes(planoAtual());
+  // Admin global tem acesso total às configurações
+  const adminGlobal = isAdmin();
+  const temMarca = adminGlobal || planoTemRecurso('marca');
+  const temUsers = adminGlobal || planoTemRecurso('usuarios') || ['pro','enterprise'].includes(planoAtual());
 
   // Aba Personalização
   const lockMarca = $('cfgMarcaLock');
@@ -5463,7 +5475,7 @@ function aplicarPermissoes() {
     badge.style.color = perfil.cor;
   }
 
-  // ── Configurações: visível para todos os usuários autenticados ──
+  // ── Configurações: visível para todos (incluindo admin global) ──
   const cfgBtn = $('navConfigBtn');
   if (cfgBtn) cfgBtn.style.display = '';   // sempre visível após login
 
