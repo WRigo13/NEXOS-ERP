@@ -758,6 +758,29 @@
       MODO: 'live'
     };
   </script>
+
+  <script>
+    // PWA — Registrar Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js')
+          .then(function(reg) { console.log('[PWA] SW registrado:', reg.scope); })
+          .catch(function(e)  { console.warn('[PWA] SW falhou:', e); });
+      });
+    }
+    // PWA — Capturar evento de instalação
+    window._pwaInstallEvent = null;
+    window.addEventListener('beforeinstallprompt', function(e) {
+      e.preventDefault();
+      window._pwaInstallEvent = e;
+      const btn = document.getElementById('btnInstalarPWA');
+      if (btn) btn.style.display = 'flex';
+    });
+    window.addEventListener('appinstalled', function() {
+      const btn = document.getElementById('btnInstalarPWA');
+      if (btn) btn.style.display = 'none';
+    });
+  </script>
 </head>
 <body>
 
@@ -2768,6 +2791,20 @@ window._syncTudo = async function _syncTudo() {
   }
 };
 
+function instalarPWA() {
+  if (!window._pwaInstallEvent) {
+    toast('📲 Para instalar: menu do navegador → "Adicionar à tela inicial"', 5000);
+    return;
+  }
+  window._pwaInstallEvent.prompt();
+  window._pwaInstallEvent.userChoice.then(function(result) {
+    if (result.outcome === 'accepted') toast('✅ App instalado!');
+    window._pwaInstallEvent = null;
+    const btn = document.getElementById('btnInstalarPWA');
+    if (btn) btn.style.display = 'none';
+  });
+}
+
 function navegar(page) {
   // Verificar permissão (exceto páginas sempre liberadas)
   const semRestricao = ['plano','admin'];
@@ -3742,8 +3779,11 @@ function vendStats() {
   const hj  = hoje();
   const mes = mesAtual();
   const getDataVenda = v => (v.data||v.created_at||'').substring(0,10);
-  const totalHoje = vendas.filter(v => getDataVenda(v) === hj).reduce((s,v)  => s+(Number(v.total)||0), 0);
-  const totalMes  = vendas.filter(v => getDataVenda(v).startsWith(mes)).reduce((s,v) => s+(Number(v.total)||0), 0);
+  const totalHoje = vendas.filter(v => getDataVenda(v) === hj).reduce((s,v) => s+(Number(v.total)||0), 0);
+  const totalMes  = vendas.filter(v => {
+    const d = getDataVenda(v);
+    return d.startsWith(mes) && d !== '';
+  }).reduce((s,v) => s+(Number(v.total)||0), 0);
   $('vendHoje').textContent = moeda(totalHoje);
   $('vendMes').textContent  = moeda(totalMes);
 }
@@ -3760,10 +3800,15 @@ function dashAtualizar() {
   const saldo     = recTotal - despTotal;
 
   const _dvData = v => (v.data||v.created_at||'').substring(0,10);
+  // Vendas HOJE: apenas o dia exato de hoje
   const vendasHoje = vendas.filter(v => _dvData(v) === hj);
-  const vendasMes  = vendas.filter(v => _dvData(v).startsWith(mes));
-  const totalHoje  = vendasHoje.reduce((s,v) => s+(Number(v.total)||0), 0);
-  const totalMes   = vendasMes.reduce((s,v)  => s+(Number(v.total)||0), 0);
+  // Vendas MÊS: apenas o mês atual
+  const vendasMes  = vendas.filter(v => {
+    const d = _dvData(v);
+    return d.startsWith(mes) && d !== ''; // mesmo mês
+  });
+  const totalHoje = vendasHoje.reduce((s,v) => s+(Number(v.total)||0), 0);
+  const totalMes  = vendasMes.reduce((s,v)  => s+(Number(v.total)||0), 0);
 
   const alertas = produtos.filter(p => p.quantidade <= p.minimo);
   const valEst  = produtos.reduce((s,p) => s+p.quantidade*p.preco, 0);
@@ -4710,7 +4755,7 @@ async function checkoutFinalizar() {
         forma:      checkoutFormaSelecionada,
         preco:      cfg.preco,
         company_id: currentCompany.id,
-        email:      currentUser.email,
+        email:      'teste@nexoserp.com.br',
         nome:       currentUser.name || currentUser.email,
       })
     });
