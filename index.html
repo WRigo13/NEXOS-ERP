@@ -81,7 +81,7 @@
     .sidebar {
       width: var(--sidebar-w);
       min-height: 100vh;
-      background: #1B4491;
+      background: linear-gradient(160deg, #1B4491 0%, #142f6e 100%);
       display: flex;
       flex-direction: column;
       position: fixed;
@@ -89,37 +89,37 @@
       z-index: 100;
       transition: transform 0.25s ease;
       overflow-y: auto;
+      overflow-x: hidden;
     }
-  /* Bolhas decorativas da sidebar */
-  .sidebar-bubble-grande {
+  /* Bolhas decorativas — canto sup esq e inf esq */
+  .sb-bubble {
     position: absolute;
-    top: -60px;
-    right: -70px;
-    width: 220px;
-    height: 220px;
     border-radius: 50%;
-    background: #2E549B;
     pointer-events: none;
     z-index: 0;
-    opacity: 1;
   }
-  .sidebar-bubble-pequena {
-    position: absolute;
-    top: 90px;
-    right: -20px;
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
-    background: #2E549B;
-    pointer-events: none;
-    z-index: 0;
-    opacity: 1;
+  .sb-bubble-top {
+    width: 260px;
+    height: 260px;
+    top: -80px;
+    left: -80px;
+    background: radial-gradient(circle,
+      rgba(58,111,216,.55) 0%,
+      rgba(42,91,196,.0) 70%);
+    border: 1.5px solid rgba(120,170,255,.18);
+  }
+  .sb-bubble-bot {
+    width: 160px;
+    height: 160px;
+    bottom: -50px;
+    left: -50px;
+    background: radial-gradient(circle,
+      rgba(74,128,224,.4) 0%,
+      rgba(59,111,208,.0) 70%);
+    border: 1.5px solid rgba(140,185,255,.14);
   }
 
-    .sidebar-brand {
-      padding: 22px 18px 16px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
+    .sidebar-brand { padding: 22px 18px 16px; position: relative; z-index: 1; border-bottom: 1px solid rgba(255,255,255,0.1); }
     .brand-logo {
       display: flex; align-items: center; gap: 10px;
     }
@@ -142,12 +142,13 @@
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: var(--radius-sm);
       padding: 9px 12px;
+      position: relative; z-index: 1;
     }
     .company-label { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: rgba(255,255,255,0.45); margin-bottom: 3px; }
     .company-name  { font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,0.9); }
 
     /* Nav */
-    .sidebar-nav { flex: 1; padding: 10px 10px; }
+    .sidebar-nav { flex: 1; padding: 10px 10px; position: relative; z-index: 1; }
     .nav-section-label {
       font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px;
       color: rgba(255,255,255,0.3); padding: 10px 8px 4px;
@@ -173,6 +174,7 @@
     .sidebar-footer {
       padding: 12px 14px;
       border-top: 1px solid rgba(255,255,255,0.1);
+      position: relative; z-index: 1;
     }
     .user-info {
       display: flex; align-items: center; gap: 9px;
@@ -802,31 +804,29 @@
         <div class="login-logo" style="background:none;width:auto;height:auto;margin-bottom:6px;display:flex;justify-content:center">
           <svg viewBox="0 0 200 200" width="88" height="88" xmlns="http://www.w3.org/2000/svg" style="display:block">
             <defs>
+              <linearGradient id="ng88bg" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#1e4f9f"/>
+                <stop offset="100%" stop-color="#0d2464"/>
+              </linearGradient>
               <linearGradient id="ng88a" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#60B8FF"/>
-                <stop offset="100%" stop-color="#0040E0"/>
+                <stop offset="0%" stop-color="#93c5fd"/>
+                <stop offset="100%" stop-color="#3b82f6"/>
               </linearGradient>
-              <linearGradient id="ng88b" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#0050FF"/>
-                <stop offset="100%" stop-color="#002BB0"/>
-              </linearGradient>
-              <linearGradient id="ng88c" x1="100%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stop-color="#4090FF"/>
-                <stop offset="100%" stop-color="#0035C0"/>
+              <linearGradient id="ng88b" x1="100%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#60a5fa"/>
+                <stop offset="100%" stop-color="#1d4ed8"/>
               </linearGradient>
             </defs>
-            <!-- Coluna esquerda (face frontal) -->
-            <rect x="22" y="22" width="44" height="156" rx="10" fill="url(#ng88a)"/>
-            <!-- Coluna direita (face frontal) -->
-            <rect x="134" y="22" width="44" height="156" rx="10" fill="url(#ng88b)"/>
-            <!-- Diagonal principal -->
-            <polygon points="66,22 100,22 156,178 122,178" fill="url(#ng88c)"/>
-            <!-- Sombra/profundidade na diagonal -->
-            <polygon points="66,22 100,22 116,68 82,68" fill="rgba(0,20,120,0.3)"/>
-            <polygon points="122,178 156,178 140,132 106,132" fill="rgba(0,20,120,0.2)"/>
+            <rect x="0" y="0" width="200" height="200" rx="36" fill="url(#ng88bg)"/>
+            <!-- Arco externo -->
+            <path d="M 100 22 A 78 78 0 1 1 34 156" fill="none" stroke="url(#ng88a)" stroke-width="18" stroke-linecap="round"/>
+            <!-- Seta interna -->
+            <path d="M 100 58 L 136 100 L 100 142" fill="none" stroke="url(#ng88b)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Ponto acento -->
+            <circle cx="52" cy="162" r="10" fill="#60a5fa" opacity=".6"/>
           </svg>
         </div>
-        <h2 style="font-size:1.6rem;letter-spacing:-0.5px">Nexos</h2>
+        <h2 style="font-family:'Barlow',sans-serif;font-size:1.6rem;font-weight:900;letter-spacing:.3em;text-transform:uppercase">NEXOS</h2>
         <p>Gestão empresarial</p>
       </div>
 
@@ -887,25 +887,34 @@
 
   <!-- SIDEBAR -->
   <nav class="sidebar" id="sidebar">
+    <!-- Bolha superior esquerda -->
+    <div class="sb-bubble sb-bubble-top"></div>
+    <!-- Bolha inferior esquerda -->
+    <div class="sb-bubble sb-bubble-bot"></div>
+
     <div class="sidebar-brand">
       <div class="brand-logo">
-        <div class="brand-icon" style="background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.2);overflow:hidden;padding:2px">
-          <svg viewBox="0 0 200 200" width="32" height="32" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
-              <defs>
-                <linearGradient id="ng32a" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#60B8FF"/>
-                  <stop offset="100%" stop-color="#0040E0"/>
-                </linearGradient>
-                <linearGradient id="ng32b" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#0050FF"/>
-                  <stop offset="100%" stop-color="#002BB0"/>
-                </linearGradient>
-              </defs>
-              <rect x="22" y="22" width="44" height="156" rx="10" fill="url(#ng32a)"/>
-              <rect x="134" y="22" width="44" height="156" rx="10" fill="url(#ng32b)"/>
-              <polygon points="66,22 100,22 156,178 122,178" fill="url(#ng32a)"/>
-              <polygon points="66,22 100,22 116,68 82,68" fill="rgba(0,20,120,0.3)"/>
-            </svg>
+        <div class="brand-icon" style="background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.2);overflow:hidden;padding:3px">
+          <svg viewBox="0 0 200 200" width="30" height="30" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+            <defs>
+              <linearGradient id="ng32bg" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#1e4f9f"/>
+                <stop offset="100%" stop-color="#0d2464"/>
+              </linearGradient>
+              <linearGradient id="ng32a" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#93c5fd"/>
+                <stop offset="100%" stop-color="#60a5fa"/>
+              </linearGradient>
+              <linearGradient id="ng32b" x1="100%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#7eb8ff"/>
+                <stop offset="100%" stop-color="#3b82f6"/>
+              </linearGradient>
+            </defs>
+            <rect x="0" y="0" width="200" height="200" rx="36" fill="url(#ng32bg)"/>
+            <path d="M 100 22 A 78 78 0 1 1 34 156" fill="none" stroke="url(#ng32a)" stroke-width="18" stroke-linecap="round"/>
+            <path d="M 100 58 L 136 100 L 100 142" fill="none" stroke="url(#ng32b)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="52" cy="162" r="10" fill="#60a5fa" opacity=".6"/>
+          </svg>
         </div>
         <div class="brand-text">
           <span class="nexos-wordmark">NEXOS</span>
