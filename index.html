@@ -7,7 +7,7 @@
   <title>Nexos — Gestão Empresarial</title>
 
   <!-- PWA -->
-  <link rel="manifest" id="pwaManifest">
+  <link rel="manifest" href="/manifest.json" id="pwaManifest">
   <meta name="theme-color" content="#1e4f9f">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -786,26 +786,8 @@
   </script>
 
   <script>
-    // PWA — Registrar Service Worker
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function() {
-        navigator.serviceWorker.register('/sw.js')
-          .then(function(reg) { console.log('[PWA] SW registrado:', reg.scope); })
-          .catch(function(e)  { console.warn('[PWA] SW falhou:', e); });
-      });
-    }
-    // PWA — Capturar evento de instalação
-    window._pwaInstallEvent = null;
-    window.addEventListener('beforeinstallprompt', function(e) {
-      e.preventDefault();
-      window._pwaInstallEvent = e;
-      const btn = document.getElementById('btnInstalarPWA');
-      if (btn) btn.style.display = 'flex';
-    });
-    window.addEventListener('appinstalled', function() {
-      const btn = document.getElementById('btnInstalarPWA');
-      if (btn) btn.style.display = 'none';
-    });
+    // PWA — Service Worker será registrado no bloco principal (body)
+    // para garantir que o DOM já esteja pronto ao capturar beforeinstallprompt
   </script>
 </head>
 <body>
@@ -990,6 +972,9 @@
           </div>
         </div>
       </div>
+      <button class="btn-logout" id="btnInstalarPWA" style="display:none;margin-bottom:6px" onclick="instalarPWA()">
+        <span>📲</span> Instalar app
+      </button>
       <button class="btn-logout" onclick="fazerLogout()">
         <span>⬡</span> Sair da conta
       </button>
@@ -1143,7 +1128,7 @@
               <th>Ações</th>
             </tr>
           </thead>
-          <tbody id="recTbody"></div>></tbody>
+          <tbody id="recTbody"></tbody>
         </table>
           <div class="pag-wrap" id="rec_pag"></div>
       </div>
@@ -1245,7 +1230,7 @@
               <th>Ações</th>
             </tr>
           </thead>
-          <tbody id="despTbody"></div>></tbody>
+          <tbody id="despTbody"></tbody>
         </table>
           <div class="pag-wrap" id="desp_pag"></div>
       </div>
@@ -1382,7 +1367,7 @@
               <th>Ações</th>
             </tr>
           </thead>
-          <tbody id="cliTbody"></div>></tbody>
+          <tbody id="cliTbody"></tbody>
         </table>
           <div class="pag-wrap" id="cli_pag"></div>
       </div>
@@ -1491,7 +1476,7 @@
               <th>Ações</th>
             </tr>
           </thead>
-          <tbody id="prodTbody"></div>></tbody>
+          <tbody id="prodTbody"></tbody>
         </table>
           <div class="pag-wrap" id="prod_pag"></div>
       </div>
@@ -2818,15 +2803,15 @@ window._syncTudo = async function _syncTudo() {
 };
 
 function instalarPWA() {
-  if (!window._pwaInstallEvent) {
+  if (!deferredPrompt) {
     toast('📲 Para instalar: menu do navegador → "Adicionar à tela inicial"', 5000);
     return;
   }
-  window._pwaInstallEvent.prompt();
-  window._pwaInstallEvent.userChoice.then(function(result) {
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(function(result) {
     if (result.outcome === 'accepted') toast('✅ App instalado!');
-    window._pwaInstallEvent = null;
-    const btn = document.getElementById('btnInstalarPWA');
+    deferredPrompt = null;
+    const btn = $('btnInstalarPWA');
     if (btn) btn.style.display = 'none';
   });
 }
@@ -3947,69 +3932,58 @@ function exportCSV(lista, nome) {
    PWA + SERVICE WORKER
 ═══════════════════════════════════════════ */
 let deferredPrompt = null;
-window.addEventListener('beforeinstallprompt', e => {
+
+// Captura o evento de instalação — funciona em http e https
+window.addEventListener('beforeinstallprompt', function(e) {
   e.preventDefault();
   deferredPrompt = e;
+
+  // Mostrar botão na sidebar
+  const btnSidebar = $('btnInstalarPWA');
+  if (btnSidebar) btnSidebar.style.display = 'flex';
+
+  // Mostrar banner flutuante
   const banner = $('installBanner');
   if (banner) banner.style.display = 'block';
+
+  console.log('[PWA] Pronto para instalar ✅');
 });
 
-$('btnInstall')?.addEventListener('click', async () => {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
-  if (outcome === 'accepted') toast('✅ ERP MEI instalado!');
+// Esconder botão após instalação
+window.addEventListener('appinstalled', function() {
+  const btnSidebar = $('btnInstalarPWA');
+  if (btnSidebar) btnSidebar.style.display = 'none';
+  const banner = $('installBanner');
+  if (banner) banner.style.display = 'none';
   deferredPrompt = null;
-  $('installBanner').style.display = 'none';
+  toast('✅ Nexos instalado com sucesso!');
 });
 
-if ('serviceWorker' in navigator && location.protocol === 'https:') {
-  // Manifest dinâmico — não depende de arquivo externo
-  const _manifest = {
-    name: 'Nexos — Gestão Empresarial',
-    short_name: 'Nexos',
-    description: 'ERP completo para MEI e pequenas empresas',
-    start_url: '/',
-    display: 'standalone',
-    background_color: '#1e4f9f',
-    theme_color: '#1e4f9f',
-    orientation: 'portrait-primary',
-    lang: 'pt-BR',
-    categories: ['business','finance','productivity'],
-    icons: [
-      { src: 'https://nexos-erp-blush.vercel.app/logo.png', sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
-      { src: 'https://nexos-erp-blush.vercel.app/logo.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
-    ]
-  };
-  const _mBlob = new Blob([JSON.stringify(_manifest)], { type: 'application/manifest+json' });
-  const _mURL  = URL.createObjectURL(_mBlob);
-  const _mLink = document.getElementById('pwaManifest');
-  if (_mLink) _mLink.href = _mURL;
+// Botão banner (flutuante)
+document.addEventListener('DOMContentLoaded', function() {
+  const btnBanner = $('btnInstall');
+  if (btnBanner) {
+    btnBanner.addEventListener('click', async function() {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') toast('✅ Nexos instalado!');
+      deferredPrompt = null;
+      $('installBanner').style.display = 'none';
+    });
+  }
+});
 
-  // Service Worker inline — não depende de service-worker.js no servidor
-  const _swSrc = [
-    "const CACHE='nexos-v2';",
-    "self.addEventListener('install',e=>{",
-    "  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/','/']).catch(()=>{})).then(()=>self.skipWaiting()));",
-    "});",
-    "self.addEventListener('activate',e=>{",
-    "  e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));",
-    "});",
-    "self.addEventListener('fetch',e=>{",
-    "  if(e.request.method!=='GET')return;",
-    "  e.respondWith(fetch(e.request).then(r=>{",
-    "    if(r&&r.status===200){const cl=r.clone();caches.open(CACHE).then(c=>c.put(e.request,cl));}",
-    "    return r;",
-    "  }).catch(()=>caches.match(e.request).then(r=>r||new Response('',{status:408}))));",
-    "});"
-  ].join('\n');
-  const _swBlob = new Blob([_swSrc], { type: 'application/javascript' });
-  const _swURL  = URL.createObjectURL(_swBlob);
-
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register(_swURL)
-      .then(() => console.log('SW inline registrado ✅'))
-      .catch(() => {}); // silencia erro em dev/local
+// Registrar Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/sw.js')
+      .then(function(reg) {
+        console.log('[PWA] Service Worker registrado ✅', reg.scope);
+      })
+      .catch(function(err) {
+        console.warn('[PWA] Service Worker falhou:', err);
+      });
   });
 }
 

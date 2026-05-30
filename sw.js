@@ -1,12 +1,11 @@
 // ═══════════════════════════════════════════
-//  NEXOS ERP — Service Worker PWA
+//  NEXOS ERP — Service Worker PWA v2
 // ═══════════════════════════════════════════
-const CACHE_NAME = 'nexos-v1';
+const CACHE_NAME = 'nexos-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
-  'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Barlow:wght@800&display=swap',
-  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
+  '/manifest.json',
 ];
 
 // Instalar — cache dos assets estáticos
