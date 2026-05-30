@@ -4882,7 +4882,7 @@ async function checkoutFinalizar() {
         forma:      checkoutFormaSelecionada,
         preco:      cfg.preco,
         company_id: currentCompany.id,
-        email:      'teste@nexoserp.com.br',
+        email:      currentUser.email || 'cliente@nexoserp.com.br',
         nome:       currentUser.name || currentUser.email,
       })
     });
@@ -4897,11 +4897,19 @@ async function checkoutFinalizar() {
       return;
     }
 
-    // Boleto → abrir Checkout Pro do MP
-    if (data.tipo === 'boleto' && data.checkout_url) {
-      toast('📄 Abrindo página do boleto...', 2000);
-      setTimeout(function() { window.open(data.checkout_url, '_blank'); }, 500);
-      return;
+    // Boleto → abrir URL do boleto no Mercado Pago
+    if (data.tipo === 'boleto') {
+      const boletoUrl = data.boleto_url || data.checkout_url;
+      if (boletoUrl) {
+        toast('📄 Abrindo página do boleto...', 2000);
+        setTimeout(function() { window.open(boletoUrl, '_blank'); }, 500);
+        return;
+      }
+      // Fallback: mostrar código de barras se não tiver URL
+      if (data.barcode) {
+        _mostrarBoleto(data, plano, cfg.preco);
+        return;
+      }
     }
 
     // Checkout Pro genérico
