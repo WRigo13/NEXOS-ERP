@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Nexos — Gestão Empresarial</title>
 
-  <!-- PWA -->
-  <link rel="manifest" href="/manifest.json" id="pwaManifest">
+  <!-- PWA — href injetado via JS com ícone gerado por canvas -->
+  <link rel="manifest" id="pwaManifest">
   <meta name="theme-color" content="#1e4f9f">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -3933,17 +3933,121 @@ function exportCSV(lista, nome) {
 ═══════════════════════════════════════════ */
 let deferredPrompt = null;
 
-// Captura o evento de instalação — funciona em http e https
+// ── Gera ícone PNG via canvas e injeta manifest via blob ──
+// (resolve o 404 do logo.png sem precisar de arquivo externo)
+(function _injectManifest() {
+  // Desenha o logo Nexos em canvas 512x512
+  function gerarIconePNG(size) {
+    var c = document.createElement('canvas');
+    c.width = size; c.height = size;
+    var ctx = c.getContext('2d');
+
+    // Fundo arredondado azul
+    var r = size * 0.18;
+    ctx.beginPath();
+    ctx.moveTo(r, 0); ctx.lineTo(size - r, 0);
+    ctx.quadraticCurveTo(size, 0, size, r);
+    ctx.lineTo(size, size - r);
+    ctx.quadraticCurveTo(size, size, size - r, size);
+    ctx.lineTo(r, size); ctx.quadraticCurveTo(0, size, 0, size - r);
+    ctx.lineTo(0, r); ctx.quadraticCurveTo(0, 0, r, 0);
+    ctx.closePath();
+    var bg = ctx.createLinearGradient(0, 0, size, size);
+    bg.addColorStop(0, '#2563eb');
+    bg.addColorStop(1, '#1e3a8a');
+    ctx.fillStyle = bg;
+    ctx.fill();
+
+    // Logo N — coluna esquerda
+    var p = size * 0.11;  // padding
+    var w = size - p * 2; // área útil
+    var cw = w * 0.22;    // largura das colunas
+    var g1 = ctx.createLinearGradient(p, p, p + cw, p);
+    g1.addColorStop(0, '#93c5fd'); g1.addColorStop(1, '#3b82f6');
+    ctx.fillStyle = g1;
+    _rrect(ctx, p, p, cw, w, cw * 0.22);
+
+    // Coluna direita
+    var g2 = ctx.createLinearGradient(p + w - cw, p, p + w, p);
+    g2.addColorStop(0, '#1d4ed8'); g2.addColorStop(1, '#1e3a8a');
+    ctx.fillStyle = g2;
+    _rrect(ctx, p + w - cw, p, cw, w, cw * 0.22);
+
+    // Diagonal
+    var g3 = ctx.createLinearGradient(p + cw, p, p + w - cw, p + w);
+    g3.addColorStop(0, '#60a5fa'); g3.addColorStop(1, '#2563eb');
+    ctx.fillStyle = g3;
+    ctx.beginPath();
+    ctx.moveTo(p + cw, p);
+    ctx.lineTo(p + cw * 2, p);
+    ctx.lineTo(p + w - cw, p + w);
+    ctx.lineTo(p + w - cw * 2, p + w);
+    ctx.closePath();
+    ctx.fill();
+
+    // Sombra diagonal topo
+    ctx.fillStyle = 'rgba(0,20,100,0.25)';
+    ctx.beginPath();
+    ctx.moveTo(p + cw, p); ctx.lineTo(p + cw * 2, p);
+    ctx.lineTo(p + cw * 2 + (w * 0.11), p + w * 0.22);
+    ctx.lineTo(p + cw + (w * 0.11), p + w * 0.22);
+    ctx.closePath(); ctx.fill();
+
+    return c.toDataURL('image/png');
+  }
+
+  function _rrect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath(); ctx.fill();
+  }
+
+  try {
+    var icon192 = gerarIconePNG(192);
+    var icon512 = gerarIconePNG(512);
+
+    var manifest = {
+      name: 'Nexos — Gestão Empresarial',
+      short_name: 'Nexos',
+      description: 'ERP completo para MEI e pequenas empresas',
+      start_url: '/',
+      display: 'standalone',
+      background_color: '#1e4f9f',
+      theme_color: '#1e4f9f',
+      orientation: 'portrait-primary',
+      lang: 'pt-BR',
+      categories: ['business', 'finance', 'productivity'],
+      icons: [
+        { src: icon192, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+        { src: icon512, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+      ]
+    };
+
+    var blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+    var url  = URL.createObjectURL(blob);
+    var link = document.getElementById('pwaManifest');
+    if (link) {
+      link.href = url;
+      console.log('[PWA] Manifest com ícone gerado ✅');
+    }
+  } catch(e) {
+    console.warn('[PWA] Falha ao gerar ícone:', e);
+  }
+})();
+
+// Captura o evento de instalação
 window.addEventListener('beforeinstallprompt', function(e) {
   e.preventDefault();
   deferredPrompt = e;
 
-  // Mostrar botão na sidebar
-  const btnSidebar = $('btnInstalarPWA');
+  var btnSidebar = $('btnInstalarPWA');
   if (btnSidebar) btnSidebar.style.display = 'flex';
 
-  // Mostrar banner flutuante
-  const banner = $('installBanner');
+  var banner = $('installBanner');
   if (banner) banner.style.display = 'block';
 
   console.log('[PWA] Pronto para instalar ✅');
@@ -3951,23 +4055,23 @@ window.addEventListener('beforeinstallprompt', function(e) {
 
 // Esconder botão após instalação
 window.addEventListener('appinstalled', function() {
-  const btnSidebar = $('btnInstalarPWA');
+  var btnSidebar = $('btnInstalarPWA');
   if (btnSidebar) btnSidebar.style.display = 'none';
-  const banner = $('installBanner');
+  var banner = $('installBanner');
   if (banner) banner.style.display = 'none';
   deferredPrompt = null;
   toast('✅ Nexos instalado com sucesso!');
 });
 
-// Botão banner (flutuante)
+// Botão do banner flutuante
 document.addEventListener('DOMContentLoaded', function() {
-  const btnBanner = $('btnInstall');
+  var btnBanner = $('btnInstall');
   if (btnBanner) {
     btnBanner.addEventListener('click', async function() {
       if (!deferredPrompt) return;
       deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') toast('✅ Nexos instalado!');
+      var result = await deferredPrompt.userChoice;
+      if (result.outcome === 'accepted') toast('✅ Nexos instalado!');
       deferredPrompt = null;
       $('installBanner').style.display = 'none';
     });
