@@ -3749,37 +3749,6 @@ function vendConfirmar() {
   });
   salvar('receitas', receitas);
 
-  // Persistir IMEDIATAMENTE no Supabase
-  if (_sb && currentCompany && currentCompany.id && currentCompany.id !== 'demo_company') {
-    const recAuto = receitas[receitas.length - 1];
-    _sb.from('vendas').upsert({
-      id:          String(venda.id),
-      company_id:  currentCompany.id,
-      total:       Number(venda.total) || 0,
-      forma_pagto: venda.forma_pagto,
-      cliente:     venda.cliente || '',
-      cliente_nome:venda.cliente_nome || '',
-      items:       venda.items || [],
-      status:      'concluido',
-      data:        venda.data,
-    }, { onConflict: 'id' }).then(function(res) {
-      if (res.error) console.error('[Nexos] venda Supabase erro:', res.error.message);
-      else console.log('[Nexos] venda salva no Supabase ✅');
-    });
-    _sb.from('receitas').upsert({
-      id:         String(recAuto.id),
-      company_id: currentCompany.id,
-      descricao:  recAuto.descricao,
-      valor:      Number(recAuto.valor) || 0,
-      categoria:  'Venda',
-      status:     'pago',
-      data:       recAuto.data,
-    }, { onConflict: 'id' }).then(function(res) {
-      if (res.error) console.error('[Nexos] receita venda Supabase erro:', res.error.message);
-      else console.log('[Nexos] receita venda salva no Supabase ✅');
-    });
-  }
-
   toast(`✅ Venda de ${moeda(total)} confirmada!`);
   vendLimpar();
   $('vendCliente').value = '';
@@ -3997,7 +3966,7 @@ let deferredPrompt = null;
     c.width = size; c.height = size;
     var ctx = c.getContext('2d');
 
-    // Fundo arredondado — gradiente azul escuro
+    // Fundo arredondado azul
     var r = size * 0.18;
     ctx.beginPath();
     ctx.moveTo(r, 0); ctx.lineTo(size - r, 0);
@@ -4008,44 +3977,37 @@ let deferredPrompt = null;
     ctx.lineTo(0, r); ctx.quadraticCurveTo(0, 0, r, 0);
     ctx.closePath();
     var bg = ctx.createLinearGradient(0, 0, size, size);
-    bg.addColorStop(0, '#1e4f9f'); bg.addColorStop(1, '#0d2464');
+    bg.addColorStop(0, '#2563eb'); bg.addColorStop(1, '#1e3a8a');
     ctx.fillStyle = bg; ctx.fill();
 
-    var cx = size / 2, cy = size / 2;
-    var rad = size * 0.39;
-    var sw  = size * 0.09;
+    var p = size * 0.11, w = size - p * 2, cw = w * 0.22;
 
-    // Arco externo
-    var arcGrad = ctx.createLinearGradient(cx - rad, cy - rad, cx + rad, cy + rad);
-    arcGrad.addColorStop(0, '#93c5fd');
-    arcGrad.addColorStop(1, '#3b82f6');
-    ctx.beginPath();
-    ctx.arc(cx, cy, rad, 3.58, 2.53, false);
-    ctx.strokeStyle = arcGrad;
-    ctx.lineWidth   = sw;
-    ctx.lineCap     = 'round';
-    ctx.stroke();
+    // Coluna esquerda
+    var g1 = ctx.createLinearGradient(p, p, p + cw, p);
+    g1.addColorStop(0, '#93c5fd'); g1.addColorStop(1, '#3b82f6');
+    ctx.fillStyle = g1; _rrect(ctx, p, p, cw, w, cw * 0.22);
 
-    // Seta interna
-    var ar = rad * 0.52;
-    var chevGrad = ctx.createLinearGradient(cx, cy - ar, cx, cy + ar);
-    chevGrad.addColorStop(0, '#bfdbfe');
-    chevGrad.addColorStop(1, '#93c5fd');
-    ctx.beginPath();
-    ctx.moveTo(cx - ar * 0.55, cy - ar * 0.72);
-    ctx.lineTo(cx + ar * 0.55, cy);
-    ctx.lineTo(cx - ar * 0.55, cy + ar * 0.72);
-    ctx.strokeStyle = chevGrad;
-    ctx.lineWidth   = sw * 0.78;
-    ctx.lineCap     = 'round';
-    ctx.lineJoin    = 'round';
-    ctx.stroke();
+    // Coluna direita
+    var g2 = ctx.createLinearGradient(p + w - cw, p, p + w, p);
+    g2.addColorStop(0, '#1d4ed8'); g2.addColorStop(1, '#1e3a8a');
+    ctx.fillStyle = g2; _rrect(ctx, p + w - cw, p, cw, w, cw * 0.22);
 
-    // Ponto acento
+    // Diagonal
+    var g3 = ctx.createLinearGradient(p + cw, p, p + w - cw, p + w);
+    g3.addColorStop(0, '#60a5fa'); g3.addColorStop(1, '#2563eb');
+    ctx.fillStyle = g3;
     ctx.beginPath();
-    ctx.arc(cx - rad * 0.76, cy + rad * 0.64, sw * 0.56, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(147,197,253,0.55)';
-    ctx.fill();
+    ctx.moveTo(p + cw, p); ctx.lineTo(p + cw * 2, p);
+    ctx.lineTo(p + w - cw, p + w); ctx.lineTo(p + w - cw * 2, p + w);
+    ctx.closePath(); ctx.fill();
+
+    // Sombra diagonal
+    ctx.fillStyle = 'rgba(0,20,100,0.25)';
+    ctx.beginPath();
+    ctx.moveTo(p + cw, p); ctx.lineTo(p + cw * 2, p);
+    ctx.lineTo(p + cw * 2 + w * 0.11, p + w * 0.22);
+    ctx.lineTo(p + cw + w * 0.11, p + w * 0.22);
+    ctx.closePath(); ctx.fill();
 
     // toBlob → Blob URL (Chrome aceita blob: mas não data: nos ícones do manifest)
     c.toBlob(function(blob) { cb(URL.createObjectURL(blob)); }, 'image/png');
