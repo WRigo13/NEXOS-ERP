@@ -3949,67 +3949,62 @@ let deferredPrompt = null;
 
 // ── Gera ícones PNG via canvas → Blob URL → manifest blob ──
 // Chrome não aceita data:URI nos ícones do manifest, mas aceita blob: URLs
-(function _injectManifest() {
-
-  function _rrect(ctx, x, y, w, h, r) {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-    ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-    ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-    ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
-    ctx.closePath(); ctx.fill();
-  }
-
-  function gerarIconeBlob(size, cb) {
+(function _injectManifest() {  function gerarIconeBlob(size, cb) {
     var c = document.createElement('canvas');
     c.width = size; c.height = size;
     var ctx = c.getContext('2d');
 
-    // Fundo arredondado azul
-    var r = size * 0.18;
+    // Fundo arredondado — gradiente azul escuro
+    var rr = size * 0.18;
     ctx.beginPath();
-    ctx.moveTo(r, 0); ctx.lineTo(size - r, 0);
-    ctx.quadraticCurveTo(size, 0, size, r);
-    ctx.lineTo(size, size - r);
-    ctx.quadraticCurveTo(size, size, size - r, size);
-    ctx.lineTo(r, size); ctx.quadraticCurveTo(0, size, 0, size - r);
-    ctx.lineTo(0, r); ctx.quadraticCurveTo(0, 0, r, 0);
+    ctx.moveTo(rr, 0); ctx.lineTo(size - rr, 0);
+    ctx.quadraticCurveTo(size, 0, size, rr);
+    ctx.lineTo(size, size - rr);
+    ctx.quadraticCurveTo(size, size, size - rr, size);
+    ctx.lineTo(rr, size); ctx.quadraticCurveTo(0, size, 0, size - rr);
+    ctx.lineTo(0, rr); ctx.quadraticCurveTo(0, 0, rr, 0);
     ctx.closePath();
     var bg = ctx.createLinearGradient(0, 0, size, size);
-    bg.addColorStop(0, '#2563eb'); bg.addColorStop(1, '#1e3a8a');
+    bg.addColorStop(0, '#1e4f9f'); bg.addColorStop(1, '#0d2464');
     ctx.fillStyle = bg; ctx.fill();
 
-    var p = size * 0.11, w = size - p * 2, cw = w * 0.22;
+    var cx = size / 2, cy = size / 2;
+    var rad = size * 0.39;   // raio do arco
+    var sw  = size * 0.09;   // stroke width
 
-    // Coluna esquerda
-    var g1 = ctx.createLinearGradient(p, p, p + cw, p);
-    g1.addColorStop(0, '#93c5fd'); g1.addColorStop(1, '#3b82f6');
-    ctx.fillStyle = g1; _rrect(ctx, p, p, cw, w, cw * 0.22);
-
-    // Coluna direita
-    var g2 = ctx.createLinearGradient(p + w - cw, p, p + w, p);
-    g2.addColorStop(0, '#1d4ed8'); g2.addColorStop(1, '#1e3a8a');
-    ctx.fillStyle = g2; _rrect(ctx, p + w - cw, p, cw, w, cw * 0.22);
-
-    // Diagonal
-    var g3 = ctx.createLinearGradient(p + cw, p, p + w - cw, p + w);
-    g3.addColorStop(0, '#60a5fa'); g3.addColorStop(1, '#2563eb');
-    ctx.fillStyle = g3;
+    // ── Arco externo (quase completo, abre no canto inferior esq) ──
+    var arcGrad = ctx.createLinearGradient(cx - rad, cy - rad, cx + rad, cy + rad);
+    arcGrad.addColorStop(0, '#93c5fd');
+    arcGrad.addColorStop(1, '#3b82f6');
     ctx.beginPath();
-    ctx.moveTo(p + cw, p); ctx.lineTo(p + cw * 2, p);
-    ctx.lineTo(p + w - cw, p + w); ctx.lineTo(p + w - cw * 2, p + w);
-    ctx.closePath(); ctx.fill();
+    // de ~205° até ~145° passando pelo topo (sentido anti-horário via flag=0)
+    ctx.arc(cx, cy, rad, 3.58, 2.53, false); // ~205° start → ~145° end
+    ctx.strokeStyle = arcGrad;
+    ctx.lineWidth   = sw;
+    ctx.lineCap     = 'round';
+    ctx.stroke();
 
-    // Sombra diagonal
-    ctx.fillStyle = 'rgba(0,20,100,0.25)';
+    // ── Seta / chevron interno ──
+    var ar = rad * 0.52; // raio interno da seta
+    var chevGrad = ctx.createLinearGradient(cx, cy - ar, cx, cy + ar);
+    chevGrad.addColorStop(0, '#bfdbfe');
+    chevGrad.addColorStop(1, '#93c5fd');
     ctx.beginPath();
-    ctx.moveTo(p + cw, p); ctx.lineTo(p + cw * 2, p);
-    ctx.lineTo(p + cw * 2 + w * 0.11, p + w * 0.22);
-    ctx.lineTo(p + cw + w * 0.11, p + w * 0.22);
-    ctx.closePath(); ctx.fill();
+    ctx.moveTo(cx - ar * 0.55, cy - ar * 0.72);  // topo esq
+    ctx.lineTo(cx + ar * 0.55, cy);               // ponta direita
+    ctx.lineTo(cx - ar * 0.55, cy + ar * 0.72);  // base esq
+    ctx.strokeStyle = chevGrad;
+    ctx.lineWidth   = sw * 0.78;
+    ctx.lineCap     = 'round';
+    ctx.lineJoin    = 'round';
+    ctx.stroke();
 
-    // toBlob → Blob URL (Chrome aceita blob: mas não data: nos ícones do manifest)
+    // ── Ponto acento (onde o arco abre) ──
+    ctx.beginPath();
+    ctx.arc(cx - rad * 0.76, cy + rad * 0.64, sw * 0.56, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(147,197,253,0.55)';
+    ctx.fill();
+
     c.toBlob(function(blob) { cb(URL.createObjectURL(blob)); }, 'image/png');
   }
 
