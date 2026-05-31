@@ -3749,6 +3749,37 @@ function vendConfirmar() {
   });
   salvar('receitas', receitas);
 
+  // Persistir IMEDIATAMENTE no Supabase
+  if (_sb && currentCompany && currentCompany.id && currentCompany.id !== 'demo_company') {
+    const recAuto = receitas[receitas.length - 1];
+    _sb.from('vendas').upsert({
+      id:          String(venda.id),
+      company_id:  currentCompany.id,
+      total:       Number(venda.total) || 0,
+      forma_pagto: venda.forma_pagto,
+      cliente:     venda.cliente || '',
+      cliente_nome:venda.cliente_nome || '',
+      items:       venda.items || [],
+      status:      'concluido',
+      data:        venda.data,
+    }, { onConflict: 'id' }).then(function(res) {
+      if (res.error) console.error('[Nexos] venda Supabase erro:', res.error.message);
+      else console.log('[Nexos] venda salva no Supabase ✅');
+    });
+    _sb.from('receitas').upsert({
+      id:         String(recAuto.id),
+      company_id: currentCompany.id,
+      descricao:  recAuto.descricao,
+      valor:      Number(recAuto.valor) || 0,
+      categoria:  'Venda',
+      status:     'pago',
+      data:       recAuto.data,
+    }, { onConflict: 'id' }).then(function(res) {
+      if (res.error) console.error('[Nexos] receita venda Supabase erro:', res.error.message);
+      else console.log('[Nexos] receita venda salva no Supabase ✅');
+    });
+  }
+
   toast(`✅ Venda de ${moeda(total)} confirmada!`);
   vendLimpar();
   $('vendCliente').value = '';
@@ -4019,6 +4050,7 @@ let deferredPrompt = null;
     // toBlob → Blob URL (Chrome aceita blob: mas não data: nos ícones do manifest)
     c.toBlob(function(blob) { cb(URL.createObjectURL(blob)); }, 'image/png');
   }
+
   try {
     // Gerar os dois tamanhos em paralelo via callbacks
     gerarIconeBlob(192, function(url192) {
