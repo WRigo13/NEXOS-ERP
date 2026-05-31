@@ -777,7 +777,7 @@
       },
 
       // URL do app (produção)
-      APP_URL: 'https://nexoserp.com.br',
+      APP_URL: 'https://nexos-erp-blush.vercel.app',
 
       // URL das Edge Functions no Supabase
       EDGE_URL: 'https://awdgnxwmzestfdfuabcb.supabase.co/functions/v1',
@@ -2300,10 +2300,14 @@ let prodEdit  = null;
 const $ = id => document.getElementById(id);
 
 function hoje() {
-  return new Date().toISOString().split('T')[0];
+  const d = new Date();
+  return d.getFullYear() + '-'
+    + String(d.getMonth()+1).padStart(2,'0') + '-'
+    + String(d.getDate()).padStart(2,'0');
 }
 function mesAtual() {
-  return new Date().toISOString().slice(0, 7);
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
 }
 function moeda(v) {
   return Number(v||0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
@@ -2361,7 +2365,7 @@ async function _salvarSupabase(mod, data) {
       data: r.data||null }),
     clientes:      r => ({ id: String(r.id), company_id: cid, nome: r.nome||'', email: r.email||'', telefone: r.telefone||'', cpf: r.cpf||'', endereco: r.endereco||'' }),
     produtos:      r => ({ id: String(r.id), company_id: cid, nome: r.nome||'', categoria: r.categoria||'', preco: Number(r.preco)||0, quantidade: Number(r.quantidade??r.estoque)||0, minimo: Number(r.minimo??r.estoque_min)||5 }),
-    vendas:        r => ({ id: String(r.id), company_id: cid, total: Number(r.total)||0, forma_pagto: r.forma_pagto||r.forma||r.pagamento||'dinheiro', cliente: r.cliente||r.cliente_nome||'', cliente_nome: r.cliente||r.cliente_nome||'', items: r.items||r.itens||[], status: r.status||'concluido' }),
+    vendas:        r => ({ id: String(r.id), company_id: cid, total: Number(r.total)||0, forma_pagto: r.forma_pagto||r.forma||r.pagamento||'dinheiro', cliente: r.cliente||r.cliente_nome||'', cliente_nome: r.cliente||r.cliente_nome||'', items: r.items||r.itens||[], status: r.status||'concluido', data: r.data||r.created_at||null, created_at: r.created_at||r.data||null }),
     movimentacoes: r => ({ id: String(r.id), company_id: cid, produto_id: String(r.produto_id||''), produto_nome: r.produto_nome||r.nome||'', tipo: r.tipo||'', qtd: Number(r.qtd)||0, motivo: r.motivo||'' }),
   };
 
@@ -2777,11 +2781,12 @@ window._syncTudo = async function _syncTudo() {
     if (v.data && v.data.length > 0) {
       vendas = v.data.map(x => ({
         ...x,
-        id:      String(x.id),
-        items:   x.items || x.itens || [],
-        forma:   x.forma_pagto || x.forma || x.pagamento || 'dinheiro',
-        cliente: x.cliente || x.cliente_nome || '',
-        data:    x.created_at || x.data || new Date().toISOString(),
+        id:         String(x.id),
+        items:      x.items || x.itens || [],
+        forma:      x.forma_pagto || x.forma || x.pagamento || 'dinheiro',
+        cliente:    x.cliente || x.cliente_nome || '',
+        data:       x.data || x.created_at || new Date().toISOString(),
+        created_at: x.created_at || x.data || new Date().toISOString(),
       }));
       localStorage.setItem(getKey('vendas'), JSON.stringify(vendas));
     }
@@ -4017,8 +4022,8 @@ let deferredPrompt = null;
           name: 'Nexos — Gestão Empresarial',
           short_name: 'Nexos',
           description: 'ERP completo para MEI e pequenas empresas',
-          start_url: 'https://nexoserp.com.br/',
-          id: 'https://nexoserp.com.br/',
+          start_url: 'https://nexos-erp-blush.vercel.app/',
+          id: 'https://nexos-erp-blush.vercel.app/',
           display: 'standalone',
           background_color: '#1e4f9f',
           theme_color: '#1e4f9f',
