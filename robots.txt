@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /landing.html
+Allow: /
+Disallow: /sw.js
+
+Sitemap: https://nexoserp.com.br/sitemap.xml
