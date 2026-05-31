@@ -6,13 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Nexos — Gestão Empresarial</title>
 
-  <!-- PWA — href injetado via JS com ícone gerado por canvas -->
+  <!-- PWA -->
   <link rel="manifest" id="pwaManifest">
-  <meta name="theme-color" content="#1e4f9f">
+  <meta name="theme-color" content="#1B4491">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Nexos">
-  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjEwMCIgZmlsbD0iIzFCNDQ5MSIvPgogIDxyZWN0IHg9Ijg4IiB5PSI4OCIgd2lkdGg9Ijg4IiBoZWlnaHQ9IjMzNiIgcng9IjE4IiBmaWxsPSJ3aGl0ZSIvPgogIDxyZWN0IHg9IjMzNiIgeT0iODgiIHdpZHRoPSI4OCIgaGVpZ2h0PSIzMzYiIHJ4PSIxOCIgZmlsbD0id2hpdGUiLz4KICA8cG9seWdvbiBwb2ludHM9IjE3Niw4OCAyNDgsODggNDI0LDQyNCAzNTIsNDI0IiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4=">
 
   <!-- Fontes -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -78,20 +78,7 @@
     #appShell { display: none; width: 100%; min-height: 100vh; }
 
     /* SIDEBAR */
-    .sidebar {
-      width: var(--sidebar-w);
-      min-height: 100vh;
-      background: linear-gradient(160deg, #1B4491 0%, #142f6e 100%);
-      display: flex;
-      flex-direction: column;
-      position: fixed;
-      top: 0; left: 0; bottom: 0;
-      z-index: 100;
-      transition: transform 0.25s ease;
-      overflow-y: auto;
-      overflow-x: hidden;
-    }
-  /* Bolhas decorativas — canto sup esq e inf esq */
+    /* Bolhas decorativas sidebar */
   .sb-bubble {
     position: absolute;
     border-radius: 50%;
@@ -99,27 +86,37 @@
     z-index: 0;
   }
   .sb-bubble-top {
-    width: 260px;
-    height: 260px;
-    top: -80px;
-    left: -80px;
-    background: radial-gradient(circle,
-      rgba(58,111,216,.55) 0%,
-      rgba(42,91,196,.0) 70%);
+    width: 260px; height: 260px;
+    top: -80px; left: -80px;
+    background: radial-gradient(circle, rgba(58,111,216,.55) 0%, rgba(42,91,196,.0) 70%);
     border: 1.5px solid rgba(120,170,255,.18);
   }
   .sb-bubble-bot {
-    width: 160px;
-    height: 160px;
-    bottom: -50px;
-    left: -50px;
-    background: radial-gradient(circle,
-      rgba(74,128,224,.4) 0%,
-      rgba(59,111,208,.0) 70%);
+    width: 160px; height: 160px;
+    bottom: -50px; left: -50px;
+    background: radial-gradient(circle, rgba(74,128,224,.4) 0%, rgba(59,111,208,.0) 70%);
     border: 1.5px solid rgba(140,185,255,.14);
   }
+  .sidebar {
+      width: var(--sidebar-w);
+      min-height: 100vh;
+      background: #1B4491;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 100;
+      transition: transform 0.25s ease;
+      overflow-y: auto;
+    }
+  /* Bolhas decorativas da sidebar */
+  
+  
 
-    .sidebar-brand { padding: 22px 18px 16px; position: relative; z-index: 1; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .sidebar-brand {
+      padding: 22px 18px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
     .brand-logo {
       display: flex; align-items: center; gap: 10px;
     }
@@ -142,13 +139,12 @@
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: var(--radius-sm);
       padding: 9px 12px;
-      position: relative; z-index: 1;
     }
     .company-label { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: rgba(255,255,255,0.45); margin-bottom: 3px; }
     .company-name  { font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,0.9); }
 
     /* Nav */
-    .sidebar-nav { flex: 1; padding: 10px 10px; position: relative; z-index: 1; }
+    .sidebar-nav { flex: 1; padding: 10px 10px; }
     .nav-section-label {
       font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px;
       color: rgba(255,255,255,0.3); padding: 10px 8px 4px;
@@ -174,7 +170,6 @@
     .sidebar-footer {
       padding: 12px 14px;
       border-top: 1px solid rgba(255,255,255,0.1);
-      position: relative; z-index: 1;
     }
     .user-info {
       display: flex; align-items: center; gap: 9px;
@@ -788,8 +783,26 @@
   </script>
 
   <script>
-    // PWA — Service Worker será registrado no bloco principal (body)
-    // para garantir que o DOM já esteja pronto ao capturar beforeinstallprompt
+    // PWA — Registrar Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js')
+          .then(function(reg) { console.log('[PWA] SW registrado:', reg.scope); })
+          .catch(function(e)  { console.warn('[PWA] SW falhou:', e); });
+      });
+    }
+    // PWA — Capturar evento de instalação
+    window._pwaInstallEvent = null;
+    window.addEventListener('beforeinstallprompt', function(e) {
+      e.preventDefault();
+      window._pwaInstallEvent = e;
+      const btn = document.getElementById('btnInstalarPWA');
+      if (btn) btn.style.display = 'flex';
+    });
+    window.addEventListener('appinstalled', function() {
+      const btn = document.getElementById('btnInstalarPWA');
+      if (btn) btn.style.display = 'none';
+    });
   </script>
 </head>
 <body>
@@ -802,31 +815,14 @@
     <div class="login-card">
       <div class="login-header">
         <div class="login-logo" style="background:none;width:auto;height:auto;margin-bottom:6px;display:flex;justify-content:center">
-          <svg viewBox="0 0 200 200" width="88" height="88" xmlns="http://www.w3.org/2000/svg" style="display:block">
-            <defs>
-              <linearGradient id="ng88bg" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#1e4f9f"/>
-                <stop offset="100%" stop-color="#0d2464"/>
-              </linearGradient>
-              <linearGradient id="ng88a" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#93c5fd"/>
-                <stop offset="100%" stop-color="#3b82f6"/>
-              </linearGradient>
-              <linearGradient id="ng88b" x1="100%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stop-color="#60a5fa"/>
-                <stop offset="100%" stop-color="#1d4ed8"/>
-              </linearGradient>
-            </defs>
-            <rect x="0" y="0" width="200" height="200" rx="36" fill="url(#ng88bg)"/>
-            <!-- Arco externo -->
-            <path d="M 100 22 A 78 78 0 1 1 34 156" fill="none" stroke="url(#ng88a)" stroke-width="18" stroke-linecap="round"/>
-            <!-- Seta interna -->
-            <path d="M 100 58 L 136 100 L 100 142" fill="none" stroke="url(#ng88b)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
-            <!-- Ponto acento -->
-            <circle cx="52" cy="162" r="10" fill="#60a5fa" opacity=".6"/>
-          </svg>
+          <svg viewBox="0 0 512 512" width="88" height="88" xmlns="http://www.w3.org/2000/svg" style="display:block;border-radius:18px">
+              <rect width="512" height="512" rx="80" fill="#1B4491"/>
+              <rect x="88" y="88" width="88" height="336" rx="18" fill="white"/>
+              <rect x="336" y="88" width="88" height="336" rx="18" fill="white"/>
+              <polygon points="176,88 248,88 424,424 352,424" fill="white"/>
+            </svg>
         </div>
-        <h2 style="font-family:'Barlow',sans-serif;font-size:1.6rem;font-weight:900;letter-spacing:.3em;text-transform:uppercase">NEXOS</h2>
+        <h2 style="font-size:1.6rem;letter-spacing:-0.5px">Nexos</h2>
         <p>Gestão empresarial</p>
       </div>
 
@@ -887,34 +883,17 @@
 
   <!-- SIDEBAR -->
   <nav class="sidebar" id="sidebar">
-    <!-- Bolha superior esquerda -->
     <div class="sb-bubble sb-bubble-top"></div>
-    <!-- Bolha inferior esquerda -->
     <div class="sb-bubble sb-bubble-bot"></div>
-
     <div class="sidebar-brand">
       <div class="brand-logo">
-        <div class="brand-icon" style="background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.2);overflow:hidden;padding:3px">
-          <svg viewBox="0 0 200 200" width="30" height="30" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
-            <defs>
-              <linearGradient id="ng32bg" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#1e4f9f"/>
-                <stop offset="100%" stop-color="#0d2464"/>
-              </linearGradient>
-              <linearGradient id="ng32a" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#93c5fd"/>
-                <stop offset="100%" stop-color="#60a5fa"/>
-              </linearGradient>
-              <linearGradient id="ng32b" x1="100%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stop-color="#7eb8ff"/>
-                <stop offset="100%" stop-color="#3b82f6"/>
-              </linearGradient>
-            </defs>
-            <rect x="0" y="0" width="200" height="200" rx="36" fill="url(#ng32bg)"/>
-            <path d="M 100 22 A 78 78 0 1 1 34 156" fill="none" stroke="url(#ng32a)" stroke-width="18" stroke-linecap="round"/>
-            <path d="M 100 58 L 136 100 L 100 142" fill="none" stroke="url(#ng32b)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="52" cy="162" r="10" fill="#60a5fa" opacity=".6"/>
-          </svg>
+        <div class="brand-icon" style="background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.2);overflow:hidden;padding:2px">
+          <svg viewBox="0 0 512 512" width="32" height="32" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;border-radius:6px">
+              <rect width="512" height="512" rx="80" fill="#1B4491"/>
+              <rect x="88" y="88" width="88" height="336" rx="18" fill="white"/>
+              <rect x="336" y="88" width="88" height="336" rx="18" fill="white"/>
+              <polygon points="176,88 248,88 424,424 352,424" fill="white"/>
+            </svg>
         </div>
         <div class="brand-text">
           <span class="nexos-wordmark">NEXOS</span>
@@ -981,9 +960,6 @@
           </div>
         </div>
       </div>
-      <button class="btn-logout" id="btnInstalarPWA" style="display:none;margin-bottom:6px" onclick="instalarPWA()">
-        <span>📲</span> Instalar app
-      </button>
       <button class="btn-logout" onclick="fazerLogout()">
         <span>⬡</span> Sair da conta
       </button>
@@ -1137,7 +1113,7 @@
               <th>Ações</th>
             </tr>
           </thead>
-          <tbody id="recTbody"></tbody>
+          <tbody id="recTbody"></div>></tbody>
         </table>
           <div class="pag-wrap" id="rec_pag"></div>
       </div>
@@ -1239,7 +1215,7 @@
               <th>Ações</th>
             </tr>
           </thead>
-          <tbody id="despTbody"></tbody>
+          <tbody id="despTbody"></div>></tbody>
         </table>
           <div class="pag-wrap" id="desp_pag"></div>
       </div>
@@ -1376,7 +1352,7 @@
               <th>Ações</th>
             </tr>
           </thead>
-          <tbody id="cliTbody"></tbody>
+          <tbody id="cliTbody"></div>></tbody>
         </table>
           <div class="pag-wrap" id="cli_pag"></div>
       </div>
@@ -1485,7 +1461,7 @@
               <th>Ações</th>
             </tr>
           </thead>
-          <tbody id="prodTbody"></tbody>
+          <tbody id="prodTbody"></div>></tbody>
         </table>
           <div class="pag-wrap" id="prod_pag"></div>
       </div>
@@ -2300,15 +2276,13 @@ let prodEdit  = null;
 const $ = id => document.getElementById(id);
 
 function hoje() {
-  const d = new Date();
-  return d.getFullYear() + '-'
-    + String(d.getMonth()+1).padStart(2,'0') + '-'
-    + String(d.getDate()).padStart(2,'0');
+  return new Date().toISOString().split('T')[0];
 }
 function mesAtual() {
-  const d = new Date();
-  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+  return new Date().toISOString().slice(0, 7);
 }
+
+function fmt(v) { return moeda(v); }
 function moeda(v) {
   return Number(v||0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
 }
@@ -2365,7 +2339,7 @@ async function _salvarSupabase(mod, data) {
       data: r.data||null }),
     clientes:      r => ({ id: String(r.id), company_id: cid, nome: r.nome||'', email: r.email||'', telefone: r.telefone||'', cpf: r.cpf||'', endereco: r.endereco||'' }),
     produtos:      r => ({ id: String(r.id), company_id: cid, nome: r.nome||'', categoria: r.categoria||'', preco: Number(r.preco)||0, quantidade: Number(r.quantidade??r.estoque)||0, minimo: Number(r.minimo??r.estoque_min)||5 }),
-    vendas:        r => ({ id: String(r.id), company_id: cid, total: Number(r.total)||0, forma_pagto: r.forma_pagto||r.forma||r.pagamento||'dinheiro', cliente: r.cliente||r.cliente_nome||'', cliente_nome: r.cliente||r.cliente_nome||'', items: r.items||r.itens||[], status: r.status||'concluido', data: r.data||r.created_at||null, created_at: r.created_at||r.data||null }),
+    vendas:        r => ({ id: String(r.id), company_id: cid, total: Number(r.total)||0, forma_pagto: r.forma_pagto||r.forma||r.pagamento||'dinheiro', cliente: r.cliente||r.cliente_nome||'', cliente_nome: r.cliente||r.cliente_nome||'', items: r.items||r.itens||[], status: r.status||'concluido' }),
     movimentacoes: r => ({ id: String(r.id), company_id: cid, produto_id: String(r.produto_id||''), produto_nome: r.produto_nome||r.nome||'', tipo: r.tipo||'', qtd: Number(r.qtd)||0, motivo: r.motivo||'' }),
   };
 
@@ -2694,6 +2668,10 @@ async function iniciarApp(user, company) {
   vendRenderCatalogo(); vendRenderHistorico(); vendStats();
   fluxoPopularMeses(); fluxoRender();
   dashAtualizar();
+  // Sync silencioso após carregar (garante dados frescos do banco)
+  if (_sb && currentCompany && currentCompany.id !== 'demo_company') {
+    setTimeout(syncDados, 2000);
+  }
 
   // ── Nav ──
   document.querySelectorAll('.nav-item').forEach(btn => {
@@ -2781,12 +2759,11 @@ window._syncTudo = async function _syncTudo() {
     if (v.data && v.data.length > 0) {
       vendas = v.data.map(x => ({
         ...x,
-        id:         String(x.id),
-        items:      x.items || x.itens || [],
-        forma:      x.forma_pagto || x.forma || x.pagamento || 'dinheiro',
-        cliente:    x.cliente || x.cliente_nome || '',
-        data:       x.data || x.created_at || new Date().toISOString(),
-        created_at: x.created_at || x.data || new Date().toISOString(),
+        id:      String(x.id),
+        items:   x.items || x.itens || [],
+        forma:   x.forma_pagto || x.forma || x.pagamento || 'dinheiro',
+        cliente: x.cliente || x.cliente_nome || '',
+        data:    x.created_at || x.data || new Date().toISOString(),
       }));
       localStorage.setItem(getKey('vendas'), JSON.stringify(vendas));
     }
@@ -2817,15 +2794,15 @@ window._syncTudo = async function _syncTudo() {
 };
 
 function instalarPWA() {
-  if (!deferredPrompt) {
+  if (!window._pwaInstallEvent) {
     toast('📲 Para instalar: menu do navegador → "Adicionar à tela inicial"', 5000);
     return;
   }
-  deferredPrompt.prompt();
-  deferredPrompt.userChoice.then(function(result) {
+  window._pwaInstallEvent.prompt();
+  window._pwaInstallEvent.userChoice.then(function(result) {
     if (result.outcome === 'accepted') toast('✅ App instalado!');
-    deferredPrompt = null;
-    const btn = $('btnInstalarPWA');
+    window._pwaInstallEvent = null;
+    const btn = document.getElementById('btnInstalarPWA');
     if (btn) btn.style.display = 'none';
   });
 }
@@ -3749,6 +3726,37 @@ function vendConfirmar() {
   });
   salvar('receitas', receitas);
 
+  // Persistir IMEDIATAMENTE no Supabase
+  if (_sb && currentCompany && currentCompany.id && currentCompany.id !== 'demo_company') {
+    const recAuto = receitas[receitas.length - 1];
+    _sb.from('vendas').upsert({
+      id:          String(venda.id),
+      company_id:  currentCompany.id,
+      total:       Number(venda.total) || 0,
+      forma_pagto: venda.forma_pagto,
+      cliente:     venda.cliente || '',
+      cliente_nome:venda.cliente_nome || '',
+      items:       venda.items || [],
+      status:      'concluido',
+      data:        venda.data,
+    }, { onConflict: 'id' }).then(function(res) {
+      if (res.error) console.error('[Nexos] venda Supabase erro:', res.error.message);
+      else console.log('[Nexos] venda salva no Supabase ✅');
+    });
+    _sb.from('receitas').upsert({
+      id:         String(recAuto.id),
+      company_id: currentCompany.id,
+      descricao:  recAuto.descricao,
+      valor:      Number(recAuto.valor) || 0,
+      categoria:  'Venda',
+      status:     'pago',
+      data:       recAuto.data,
+    }, { onConflict: 'id' }).then(function(res) {
+      if (res.error) console.error('[Nexos] receita venda Supabase erro:', res.error.message);
+      else console.log('[Nexos] receita venda salva no Supabase ✅');
+    });
+  }
+
   toast(`✅ Venda de ${moeda(total)} confirmada!`);
   vendLimpar();
   $('vendCliente').value = '';
@@ -3757,6 +3765,8 @@ function vendConfirmar() {
   prodRender();
   dashAtualizar();
   fluxoPopularMeses();
+  // Sync silencioso para garantir que dados do banco estejam atualizados
+  setTimeout(syncDados, 1500);
 }
 
 function vendRenderHistorico() {
@@ -3829,6 +3839,38 @@ function vendStats() {
 /* ═══════════════════════════════════════════
    DASHBOARD
 ═══════════════════════════════════════════ */
+// Sync silencioso — atualiza dados do banco sem bloquear a UI
+async function syncDados() {
+  if (!_sb || !currentCompany || currentCompany.id === 'demo_company') return;
+  const cid = currentCompany.id;
+  try {
+    const [v, r] = await Promise.all([
+      _sb.from('vendas').select('*').eq('company_id', cid).order('created_at', {ascending: false}),
+      _sb.from('receitas').select('*').eq('company_id', cid),
+    ]);
+    if (v.data && v.data.length > 0) {
+      vendas = v.data.map(x => ({
+        ...x,
+        id:      String(x.id),
+        items:   typeof x.items === 'string' ? JSON.parse(x.items||'[]') : (x.items || []),
+        forma:   x.forma_pagto || x.forma || 'dinheiro',
+        cliente: x.cliente || x.cliente_nome || '',
+        data:    x.data || x.created_at || new Date().toISOString(),
+      }));
+      localStorage.setItem(getKey('vendas'), JSON.stringify(vendas));
+    }
+    if (r.data && r.data.length > 0) {
+      receitas = r.data.map(x => ({...x, id: String(x.id)}));
+      localStorage.setItem(getKey('receitas'), JSON.stringify(receitas));
+    }
+    dashAtualizar();
+    vendStats();
+  } catch(e) {
+    console.warn('[Nexos] syncDados falhou:', e.message);
+  }
+}
+
+
 function dashAtualizar() {
   const hj  = hoje();
   const mes = mesAtual();
@@ -3946,161 +3988,69 @@ function exportCSV(lista, nome) {
    PWA + SERVICE WORKER
 ═══════════════════════════════════════════ */
 let deferredPrompt = null;
-
-// ── Gera ícones PNG via canvas → Blob URL → manifest blob ──
-// Chrome não aceita data:URI nos ícones do manifest, mas aceita blob: URLs
-(function _injectManifest() {
-
-  function _rrect(ctx, x, y, w, h, r) {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-    ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-    ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-    ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
-    ctx.closePath(); ctx.fill();
-  }
-
-  function gerarIconeBlob(size, cb) {
-    var c = document.createElement('canvas');
-    c.width = size; c.height = size;
-    var ctx = c.getContext('2d');
-
-    // Fundo arredondado azul
-    var r = size * 0.18;
-    ctx.beginPath();
-    ctx.moveTo(r, 0); ctx.lineTo(size - r, 0);
-    ctx.quadraticCurveTo(size, 0, size, r);
-    ctx.lineTo(size, size - r);
-    ctx.quadraticCurveTo(size, size, size - r, size);
-    ctx.lineTo(r, size); ctx.quadraticCurveTo(0, size, 0, size - r);
-    ctx.lineTo(0, r); ctx.quadraticCurveTo(0, 0, r, 0);
-    ctx.closePath();
-    var bg = ctx.createLinearGradient(0, 0, size, size);
-    bg.addColorStop(0, '#2563eb'); bg.addColorStop(1, '#1e3a8a');
-    ctx.fillStyle = bg; ctx.fill();
-
-    var p = size * 0.11, w = size - p * 2, cw = w * 0.22;
-
-    // Coluna esquerda
-    var g1 = ctx.createLinearGradient(p, p, p + cw, p);
-    g1.addColorStop(0, '#93c5fd'); g1.addColorStop(1, '#3b82f6');
-    ctx.fillStyle = g1; _rrect(ctx, p, p, cw, w, cw * 0.22);
-
-    // Coluna direita
-    var g2 = ctx.createLinearGradient(p + w - cw, p, p + w, p);
-    g2.addColorStop(0, '#1d4ed8'); g2.addColorStop(1, '#1e3a8a');
-    ctx.fillStyle = g2; _rrect(ctx, p + w - cw, p, cw, w, cw * 0.22);
-
-    // Diagonal
-    var g3 = ctx.createLinearGradient(p + cw, p, p + w - cw, p + w);
-    g3.addColorStop(0, '#60a5fa'); g3.addColorStop(1, '#2563eb');
-    ctx.fillStyle = g3;
-    ctx.beginPath();
-    ctx.moveTo(p + cw, p); ctx.lineTo(p + cw * 2, p);
-    ctx.lineTo(p + w - cw, p + w); ctx.lineTo(p + w - cw * 2, p + w);
-    ctx.closePath(); ctx.fill();
-
-    // Sombra diagonal
-    ctx.fillStyle = 'rgba(0,20,100,0.25)';
-    ctx.beginPath();
-    ctx.moveTo(p + cw, p); ctx.lineTo(p + cw * 2, p);
-    ctx.lineTo(p + cw * 2 + w * 0.11, p + w * 0.22);
-    ctx.lineTo(p + cw + w * 0.11, p + w * 0.22);
-    ctx.closePath(); ctx.fill();
-
-    // toBlob → Blob URL (Chrome aceita blob: mas não data: nos ícones do manifest)
-    c.toBlob(function(blob) { cb(URL.createObjectURL(blob)); }, 'image/png');
-  }
-
-  try {
-    // Gerar os dois tamanhos em paralelo via callbacks
-    gerarIconeBlob(192, function(url192) {
-      gerarIconeBlob(512, function(url512) {
-
-        var manifest = {
-          name: 'Nexos — Gestão Empresarial',
-          short_name: 'Nexos',
-          description: 'ERP completo para MEI e pequenas empresas',
-          start_url: 'https://nexos-erp-blush.vercel.app/',
-          id: 'https://nexos-erp-blush.vercel.app/',
-          display: 'standalone',
-          background_color: '#1e4f9f',
-          theme_color: '#1e4f9f',
-          orientation: 'portrait-primary',
-          lang: 'pt-BR',
-          categories: ['business', 'finance', 'productivity'],
-          icons: [
-            { src: url192, sizes: '192x192', type: 'image/png', purpose: 'any' },
-            { src: url192, sizes: '192x192', type: 'image/png', purpose: 'maskable' },
-            { src: url512, sizes: '512x512', type: 'image/png', purpose: 'any' },
-            { src: url512, sizes: '512x512', type: 'image/png', purpose: 'maskable' }
-          ]
-        };
-
-        var mBlob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
-        var mURL  = URL.createObjectURL(mBlob);
-        var link  = document.getElementById('pwaManifest');
-        if (link) {
-          link.href = mURL;
-          console.log('[PWA] Manifest injetado com ícones blob ✅');
-        }
-      });
-    });
-  } catch(e) {
-    console.warn('[PWA] Falha ao gerar manifest:', e);
-  }
-})();
-
-// Captura o evento de instalação
-window.addEventListener('beforeinstallprompt', function(e) {
+window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   deferredPrompt = e;
-
-  var btnSidebar = $('btnInstalarPWA');
-  if (btnSidebar) btnSidebar.style.display = 'flex';
-
-  var banner = $('installBanner');
+  const banner = $('installBanner');
   if (banner) banner.style.display = 'block';
-
-  console.log('[PWA] Pronto para instalar ✅');
 });
 
-// Esconder botão após instalação
-window.addEventListener('appinstalled', function() {
-  var btnSidebar = $('btnInstalarPWA');
-  if (btnSidebar) btnSidebar.style.display = 'none';
-  var banner = $('installBanner');
-  if (banner) banner.style.display = 'none';
+$('btnInstall')?.addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  if (outcome === 'accepted') toast('✅ ERP MEI instalado!');
   deferredPrompt = null;
-  toast('✅ Nexos instalado com sucesso!');
+  $('installBanner').style.display = 'none';
 });
 
-// Botão do banner flutuante
-document.addEventListener('DOMContentLoaded', function() {
-  var btnBanner = $('btnInstall');
-  if (btnBanner) {
-    btnBanner.addEventListener('click', async function() {
-      if (!deferredPrompt) return;
-      deferredPrompt.prompt();
-      var result = await deferredPrompt.userChoice;
-      if (result.outcome === 'accepted') toast('✅ Nexos instalado!');
-      deferredPrompt = null;
-      $('installBanner').style.display = 'none';
-    });
-  }
-});
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  // Manifest dinâmico — não depende de arquivo externo
+  const _manifest = {
+    name: 'Nexos — Gestão Empresarial',
+    short_name: 'Nexos',
+    description: 'ERP completo para MEI e pequenas empresas',
+    start_url: '/',
+    display: 'standalone',
+    background_color: '#1B4491',
+    theme_color: '#1B4491',
+    orientation: 'portrait-primary',
+    lang: 'pt-BR',
+    categories: ['business','finance','productivity'],
+    icons: [
+      { src: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjEwMCIgZmlsbD0iIzFCNDQ5MSIvPgogIDxyZWN0IHg9Ijg4IiB5PSI4OCIgd2lkdGg9Ijg4IiBoZWlnaHQ9IjMzNiIgcng9IjE4IiBmaWxsPSJ3aGl0ZSIvPgogIDxyZWN0IHg9IjMzNiIgeT0iODgiIHdpZHRoPSI4OCIgaGVpZ2h0PSIzMzYiIHJ4PSIxOCIgZmlsbD0id2hpdGUiLz4KICA8cG9seWdvbiBwb2ludHM9IjE3Niw4OCAyNDgsODggNDI0LDQyNCAzNTIsNDI0IiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4=', sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' },
+      { src: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjEwMCIgZmlsbD0iIzFCNDQ5MSIvPgogIDxyZWN0IHg9Ijg4IiB5PSI4OCIgd2lkdGg9Ijg4IiBoZWlnaHQ9IjMzNiIgcng9IjE4IiBmaWxsPSJ3aGl0ZSIvPgogIDxyZWN0IHg9IjMzNiIgeT0iODgiIHdpZHRoPSI4OCIgaGVpZ2h0PSIzMzYiIHJ4PSIxOCIgZmlsbD0id2hpdGUiLz4KICA8cG9seWdvbiBwb2ludHM9IjE3Niw4OCAyNDgsODggNDI0LDQyNCAzNTIsNDI0IiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4=', sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }
+    ]
+  };
+  const _mBlob = new Blob([JSON.stringify(_manifest)], { type: 'application/manifest+json' });
+  const _mURL  = URL.createObjectURL(_mBlob);
+  const _mLink = document.getElementById('pwaManifest');
+  if (_mLink) _mLink.href = _mURL;
 
-// Registrar Service Worker
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function() {
-    navigator.serviceWorker.register('/sw.js')
-      .then(function(reg) {
-        console.log('[PWA] Service Worker registrado ✅', reg.scope);
-      })
-      .catch(function(err) {
-        console.warn('[PWA] Service Worker falhou:', err);
-      });
+  // Service Worker inline — não depende de service-worker.js no servidor
+  const _swSrc = [
+    "const CACHE='nexos-v2';",
+    "self.addEventListener('install',e=>{",
+    "  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/','/']).catch(()=>{})).then(()=>self.skipWaiting()));",
+    "});",
+    "self.addEventListener('activate',e=>{",
+    "  e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));",
+    "});",
+    "self.addEventListener('fetch',e=>{",
+    "  if(e.request.method!=='GET')return;",
+    "  e.respondWith(fetch(e.request).then(r=>{",
+    "    if(r&&r.status===200){const cl=r.clone();caches.open(CACHE).then(c=>c.put(e.request,cl));}",
+    "    return r;",
+    "  }).catch(()=>caches.match(e.request).then(r=>r||new Response('',{status:408}))));",
+    "});"
+  ].join('\n');
+  const _swBlob = new Blob([_swSrc], { type: 'application/javascript' });
+  const _swURL  = URL.createObjectURL(_swBlob);
+
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register(_swURL)
+      .then(() => console.log('SW inline registrado ✅'))
+      .catch(() => {}); // silencia erro em dev/local
   });
 }
 
@@ -4348,6 +4298,8 @@ function vendaDiretaSalvar() {
     });
   }
 
+  // Sync silencioso após venda direta
+  setTimeout(syncDados, 1500);
   // Limpar formulário
   if ($('vdItem'))  { $('vdItem').value  = ''; }
   if ($('vdQtd'))   { $('vdQtd').value   = '1'; }
@@ -4896,7 +4848,7 @@ async function checkoutFinalizar() {
         forma:      checkoutFormaSelecionada,
         preco:      cfg.preco,
         company_id: currentCompany.id,
-        email:      currentUser.email || 'cliente@nexoserp.com.br',
+        email:      'teste@nexoserp.com.br',
         nome:       currentUser.name || currentUser.email,
       })
     });
@@ -4911,19 +4863,11 @@ async function checkoutFinalizar() {
       return;
     }
 
-    // Boleto → abrir URL do boleto no Mercado Pago
-    if (data.tipo === 'boleto') {
-      const boletoUrl = data.boleto_url || data.checkout_url;
-      if (boletoUrl) {
-        toast('📄 Abrindo página do boleto...', 2000);
-        setTimeout(function() { window.open(boletoUrl, '_blank'); }, 500);
-        return;
-      }
-      // Fallback: mostrar código de barras se não tiver URL
-      if (data.barcode) {
-        _mostrarBoleto(data, plano, cfg.preco);
-        return;
-      }
+    // Boleto → abrir Checkout Pro do MP
+    if (data.tipo === 'boleto' && data.checkout_url) {
+      toast('📄 Abrindo página do boleto...', 2000);
+      setTimeout(function() { window.open(data.checkout_url, '_blank'); }, 500);
+      return;
     }
 
     // Checkout Pro genérico
