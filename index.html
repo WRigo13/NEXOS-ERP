@@ -1264,6 +1264,7 @@
             <option value="">Todos os períodos</option>
           </select>
           <button class="btn btn-secondary btn-sm" onclick="fluxoRender()">🔄 Atualizar</button>
+          <button class="btn btn-primary btn-sm" onclick="gerarRelatorioPDF()">📄 Relatório PDF</button>
         </div>
       </div>
 
@@ -1829,34 +1830,6 @@
           </thead>
           <tbody id="adminTbody"></tbody>
         </table>
-      </div>
-
-      <!-- AUDIT LOG -->
-      <div style="margin-top:32px;padding-top:24px;border-top:1px solid var(--border)">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
-          <div>
-            <h3 style="font-size:.95rem;font-weight:700">🔍 Logs de auditoria</h3>
-            <p style="font-size:.76rem;color:var(--text-muted);margin-top:2px">Últimas ações críticas do sistema</p>
-          </div>
-          <button class="btn btn-secondary btn-sm" onclick="auditLogCarregar()">🔄 Atualizar</button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Data/Hora</th>
-                <th>Ação</th>
-                <th>Empresa</th>
-                <th>Detalhes</th>
-                <th>IP</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="auditLogTbody">
-              <tr><td colspan="6" class="empty-state"><span class="empty-ico">🔍</span><p>Clique em Atualizar para carregar os logs.</p></td></tr>
-            </tbody>
-          </table>
-        </div>
       </div>
 
       <!-- USUARIOS DA EMPRESA -->
@@ -4035,54 +4008,74 @@ function exportCSV(lista, nome) {
 }
 
 /* ═══════════════════════════════════════════
-   AUDIT LOG — PAINEL ADMIN
+   RELATÓRIO PDF — FLUXO DE CAIXA
 ═══════════════════════════════════════════ */
-async function auditLogCarregar() {
-  const tbody = $('auditLogTbody');
-  if (!tbody) return;
-  if (!_sb) { tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:16px">Supabase não conectado.</td></tr>`; return; }
-
-  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted)">⏳ Carregando...</td></tr>`;
-
-  try {
-    const { data, error } = await _sb
-      .from('audit_logs')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(100);
-
-    if (error) throw error;
-    if (!data || !data.length) {
-      tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><span class="empty-ico">🔍</span><p>Nenhum log registrado ainda.</p></td></tr>`;
-      return;
-    }
-
-    const badgeStatus = s => {
-      const map = { success: 'background:#dcfce7;color:#16a34a', error: 'background:#fee2e2;color:#dc2626', blocked: 'background:#fef9c3;color:#b45309' };
-      return `<span style="font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:20px;${map[s]||''}">${s}</span>`;
-    };
-    const badgeAction = a => {
-      const icons = { plano_ativado: '✅', plano_downgrade: '⬇️', ativar_plano_negado: '❌', ativar_plano_bloqueado: '🚫', pagamento_pix_criado: '📱', pagamento_boleto_criado: '📄', pagamento_bloqueado: '🚫', pagamento_erro: '⚠️' };
-      return `${icons[a]||'•'} ${a.replace(/_/g,' ')}`;
-    };
-
-    tbody.innerHTML = data.map(log => {
-      const dt   = new Date(log.created_at).toLocaleString('pt-BR');
-      const det  = log.details ? Object.entries(log.details).map(([k,v]) => `<span style="color:#64748b;font-size:.68rem">${k}:</span> <strong style="font-size:.68rem">${v}</strong>`).join(' · ') : '—';
-      const emp  = log.company_id ? log.company_id.substring(0,8)+'…' : '—';
-      return `<tr>
-        <td style="font-size:.75rem;white-space:nowrap">${dt}</td>
-        <td style="font-size:.78rem;white-space:nowrap">${badgeAction(log.action)}</td>
-        <td style="font-size:.72rem;font-family:monospace;color:var(--text-muted)">${emp}</td>
-        <td style="font-size:.72rem;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(JSON.stringify(log.details||{}))}">${det}</td>
-        <td style="font-size:.72rem;color:var(--text-muted);font-family:monospace">${log.ip||'—'}</td>
-        <td>${badgeStatus(log.status)}</td>
-      </tr>`;
-    }).join('');
-
-  } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--danger);padding:16px">Erro ao carregar logs: ${e.message}</td></tr>`;
-  }
+function gerarRelatorioPDF() {
+  const mes     = $('fluxoMes').value || mesAtual();
+  const mesFmt  = mes ? new Date(mes + '-02').toLocaleDateString('pt-BR', { month:'long', year:'numeric' }) : 'Todos os períodos';
+  const empresa = currentCompany?.name || 'Minha Empresa';
+  const gerado  = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  const filtrar = lista => mes ? lista.filter(x => (x.data || x.created_at || '').startsWith(mes)) : lista;
+  const recs    = filtrar(receitas.filter(r => r.status === 'pago'));
+  const desps   = filtrar(despesas.filter(d => d.status === 'pago'));
+  const totRec  = recs.reduce((s,r)  => s + Number(r.valor||0), 0);
+  const totDesp = desps.reduce((s,d) => s + Number(d.valor||0), 0);
+  const saldo   = totRec - totDesp;
+  const movs = [
+    ...recs.map(r  => ({ data: r.data||r.created_at||'', desc: r.descricao||'—', cat: r.categoria||'—', tipo:'Receita',  val: Number(r.valor||0) })),
+    ...desps.map(d => ({ data: d.data||d.created_at||'', desc: d.descricao||'—', cat: d.categoria||'—', tipo:'Despesa',  val: Number(d.valor||0) })),
+  ].sort((a,b) => (b.data||'').localeCompare(a.data||''));
+  const linhas = movs.map(m => `<tr>
+    <td>${m.data ? new Date(m.data).toLocaleDateString('pt-BR') : '—'}</td>
+    <td>${m.desc}</td>
+    <td><span class="badge ${m.tipo==='Receita'?'br':'bd'}">${m.tipo}</span></td>
+    <td>${m.cat}</td>
+    <td class="${m.tipo==='Receita'?'pos':'neg'}">${m.tipo==='Receita'?'+':'−'} ${moeda(m.val)}</td>
+  </tr>`).join('');
+  const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+  <title>Relatório — ${empresa}</title>
+  <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Segoe UI',Arial,sans-serif;font-size:12px;color:#1a1a2e}
+  .hd{background:linear-gradient(135deg,#1B4491,#0d2464);color:white;padding:28px 32px 22px}
+  .hd h1{font-size:20px;font-weight:800;margin-bottom:4px}.hd p{font-size:11px;opacity:.7}
+  .meta{display:flex;gap:32px;padding:16px 32px;background:#f8faff;border-bottom:1px solid #e2e8f0}
+  .mi .l{font-size:10px;font-weight:700;text-transform:uppercase;color:#64748b}.mi .v{font-size:13px;font-weight:700;color:#1B4491}
+  .cards{display:flex;gap:16px;padding:20px 32px}
+  .card{flex:1;border-radius:10px;padding:16px 18px}.card .l{font-size:10px;font-weight:700;text-transform:uppercase;color:#64748b;margin-bottom:6px}.card .v{font-size:20px;font-weight:800}
+  .cr{background:#f0fdf4;border:1px solid #bbf7d0}.cr .v{color:#16a34a}
+  .cd{background:#fff1f2;border:1px solid #fecdd3}.cd .v{color:#dc2626}
+  .cs{background:${saldo>=0?'#eff6ff':'#fff1f2'};border:1px solid ${saldo>=0?'#bfdbfe':'#fecdd3'}}.cs .v{color:${saldo>=0?'#1B4491':'#dc2626'}}
+  .sec{padding:0 32px 24px}.sec h2{font-size:13px;font-weight:700;color:#1B4491;margin:20px 0 10px;padding-bottom:6px;border-bottom:2px solid #e2e8f0;text-transform:uppercase;letter-spacing:.05em}
+  table{width:100%;border-collapse:collapse}th{background:#1B4491;color:white;font-size:10px;font-weight:700;text-transform:uppercase;padding:8px 10px;text-align:left}
+  td{padding:7px 10px;border-bottom:1px solid #f1f5f9;font-size:11px}tr:nth-child(even) td{background:#f8faff}
+  .pos{color:#16a34a;font-weight:700}.neg{color:#dc2626;font-weight:700}
+  .badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;text-transform:uppercase}
+  .br{background:#dcfce7;color:#16a34a}.bd{background:#fee2e2;color:#dc2626}
+  .ft{padding:16px 32px;background:#f8faff;border-top:1px solid #e2e8f0;font-size:10px;color:#94a3b8;display:flex;justify-content:space-between}
+  @media print{body{print-color-adjust:exact;-webkit-print-color-adjust:exact}}</style></head>
+  <body>
+  <div class="hd"><h1>📊 Relatório de Fluxo de Caixa</h1><p>${empresa} · Gerado em ${gerado}</p></div>
+  <div class="meta">
+    <div class="mi"><div class="l">Período</div><div class="v">${mesFmt}</div></div>
+    <div class="mi"><div class="l">Movimentações</div><div class="v">${movs.length}</div></div>
+    <div class="mi"><div class="l">Receitas</div><div class="v">${recs.length}</div></div>
+    <div class="mi"><div class="l">Despesas</div><div class="v">${desps.length}</div></div>
+  </div>
+  <div class="cards">
+    <div class="card cr"><div class="l">📈 Total Receitas</div><div class="v">${moeda(totRec)}</div></div>
+    <div class="card cd"><div class="l">📉 Total Despesas</div><div class="v">${moeda(totDesp)}</div></div>
+    <div class="card cs"><div class="l">${saldo>=0?'✅ Saldo Positivo':'⚠️ Saldo Negativo'}</div><div class="v">${moeda(Math.abs(saldo))}</div></div>
+  </div>
+  <div class="sec"><h2>Movimentações do período</h2>
+    ${movs.length ? `<table><thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Categoria</th><th>Valor</th></tr></thead><tbody>${linhas}</tbody></table>` : '<p style="color:#94a3b8;padding:16px 0">Nenhuma movimentação no período.</p>'}
+  </div>
+  <div class="ft"><span>Nexos ERP · nexoserp.com.br</span><span>${empresa} · ${mesFmt}</span></div>
+  </body></html>`;
+  const win = window.open('', '_blank');
+  if (!win) { toast('⚠️ Permita popups para gerar o PDF.', 4000); return; }
+  win.document.write(html);
+  win.document.close();
+  win.onload = () => { win.focus(); win.print(); };
+  toast('📄 Relatório gerado! Use Ctrl+P → Salvar como PDF.', 4000);
 }
 
 /* ═══════════════════════════════════════════
