@@ -1005,6 +1005,7 @@
           <p>Gestão empresarial</p>
         </div>
         <button class="btn btn-secondary btn-sm" onclick="dashAtualizar()">🔄 Atualizar</button>
+        <button class="btn btn-primary btn-sm" onclick="gerarRelatorioDashPDF()">📄 Relatório PDF</button>
       </div>
 
       <div class="dash-grid" id="dashCards"></div>
@@ -1264,7 +1265,7 @@
             <option value="">Todos os períodos</option>
           </select>
           <button class="btn btn-secondary btn-sm" onclick="fluxoRender()">🔄 Atualizar</button>
-          <button class="btn btn-primary btn-sm" onclick="gerarRelatorioPDF()">📄 Relatório PDF</button>
+          <button class="btn btn-primary btn-sm" onclick="gerarRelatorioFluxoPDF()">📄 Relatório PDF</button>
         </div>
       </div>
 
@@ -1372,6 +1373,7 @@
               <th>Contato</th>
               <th>CPF/CNPJ</th>
               <th>Endereço</th>
+              <th>Cobrança</th>
               <th>Ações</th>
             </tr>
           </thead>
@@ -1644,7 +1646,8 @@
               <option>Cartão de crédito</option>
               <option>Fiado</option>
             </select>
-            <button class="btn btn-secondary btn-sm" onclick="exportCSV(vendas,'vendas')">⬇ Exportar</button>
+            <button class="btn btn-secondary btn-sm" onclick="exportCSV(vendas,'vendas')">⬇ Exportar CSV</button>
+            <button class="btn btn-primary btn-sm" onclick="gerarRelatorioVendasPDF()">📄 Relatório PDF</button>
           </div>
         </div>
         <div class="table-wrap">
@@ -1832,7 +1835,26 @@
         </table>
       </div>
 
-      <!-- USUARIOS DA EMPRESA -->
+      <!-- AUDIT LOG -->
+      <div style="margin-top:32px;padding-top:24px;border-top:1px solid var(--border)">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+          <div>
+            <h3 style="font-size:.95rem;font-weight:700">🔍 Logs de auditoria</h3>
+            <p style="font-size:.76rem;color:var(--text-muted);margin-top:2px">Últimas ações críticas do sistema</p>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="auditLogCarregar()">🔄 Atualizar</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Data/Hora</th><th>Ação</th><th>Empresa</th><th>Detalhes</th><th>IP</th><th>Status</th></tr>
+            </thead>
+            <tbody id="auditLogTbody">
+              <tr><td colspan="6" class="empty-state"><span class="empty-ico">🔍</span><p>Clique em Atualizar para carregar os logs.</p></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
       <div style="margin-top:32px;padding-top:24px;border-top:1px solid var(--border)" id="secaoUsuarios">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
           <div>
@@ -2299,10 +2321,12 @@ let prodEdit  = null;
 const $ = id => document.getElementById(id);
 
 function hoje() {
-  return new Date().toISOString().split('T')[0];
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 function mesAtual() {
-  return new Date().toISOString().slice(0, 7);
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
 }
 
 function fmt(v) { return moeda(v); }
@@ -2782,11 +2806,14 @@ window._syncTudo = async function _syncTudo() {
     if (v.data && v.data.length > 0) {
       vendas = v.data.map(x => ({
         ...x,
-        id:      String(x.id),
-        items:   x.items || x.itens || [],
-        forma:   x.forma_pagto || x.forma || x.pagamento || 'dinheiro',
-        cliente: x.cliente || x.cliente_nome || '',
-        data:    x.created_at || x.data || new Date().toISOString(),
+        id:          String(x.id),
+        items:       typeof x.items === 'string' ? (() => { try { return JSON.parse(x.items); } catch(e) { return []; } })() : (x.items || x.itens || []),
+        forma:       x.forma_pagto || x.forma || x.pagamento || 'dinheiro',
+        forma_pagto: x.forma_pagto || x.forma || x.pagamento || 'dinheiro',
+        cliente:     x.cliente || x.cliente_nome || '',
+        cliente_nome:x.cliente_nome || x.cliente || '',
+        data:        x.data || x.created_at || new Date().toISOString(),
+        created_at:  x.created_at || x.data || new Date().toISOString(),
       }));
       localStorage.setItem(getKey('vendas'), JSON.stringify(vendas));
     }
@@ -3335,11 +3362,9 @@ function cliRender() {
 
   const tbody = $('cliTbody');
   if (!lista.length) {
-    tbody.innerHTML = `<tr><td colspan="5" class="empty-state"><span class="empty-ico">👥</span><p>Nenhum cliente encontrado.</p></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><span class="empty-ico">👥</span><p>Nenhum cliente encontrado.</p></td></tr>`;
     return;
   }
-
-  // ── Paginação cli ──
   pagRender(lista, 'cliTbody', c => `
     <tr>
       <td>
@@ -3353,7 +3378,8 @@ function cliRender() {
       </td>
       <td>${esc(c.telefone||'—')}</td>
       <td class="mono" style="font-size:0.78rem">${esc(c.cpf||'—')}</td>
-      <td style="font-size:0.78rem;color:var(--text-muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.endereco||'—')}</td>
+      <td style="font-size:0.78rem;color:var(--text-muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.endereco||'—')}</td>
+      <td><button class="btn btn-primary btn-sm" onclick="abrirCobrancaCliente('${c.id}')" title="Gerar cobrança">💰 Cobrar</button></td>
       <td><div class="row-actions">
         <button class="btn btn-secondary btn-icon btn-sm" onclick="cliEditar('${c.id}')" title="Editar">✏️</button>
         <button class="btn btn-danger btn-icon btn-sm" onclick="cliExcluir('${c.id}')" title="Excluir">🗑</button>
@@ -3844,11 +3870,10 @@ function vendStats() {
   const getDataVenda = v => {
     const raw = v.data || v.created_at || '';
     if (!raw) return '';
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
     const d = new Date(raw);
     if (isNaN(d.getTime())) return raw.substring(0,10);
-    return d.getFullYear() + '-'
-      + String(d.getMonth()+1).padStart(2,'0') + '-'
-      + String(d.getDate()).padStart(2,'0');
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
   };
   const totalHoje = vendas.filter(v => getDataVenda(v) === hj).reduce((s,v) => s+(Number(v.total)||0), 0);
   const totalMes  = vendas.filter(v => {
@@ -3906,11 +3931,10 @@ function dashAtualizar() {
   const _dvData = v => {
     const raw = v.data || v.created_at || '';
     if (!raw) return '';
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
     const d = new Date(raw);
     if (isNaN(d.getTime())) return raw.substring(0,10);
-    return d.getFullYear() + '-'
-      + String(d.getMonth()+1).padStart(2,'0') + '-'
-      + String(d.getDate()).padStart(2,'0');
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
   };
   // Vendas HOJE: apenas o dia exato de hoje
   const vendasHoje = vendas.filter(v => _dvData(v) === hj);
@@ -4010,8 +4034,8 @@ function exportCSV(lista, nome) {
 /* ═══════════════════════════════════════════
    RELATÓRIO PDF — FLUXO DE CAIXA
 ═══════════════════════════════════════════ */
-function gerarRelatorioPDF() {
-  const mes     = $('fluxoMes').value || mesAtual();
+function gerarRelatorioFluxoPDF() {
+  const mes     = $('fluxoMes')?.value || mesAtual();
   const mesFmt  = mes ? new Date(mes + '-02').toLocaleDateString('pt-BR', { month:'long', year:'numeric' }) : 'Todos os períodos';
   const empresa = currentCompany?.name || 'Minha Empresa';
   const gerado  = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' });
@@ -4025,50 +4049,91 @@ function gerarRelatorioPDF() {
     ...recs.map(r  => ({ data: r.data||r.created_at||'', desc: r.descricao||'—', cat: r.categoria||'—', tipo:'Receita',  val: Number(r.valor||0) })),
     ...desps.map(d => ({ data: d.data||d.created_at||'', desc: d.descricao||'—', cat: d.categoria||'—', tipo:'Despesa',  val: Number(d.valor||0) })),
   ].sort((a,b) => (b.data||'').localeCompare(a.data||''));
-  const linhas = movs.map(m => `<tr>
-    <td>${m.data ? new Date(m.data).toLocaleDateString('pt-BR') : '—'}</td>
-    <td>${m.desc}</td>
-    <td><span class="badge ${m.tipo==='Receita'?'br':'bd'}">${m.tipo}</span></td>
-    <td>${m.cat}</td>
-    <td class="${m.tipo==='Receita'?'pos':'neg'}">${m.tipo==='Receita'?'+':'−'} ${moeda(m.val)}</td>
-  </tr>`).join('');
-  const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
-  <title>Relatório — ${empresa}</title>
+  const linhas = movs.map(m => `<tr><td>${m.data ? new Date(m.data).toLocaleDateString('pt-BR') : '—'}</td><td>${m.desc}</td><td><span class="badge ${m.tipo==='Receita'?'br':'bd'}">${m.tipo}</span></td><td>${m.cat}</td><td class="${m.tipo==='Receita'?'pos':'neg'}">${m.tipo==='Receita'?'+':'−'} ${moeda(m.val)}</td></tr>`).join('');
+  _abrirPDF(`Fluxo de Caixa — ${mesFmt}`, empresa, gerado, `
+    <div class="meta"><div class="mi"><div class="l">Período</div><div class="v">${mesFmt}</div></div><div class="mi"><div class="l">Movimentações</div><div class="v">${movs.length}</div></div><div class="mi"><div class="l">Receitas</div><div class="v">${recs.length}</div></div><div class="mi"><div class="l">Despesas</div><div class="v">${desps.length}</div></div></div>
+    <div class="cards"><div class="card cr"><div class="l">📈 Total Receitas</div><div class="v">${moeda(totRec)}</div></div><div class="card cd"><div class="l">📉 Total Despesas</div><div class="v">${moeda(totDesp)}</div></div><div class="card cs" style="background:${saldo>=0?'#eff6ff':'#fff1f2'};border-color:${saldo>=0?'#bfdbfe':'#fecdd3'}"><div class="l">${saldo>=0?'✅ Saldo Positivo':'⚠️ Saldo Negativo'}</div><div class="v" style="color:${saldo>=0?'#1B4491':'#dc2626'}">${moeda(Math.abs(saldo))}</div></div></div>
+    <div class="sec"><h2>Movimentações</h2>${movs.length ? `<table><thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Categoria</th><th>Valor</th></tr></thead><tbody>${linhas}</tbody></table>` : '<p style="color:#94a3b8;padding:16px 0">Nenhuma movimentação.</p>'}</div>`);
+}
+
+/* ═══════════════════════════════════════════
+   RELATÓRIO PDF — DASHBOARD
+═══════════════════════════════════════════ */
+function gerarRelatorioDashPDF() {
+  const empresa = currentCompany?.name || 'Minha Empresa';
+  const gerado  = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  const hj      = hoje();
+  const mes     = mesAtual();
+  const vHoje   = vendas.filter(v => { const raw = v.data||v.created_at||''; if(/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw===hj; const d=new Date(raw); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')===hj; });
+  const vMes    = vendas.filter(v => (v.data||v.created_at||'').startsWith(mes));
+  const rMes    = receitas.filter(r => r.status==='pago' && (r.data||r.created_at||'').startsWith(mes));
+  const dMes    = despesas.filter(d => d.status==='pago' && (d.data||d.created_at||'').startsWith(mes));
+  const totVHoje = vHoje.reduce((s,v) => s+Number(v.total||0), 0);
+  const totVMes  = vMes.reduce((s,v) => s+Number(v.total||0), 0);
+  const totRMes  = rMes.reduce((s,r) => s+Number(r.valor||0), 0);
+  const totDMes  = dMes.reduce((s,d) => s+Number(d.valor||0), 0);
+  const saldo    = totRMes - totDMes;
+  const topVendas = [...vendas].sort((a,b) => Number(b.total||0)-Number(a.total||0)).slice(0,10);
+  const linhasV = topVendas.map(v => `<tr><td>${v.data ? new Date(v.data).toLocaleDateString('pt-BR') : '—'}</td><td>${v.cliente||'—'}</td><td>${v.forma_pagto||v.forma||'—'}</td><td class="pos">+ ${moeda(v.total)}</td></tr>`).join('');
+  _abrirPDF(`Resumo Gerencial — ${new Date().toLocaleDateString('pt-BR',{month:'long',year:'numeric'})}`, empresa, gerado, `
+    <div class="cards">
+      <div class="card cr"><div class="l">🛒 Vendas hoje</div><div class="v">${moeda(totVHoje)}</div><div style="font-size:10px;color:#16a34a;margin-top:4px">${vHoje.length} venda(s)</div></div>
+      <div class="card" style="background:#f0f7ff;border:1px solid #bfdbfe"><div class="l">📅 Vendas no mês</div><div class="v" style="color:#1B4491">${moeda(totVMes)}</div><div style="font-size:10px;color:#1B4491;margin-top:4px">${vMes.length} venda(s)</div></div>
+      <div class="card cr"><div class="l">📈 Receitas mês</div><div class="v">${moeda(totRMes)}</div></div>
+      <div class="card cd"><div class="l">📉 Despesas mês</div><div class="v">${moeda(totDMes)}</div></div>
+      <div class="card cs" style="background:${saldo>=0?'#eff6ff':'#fff1f2'};border-color:${saldo>=0?'#bfdbfe':'#fecdd3'}"><div class="l">💰 Saldo mês</div><div class="v" style="color:${saldo>=0?'#1B4491':'#dc2626'}">${moeda(Math.abs(saldo))}</div></div>
+    </div>
+    <div class="sec"><h2>Últimas 10 vendas</h2>${topVendas.length ? `<table><thead><tr><th>Data</th><th>Cliente</th><th>Forma</th><th>Valor</th></tr></thead><tbody>${linhasV}</tbody></table>` : '<p style="color:#94a3b8;padding:16px 0">Nenhuma venda registrada.</p>'}</div>`);
+}
+
+/* ═══════════════════════════════════════════
+   RELATÓRIO PDF — VENDAS
+═══════════════════════════════════════════ */
+function gerarRelatorioVendasPDF() {
+  const empresa = currentCompany?.name || 'Minha Empresa';
+  const gerado  = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  const mes     = mesAtual();
+  const mesFmt  = new Date(mes + '-02').toLocaleDateString('pt-BR', { month:'long', year:'numeric' });
+  const vMes    = vendas.filter(v => (v.data||v.created_at||'').startsWith(mes));
+  const total   = vMes.reduce((s,v) => s+Number(v.total||0), 0);
+  const linhas  = vMes.map(v => `<tr><td>${v.data ? new Date(v.data).toLocaleDateString('pt-BR') : '—'}</td><td>${v.cliente||'—'}</td><td>${v.forma_pagto||v.forma||'—'}</td><td>${(v.items||[]).length} item(s)</td><td class="pos">+ ${moeda(v.total)}</td></tr>`).join('');
+  _abrirPDF(`Relatório de Vendas — ${mesFmt}`, empresa, gerado, `
+    <div class="cards">
+      <div class="card cr"><div class="l">🛒 Total de vendas</div><div class="v">${vMes.length}</div></div>
+      <div class="card" style="background:#f0f7ff;border:1px solid #bfdbfe"><div class="l">💰 Faturamento</div><div class="v" style="color:#1B4491">${moeda(total)}</div></div>
+      <div class="card" style="background:#f0f7ff;border:1px solid #bfdbfe"><div class="l">📊 Ticket médio</div><div class="v" style="color:#1B4491">${moeda(vMes.length ? total/vMes.length : 0)}</div></div>
+    </div>
+    <div class="sec"><h2>Vendas do mês</h2>${vMes.length ? `<table><thead><tr><th>Data</th><th>Cliente</th><th>Pagamento</th><th>Itens</th><th>Total</th></tr></thead><tbody>${linhas}</tbody></table>` : '<p style="color:#94a3b8;padding:16px 0">Nenhuma venda no período.</p>'}</div>`);
+}
+
+/* ═══════════════════════════════════════════
+   PDF — HELPER COMPARTILHADO
+═══════════════════════════════════════════ */
+function _abrirPDF(titulo, empresa, gerado, corpo) {
+  const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>${titulo}</title>
   <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Segoe UI',Arial,sans-serif;font-size:12px;color:#1a1a2e}
   .hd{background:linear-gradient(135deg,#1B4491,#0d2464);color:white;padding:28px 32px 22px}
-  .hd h1{font-size:20px;font-weight:800;margin-bottom:4px}.hd p{font-size:11px;opacity:.7}
-  .meta{display:flex;gap:32px;padding:16px 32px;background:#f8faff;border-bottom:1px solid #e2e8f0}
+  .hd h1{font-size:18px;font-weight:800;margin-bottom:4px}.hd p{font-size:11px;opacity:.7}
+  .meta{display:flex;gap:24px;padding:14px 32px;background:#f8faff;border-bottom:1px solid #e2e8f0;flex-wrap:wrap}
   .mi .l{font-size:10px;font-weight:700;text-transform:uppercase;color:#64748b}.mi .v{font-size:13px;font-weight:700;color:#1B4491}
-  .cards{display:flex;gap:16px;padding:20px 32px}
-  .card{flex:1;border-radius:10px;padding:16px 18px}.card .l{font-size:10px;font-weight:700;text-transform:uppercase;color:#64748b;margin-bottom:6px}.card .v{font-size:20px;font-weight:800}
+  .cards{display:flex;gap:14px;padding:18px 32px;flex-wrap:wrap}
+  .card{flex:1;min-width:120px;border-radius:10px;padding:14px 16px}
+  .card .l{font-size:10px;font-weight:700;text-transform:uppercase;color:#64748b;margin-bottom:6px}
+  .card .v{font-size:18px;font-weight:800}
   .cr{background:#f0fdf4;border:1px solid #bbf7d0}.cr .v{color:#16a34a}
   .cd{background:#fff1f2;border:1px solid #fecdd3}.cd .v{color:#dc2626}
-  .cs{background:${saldo>=0?'#eff6ff':'#fff1f2'};border:1px solid ${saldo>=0?'#bfdbfe':'#fecdd3'}}.cs .v{color:${saldo>=0?'#1B4491':'#dc2626'}}
-  .sec{padding:0 32px 24px}.sec h2{font-size:13px;font-weight:700;color:#1B4491;margin:20px 0 10px;padding-bottom:6px;border-bottom:2px solid #e2e8f0;text-transform:uppercase;letter-spacing:.05em}
-  table{width:100%;border-collapse:collapse}th{background:#1B4491;color:white;font-size:10px;font-weight:700;text-transform:uppercase;padding:8px 10px;text-align:left}
-  td{padding:7px 10px;border-bottom:1px solid #f1f5f9;font-size:11px}tr:nth-child(even) td{background:#f8faff}
+  .sec{padding:0 32px 24px}.sec h2{font-size:12px;font-weight:700;color:#1B4491;margin:18px 0 10px;padding-bottom:5px;border-bottom:2px solid #e2e8f0;text-transform:uppercase;letter-spacing:.05em}
+  table{width:100%;border-collapse:collapse}th{background:#1B4491;color:white;font-size:10px;font-weight:700;text-transform:uppercase;padding:7px 10px;text-align:left}
+  td{padding:6px 10px;border-bottom:1px solid #f1f5f9;font-size:11px}tr:nth-child(even) td{background:#f8faff}
   .pos{color:#16a34a;font-weight:700}.neg{color:#dc2626;font-weight:700}
   .badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;text-transform:uppercase}
   .br{background:#dcfce7;color:#16a34a}.bd{background:#fee2e2;color:#dc2626}
-  .ft{padding:16px 32px;background:#f8faff;border-top:1px solid #e2e8f0;font-size:10px;color:#94a3b8;display:flex;justify-content:space-between}
+  .ft{padding:14px 32px;background:#f8faff;border-top:1px solid #e2e8f0;font-size:10px;color:#94a3b8;display:flex;justify-content:space-between}
   @media print{body{print-color-adjust:exact;-webkit-print-color-adjust:exact}}</style></head>
   <body>
-  <div class="hd"><h1>📊 Relatório de Fluxo de Caixa</h1><p>${empresa} · Gerado em ${gerado}</p></div>
-  <div class="meta">
-    <div class="mi"><div class="l">Período</div><div class="v">${mesFmt}</div></div>
-    <div class="mi"><div class="l">Movimentações</div><div class="v">${movs.length}</div></div>
-    <div class="mi"><div class="l">Receitas</div><div class="v">${recs.length}</div></div>
-    <div class="mi"><div class="l">Despesas</div><div class="v">${desps.length}</div></div>
-  </div>
-  <div class="cards">
-    <div class="card cr"><div class="l">📈 Total Receitas</div><div class="v">${moeda(totRec)}</div></div>
-    <div class="card cd"><div class="l">📉 Total Despesas</div><div class="v">${moeda(totDesp)}</div></div>
-    <div class="card cs"><div class="l">${saldo>=0?'✅ Saldo Positivo':'⚠️ Saldo Negativo'}</div><div class="v">${moeda(Math.abs(saldo))}</div></div>
-  </div>
-  <div class="sec"><h2>Movimentações do período</h2>
-    ${movs.length ? `<table><thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Categoria</th><th>Valor</th></tr></thead><tbody>${linhas}</tbody></table>` : '<p style="color:#94a3b8;padding:16px 0">Nenhuma movimentação no período.</p>'}
-  </div>
-  <div class="ft"><span>Nexos ERP · nexoserp.com.br</span><span>${empresa} · ${mesFmt}</span></div>
+  <div class="hd"><h1>📊 ${titulo}</h1><p>${empresa} · Gerado em ${gerado}</p></div>
+  ${corpo}
+  <div class="ft"><span>Nexos ERP · nexoserp.com.br</span><span>${empresa}</span></div>
   </body></html>`;
   const win = window.open('', '_blank');
   if (!win) { toast('⚠️ Permita popups para gerar o PDF.', 4000); return; }
@@ -4076,6 +4141,108 @@ function gerarRelatorioPDF() {
   win.document.close();
   win.onload = () => { win.focus(); win.print(); };
   toast('📄 Relatório gerado! Use Ctrl+P → Salvar como PDF.', 4000);
+}
+
+/* ═══════════════════════════════════════════
+   COBRANÇA DE CLIENTES — PIX / BOLETO
+═══════════════════════════════════════════ */
+function abrirCobrancaCliente(cliId) {
+  const cli = clientes.find(c => c.id === cliId);
+  if (!cli) return;
+  document.querySelectorAll('#modalCobranca').forEach(e => e.remove());
+  const modal = document.createElement('div');
+  modal.id = 'modalCobranca';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;display:flex;align-items:center;justify-content:center;padding:16px';
+  modal.innerHTML = `
+    <div style="background:white;border-radius:16px;padding:28px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <h3 style="font-size:1rem;font-weight:700;color:var(--azul-deep)">💰 Cobrar ${esc(cli.nome)}</h3>
+        <button onclick="document.getElementById('modalCobranca').remove()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#64748b">×</button>
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:.8rem;font-weight:600;color:#475569;margin-bottom:4px;display:block">Descrição</label>
+        <input type="text" id="cobDesc" placeholder="Ex: Serviço prestado" style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.9rem;font-family:inherit">
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="font-size:.8rem;font-weight:600;color:#475569;margin-bottom:4px;display:block">Valor (R$)</label>
+        <input type="number" id="cobValor" placeholder="0,00" min="1" step="0.01" style="width:100%;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:.9rem;font-family:inherit">
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:8px">
+        <button onclick="processarCobranca('${cliId}','pix')" style="flex:1;background:linear-gradient(135deg,#1B4491,#0d2464);color:white;border:none;padding:12px;border-radius:10px;font-size:.88rem;font-weight:700;cursor:pointer">📱 Gerar PIX</button>
+        <button onclick="processarCobranca('${cliId}','boleto')" style="flex:1;background:white;color:#1B4491;border:2px solid #1B4491;padding:12px;border-radius:10px;font-size:.88rem;font-weight:700;cursor:pointer">📄 Gerar Boleto</button>
+      </div>
+      <div id="cobResultado" style="margin-top:12px"></div>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  setTimeout(() => document.getElementById('cobDesc')?.focus(), 100);
+}
+
+async function processarCobranca(cliId, forma) {
+  const cli   = clientes.find(c => c.id === cliId);
+  const desc  = ($('cobDesc')?.value || '').trim();
+  const valor = parseFloat($('cobValor')?.value || '0');
+  const res   = $('cobResultado');
+  if (!desc)           { toast('⚠️ Informe a descrição.'); return; }
+  if (!valor || valor < 1) { toast('⚠️ Valor mínimo R$ 1,00.'); return; }
+  res.innerHTML = `<div style="text-align:center;padding:12px;color:#1B4491;font-weight:600">⏳ Gerando cobrança...</div>`;
+  try {
+    const r = await fetch(PAGAMENTO_CONFIG.EDGE_URL + '/criar-pagamento-mp', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ forma, preco: valor, company_id: currentCompany.id, email: cli.email || currentUser.email || 'cliente@nexoserp.com.br', nome: cli.nome, descricao: desc })
+    });
+    const data = await r.json();
+    if (data.error) throw new Error(data.message || 'Erro ao gerar cobrança');
+    if (forma === 'pix' && data.qr_code) {
+      res.innerHTML = `<div style="text-align:center;padding:12px;background:#f0fdf4;border-radius:10px;border:1px solid #bbf7d0">
+        <div style="font-weight:700;color:#16a34a;margin-bottom:8px">✅ PIX gerado!</div>
+        <div style="background:white;border:1px solid #e2e8f0;border-radius:6px;padding:8px;font-size:.7rem;font-family:monospace;word-break:break-all;max-height:80px;overflow-y:auto;text-align:left">${data.qr_code}</div>
+        <button onclick="navigator.clipboard.writeText('${data.qr_code.replace(/'/g,"\\'")}').then(()=>toast('✅ Código copiado!'))" style="margin-top:8px;background:#1B4491;color:white;border:none;padding:8px 16px;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer">📋 Copiar código PIX</button>
+      </div>`;
+    } else if (forma === 'boleto') {
+      const url = data.boleto_url || data.checkout_url;
+      res.innerHTML = `<div style="text-align:center;padding:12px;background:#eff6ff;border-radius:10px;border:1px solid #bfdbfe">
+        <div style="font-weight:700;color:#1B4491;margin-bottom:8px">✅ Boleto gerado!</div>
+        ${url ? `<a href="${url}" target="_blank" style="display:inline-block;background:#1B4491;color:white;padding:10px 20px;border-radius:8px;text-decoration:none;font-size:.85rem;font-weight:700">📄 Abrir boleto</a>` : ''}
+      </div>`;
+    }
+    const rec = { id: uid(), company_id: currentCompany.id, descricao: `Cobrança ${cli.nome} — ${desc}`, valor, categoria: 'Cobrança', status: 'pendente', data: hoje() };
+    receitas.push(rec);
+    salvar('receitas', receitas);
+    if (_sb && currentCompany.id !== 'demo_company') _sb.from('receitas').upsert({ ...rec, id: String(rec.id) }, { onConflict: 'id' });
+  } catch(e) {
+    res.innerHTML = `<div style="text-align:center;padding:12px;background:#fff1f2;border-radius:10px;border:1px solid #fecdd3;color:#dc2626;font-weight:600">❌ ${e.message}</div>`;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   AUDIT LOG — PAINEL ADMIN
+═══════════════════════════════════════════ */
+async function auditLogCarregar() {
+  const tbody = $('auditLogTbody');
+  if (!tbody || !_sb) return;
+  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted)">⏳ Carregando...</td></tr>`;
+  try {
+    const { data, error } = await _sb.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(100);
+    if (error) throw error;
+    if (!data?.length) { tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><span class="empty-ico">🔍</span><p>Nenhum log ainda.</p></td></tr>`; return; }
+    const badgeS = s => { const m={success:'background:#dcfce7;color:#16a34a',error:'background:#fee2e2;color:#dc2626',blocked:'background:#fef9c3;color:#b45309'}; return `<span style="font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:20px;${m[s]||''}">${s}</span>`; };
+    const icons  = {plano_ativado:'✅',plano_downgrade:'⬇️',ativar_plano_negado:'❌',ativar_plano_bloqueado:'🚫',pagamento_pix_criado:'📱',pagamento_boleto_criado:'📄',pagamento_bloqueado:'🚫',pagamento_erro:'⚠️'};
+    tbody.innerHTML = data.map(log => {
+      const dt  = new Date(log.created_at).toLocaleString('pt-BR');
+      const det = log.details ? Object.entries(log.details).map(([k,v]) => `<span style="color:#64748b;font-size:.68rem">${k}:</span> <strong style="font-size:.68rem">${v}</strong>`).join(' · ') : '—';
+      return `<tr>
+        <td style="font-size:.75rem;white-space:nowrap">${dt}</td>
+        <td style="font-size:.78rem;white-space:nowrap">${icons[log.action]||'•'} ${log.action.replace(/_/g,' ')}</td>
+        <td style="font-size:.72rem;font-family:monospace;color:var(--text-muted)">${log.company_id ? log.company_id.substring(0,8)+'…' : '—'}</td>
+        <td style="font-size:.72rem;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${det}</td>
+        <td style="font-size:.72rem;color:var(--text-muted);font-family:monospace">${log.ip||'—'}</td>
+        <td>${badgeS(log.status)}</td>
+      </tr>`;
+    }).join('');
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--danger);padding:16px">Erro: ${e.message}</td></tr>`;
+  }
 }
 
 /* ═══════════════════════════════════════════
@@ -4842,23 +5009,50 @@ function planoAssinar(plano) {
   abrirCheckout(plano);
 }
 
-function salvarPlano(plano) {
+async function salvarPlano(plano, payment_id) {
+  if (plano === 'free') {
+    if (!confirm('Deseja fazer downgrade para o plano Free?')) return;
+  }
+  if (_sb && currentCompany?.id && currentCompany.id !== 'demo_company') {
+    try {
+      const res = await fetch(PAGAMENTO_CONFIG.EDGE_URL + '/ativar-plano', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ payment_id: payment_id || null, plano, company_id: currentCompany.id })
+      });
+      const data = await res.json();
+      if (data.error) { toast('❌ ' + (data.message || 'Erro ao ativar plano.'), 5000); return; }
+      if (currentCompany) currentCompany.plan = plano;
+      planoRenderPagina();
+      _mostrarSucessoPagamento(plano);
+    } catch(e) { toast('❌ Erro de conexão ao ativar plano.', 5000); }
+    return;
+  }
   if (currentCompany) currentCompany.plan = plano;
-  // Atualiza localStorage da sessão demo
   try {
     const s = localStorage.getItem('erp_session');
-    if (s) {
-      const sess = JSON.parse(s);
-      sess.company.plan = plano;
-      localStorage.setItem('erp_session', JSON.stringify(sess));
-    }
+    if (s) { const sess = JSON.parse(s); sess.company.plan = plano; localStorage.setItem('erp_session', JSON.stringify(sess)); }
   } catch(e) {}
-  // Atualiza Supabase se configurado
-  if (_sb && currentCompany?.id) {
-    _sb.from('companies').update({ plan: plano }).eq('id', currentCompany.id).then(() => {});
-  }
   planoRenderPagina();
-  toast(`✅ Plano alterado para ${PLANOS_CONFIG[plano].nome}!`);
+  toast(`✅ Plano alterado para ${PLANOS_CONFIG[plano]?.nome || plano}!`);
+}
+
+function _mostrarSucessoPagamento(plano) {
+  document.querySelectorAll('.nexos-pix-overlay').forEach(e => e.remove());
+  const overlay = document.createElement('div');
+  overlay.className = 'nexos-pix-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+  const cfg = PLANOS_CONFIG[plano] || {};
+  overlay.innerHTML = `
+    <div style="background:white;border-radius:20px;padding:36px 28px;max-width:380px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.25)">
+      <div style="font-size:3rem;margin-bottom:12px">🎉</div>
+      <div style="font-size:1.2rem;font-weight:800;color:#16a34a;margin-bottom:8px">Pagamento confirmado!</div>
+      <div style="font-size:.9rem;color:#475569;margin-bottom:20px">Plano <strong>${cfg.nome || plano}</strong> ativado com sucesso.</div>
+      <button onclick="this.closest('.nexos-pix-overlay').remove();navegar('plano')"
+        style="width:100%;padding:13px;background:linear-gradient(135deg,#1B4491,#0d2464);color:white;border:none;border-radius:12px;font-weight:700;font-size:.95rem;cursor:pointer">
+        ✨ Ver meu plano
+      </button>
+    </div>`;
+  document.body.appendChild(overlay);
 }
 
 /* ═══════════════════════════════════════════
@@ -5040,20 +5234,45 @@ function _mostrarPIX(data, plano, preco) {
 
   // Nota
   const nota = document.createElement('div');
-  nota.style.cssText = 'font-size:.74rem;color:#3d5480;margin-bottom:14px';
-  nota.textContent = 'Após o pagamento, seu plano será ativado automaticamente em até 1 minuto.';
+  nota.style.cssText = 'font-size:.74rem;color:#3d5480;margin-bottom:10px';
+  nota.textContent = 'Após o pagamento, seu plano será ativado automaticamente.';
   box.appendChild(nota);
 
-  // Botão fechar
+  const statusEl = document.createElement('div');
+  statusEl.style.cssText = 'font-size:.72rem;color:#64748b;margin-bottom:10px;min-height:18px';
+  statusEl.textContent = '⏳ Aguardando pagamento...';
+  box.appendChild(statusEl);
+
   const btnFechar = document.createElement('button');
   btnFechar.style.cssText = 'width:100%;padding:10px;background:#e8eef8;border:1px solid #c8d6ee;border-radius:10px;font-size:.85rem;cursor:pointer;font-family:inherit';
   btnFechar.textContent = 'Fechar';
-  btnFechar.onclick = () => overlay.remove();
+  btnFechar.onclick = () => { if (window._pixPollTimer) { clearInterval(window._pixPollTimer); window._pixPollTimer = null; } overlay.remove(); };
   box.appendChild(btnFechar);
 
   overlay.appendChild(box);
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) { if (window._pixPollTimer) { clearInterval(window._pixPollTimer); window._pixPollTimer = null; } overlay.remove(); }
+  });
   document.body.appendChild(overlay);
+
+  if (window._pixPollTimer) clearInterval(window._pixPollTimer);
+  let pollSecs = 0;
+  window._pixPollTimer = setInterval(async () => {
+    pollSecs += 5;
+    statusEl.textContent = `⏳ Aguardando confirmação... (${pollSecs}s)`;
+    if (pollSecs > 600) { clearInterval(window._pixPollTimer); window._pixPollTimer = null; statusEl.textContent = '⏱ Tempo expirado. O plano será ativado em breve.'; return; }
+    try {
+      if (!_sb || !currentCompany?.id) return;
+      const { data: co } = await _sb.from('companies').select('plan').eq('id', currentCompany.id).single();
+      if (co && co.plan === plano) {
+        clearInterval(window._pixPollTimer); window._pixPollTimer = null;
+        overlay.remove();
+        currentCompany.plan = plano;
+        planoRenderPagina();
+        _mostrarSucessoPagamento(plano);
+      }
+    } catch(e) {}
+  }, 5000);
 }
 
 function _mostrarPIXManual(plano, preco) {
@@ -6043,14 +6262,9 @@ window.addEventListener('DOMContentLoaded', () => {
   const planoPago       = params.get('plano');
 
   if (statusPagamento === 'sucesso' && planoPago) {
-    // Aguarda sessão carregar para ativar plano
-    setTimeout(() => {
-      if (currentCompany) {
-        salvarPlano(planoPago);
-        toast(`🎉 Pagamento aprovado! Plano ${PLANOS_CONFIG[planoPago]?.nome || planoPago} ativado!`, 5000);
-        navegar('plano');
-      }
-      // Limpar URL
+    const paymentId = params.get('payment_id') || params.get('collection_id') || null;
+    setTimeout(async () => {
+      if (currentCompany) { await salvarPlano(planoPago, paymentId); navegar('plano'); }
       window.history.replaceState({}, '', window.location.pathname);
     }, 2000);
   }
