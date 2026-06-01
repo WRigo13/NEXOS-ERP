@@ -4770,9 +4770,40 @@ function planoAssinar(plano) {
   abrirCheckout(plano);
 }
 
-function salvarPlano(plano) {
+async function salvarPlano(plano, payment_id) {
+  if (plano === 'free') {
+    if (!confirm('Deseja fazer downgrade para o plano Free?')) return;
+  }
+
+  // Chamar Edge Function que valida pagamento antes de gravar
+  if (_sb && currentCompany?.id && currentCompany.id !== 'demo_company') {
+    try {
+      const res = await fetch(PAGAMENTO_CONFIG.EDGE_URL + '/ativar-plano', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({
+          payment_id: payment_id || null,
+          plano,
+          company_id: currentCompany.id,
+        })
+      });
+      const data = await res.json();
+      if (data.error) {
+        toast('❌ ' + (data.message || 'Erro ao ativar plano.'), 5000);
+        return;
+      }
+      if (currentCompany) currentCompany.plan = plano;
+      planoRenderPagina();
+      toast(`🎉 Plano ${PLANOS_CONFIG[plano]?.nome || plano} ativado!`, 5000);
+    } catch(e) {
+      console.error('[Nexos] salvarPlano erro:', e.message);
+      toast('❌ Erro de conexão ao ativar plano.', 5000);
+    }
+    return;
+  }
+
+  // Demo/local
   if (currentCompany) currentCompany.plan = plano;
-  // Atualiza localStorage da sessão demo
   try {
     const s = localStorage.getItem('erp_session');
     if (s) {
@@ -4781,12 +4812,8 @@ function salvarPlano(plano) {
       localStorage.setItem('erp_session', JSON.stringify(sess));
     }
   } catch(e) {}
-  // Atualiza Supabase se configurado
-  if (_sb && currentCompany?.id) {
-    _sb.from('companies').update({ plan: plano }).eq('id', currentCompany.id).then(() => {});
-  }
   planoRenderPagina();
-  toast(`✅ Plano alterado para ${PLANOS_CONFIG[plano].nome}!`);
+  toast(`✅ Plano alterado para ${PLANOS_CONFIG[plano]?.nome || plano}!`);
 }
 
 /* ═══════════════════════════════════════════
@@ -4870,7 +4897,7 @@ async function checkoutFinalizar() {
         forma:      checkoutFormaSelecionada,
         preco:      cfg.preco,
         company_id: currentCompany.id,
-        email:      'teste@nexoserp.com.br',
+        email:      currentUser?.email || 'cliente@nexoserp.com.br',
         nome:       currentUser.name || currentUser.email,
       })
     });
@@ -5971,14 +5998,12 @@ window.addEventListener('DOMContentLoaded', () => {
   const planoPago       = params.get('plano');
 
   if (statusPagamento === 'sucesso' && planoPago) {
-    // Aguarda sessão carregar para ativar plano
-    setTimeout(() => {
+    const paymentId = params.get('payment_id') || params.get('collection_id') || null;
+    setTimeout(async () => {
       if (currentCompany) {
-        salvarPlano(planoPago);
-        toast(`🎉 Pagamento aprovado! Plano ${PLANOS_CONFIG[planoPago]?.nome || planoPago} ativado!`, 5000);
+        await salvarPlano(planoPago, paymentId);
         navegar('plano');
       }
-      // Limpar URL
       window.history.replaceState({}, '', window.location.pathname);
     }, 2000);
   }
