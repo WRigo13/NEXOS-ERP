@@ -3881,14 +3881,11 @@ async function syncDados() {
     if (v.data && v.data.length > 0) {
       vendas = v.data.map(x => ({
         ...x,
-        id:          String(x.id),
-        items:       typeof x.items === 'string' ? (() => { try { return JSON.parse(x.items); } catch(e) { return []; } })() : (x.items || x.itens || []),
-        forma:       x.forma_pagto || x.forma || 'dinheiro',
-        forma_pagto: x.forma_pagto || x.forma || 'dinheiro',
-        cliente:     x.cliente || x.cliente_nome || '',
-        cliente_nome:x.cliente_nome || x.cliente || '',
-        data:        x.data || x.created_at || new Date().toISOString(),
-        created_at:  x.created_at || x.data || new Date().toISOString(),
+        id:      String(x.id),
+        items:   typeof x.items === 'string' ? JSON.parse(x.items||'[]') : (x.items || []),
+        forma:   x.forma_pagto || x.forma || 'dinheiro',
+        cliente: x.cliente || x.cliente_nome || '',
+        data:    x.data || x.created_at || new Date().toISOString(),
       }));
       localStorage.setItem(getKey('vendas'), JSON.stringify(vendas));
     }
@@ -4313,7 +4310,6 @@ function vendaDiretaSalvar() {
       cliente_nome:'Venda direta',
       items:       venda.items || [],
       status:      'concluido',
-      data:        venda.data || new Date().toISOString(),
     }, { onConflict: 'id' }).then(function(res) {
       if (res.error) console.error('[Nexos] venda direta Supabase erro:', res.error.message);
       else console.log('[Nexos] venda direta salva no Supabase ✅');
@@ -4783,23 +4779,55 @@ function planoAssinar(plano) {
   abrirCheckout(plano);
 }
 
-function salvarPlano(plano) {
+async function salvarPlano(plano, payment_id) {
+  if (plano === 'free') {
+    if (!confirm('Deseja fazer downgrade para o plano Free?')) return;
+  }
+  if (_sb && currentCompany?.id && currentCompany.id !== 'demo_company') {
+    try {
+      const res = await fetch(PAGAMENTO_CONFIG.EDGE_URL + '/ativar-plano', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ payment_id: payment_id || null, plano, company_id: currentCompany.id })
+      });
+      const data = await res.json();
+      if (data.error) { toast('❌ ' + (data.message || 'Erro ao ativar plano.'), 5000); return; }
+      if (currentCompany) currentCompany.plan = plano;
+      planoRenderPagina();
+      _mostrarSucessoPagamento(plano);
+    } catch(e) {
+      toast('❌ Erro de conexão ao ativar plano.', 5000);
+    }
+    return;
+  }
+  // Demo/local
   if (currentCompany) currentCompany.plan = plano;
-  // Atualiza localStorage da sessão demo
   try {
     const s = localStorage.getItem('erp_session');
-    if (s) {
-      const sess = JSON.parse(s);
-      sess.company.plan = plano;
-      localStorage.setItem('erp_session', JSON.stringify(sess));
-    }
+    if (s) { const sess = JSON.parse(s); sess.company.plan = plano; localStorage.setItem('erp_session', JSON.stringify(sess)); }
   } catch(e) {}
-  // Atualiza Supabase se configurado
-  if (_sb && currentCompany?.id) {
-    _sb.from('companies').update({ plan: plano }).eq('id', currentCompany.id).then(() => {});
-  }
   planoRenderPagina();
-  toast(`✅ Plano alterado para ${PLANOS_CONFIG[plano].nome}!`);
+  toast(`✅ Plano alterado para ${PLANOS_CONFIG[plano]?.nome || plano}!`);
+}
+
+// Tela de confirmação de pagamento aprovado
+function _mostrarSucessoPagamento(plano) {
+  document.querySelectorAll('.nexos-pix-overlay').forEach(e => e.remove());
+  const overlay = document.createElement('div');
+  overlay.className = 'nexos-pix-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+  const cfg = PLANOS_CONFIG[plano] || {};
+  overlay.innerHTML = `
+    <div style="background:white;border-radius:20px;padding:36px 28px;max-width:380px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.25)">
+      <div style="font-size:3rem;margin-bottom:12px">🎉</div>
+      <div style="font-size:1.2rem;font-weight:800;color:#16a34a;margin-bottom:8px">Pagamento confirmado!</div>
+      <div style="font-size:.9rem;color:#475569;margin-bottom:20px">Plano <strong>${cfg.nome || plano}</strong> ativado com sucesso. Bem-vindo!</div>
+      <button onclick="this.closest('.nexos-pix-overlay').remove();navegar('plano')"
+        style="width:100%;padding:13px;background:linear-gradient(135deg,#1B4491,#0d2464);color:white;border:none;border-radius:12px;font-weight:700;font-size:.95rem;cursor:pointer">
+        ✨ Ver meu plano
+      </button>
+    </div>`;
+  document.body.appendChild(overlay);
 }
 
 /* ═══════════════════════════════════════════
@@ -4985,16 +5013,53 @@ function _mostrarPIX(data, plano, preco) {
   nota.textContent = 'Após o pagamento, seu plano será ativado automaticamente em até 1 minuto.';
   box.appendChild(nota);
 
+  // Status de verificação automática
+  const statusEl = document.createElement('div');
+  statusEl.id = 'pixPollingStatus';
+  statusEl.style.cssText = 'font-size:.72rem;color:#64748b;margin-bottom:10px;min-height:18px';
+  statusEl.textContent = '⏳ Aguardando pagamento...';
+  box.appendChild(statusEl);
+
   // Botão fechar
   const btnFechar = document.createElement('button');
   btnFechar.style.cssText = 'width:100%;padding:10px;background:#e8eef8;border:1px solid #c8d6ee;border-radius:10px;font-size:.85rem;cursor:pointer;font-family:inherit';
   btnFechar.textContent = 'Fechar';
-  btnFechar.onclick = () => overlay.remove();
+  btnFechar.onclick = () => { clearInterval(pixPollInterval); overlay.remove(); };
   box.appendChild(btnFechar);
 
   overlay.appendChild(box);
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  overlay.addEventListener('click', e => { if (e.target === overlay) { clearInterval(pixPollInterval); overlay.remove(); } });
   document.body.appendChild(overlay);
+
+  // Polling — verifica status do pagamento a cada 5 segundos por até 10 minutos
+  let pixPollCount = 0;
+  const pixPollInterval = setInterval(async () => {
+    pixPollCount++;
+    if (pixPollCount > 120) { clearInterval(pixPollInterval); statusEl.textContent = '⏱ Tempo expirado. Se pagou, aguarde o webhook ativar o plano.'; return; }
+    try {
+      const r = await fetch(`https://api.mercadopago.com/v1/payments/${data.payment_id}`, {
+        headers: { 'Authorization': 'Bearer ' + PAGAMENTO_CONFIG.MP_PUBLIC_KEY }
+      });
+      // Como não temos o token MP no frontend, chama a Edge Function para verificar
+      const res = await fetch(PAGAMENTO_CONFIG.EDGE_URL + '/ativar-plano', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ payment_id: String(data.payment_id), plano, company_id: currentCompany.id })
+      });
+      const result = await res.json();
+      if (result.ok) {
+        clearInterval(pixPollInterval);
+        overlay.remove();
+        if (currentCompany) currentCompany.plan = plano;
+        planoRenderPagina();
+        _mostrarSucessoPagamento(plano);
+      } else {
+        statusEl.textContent = `⏳ Aguardando confirmação... (${pixPollCount * 5}s)`;
+      }
+    } catch(e) {
+      // silencia erros de rede durante polling
+    }
+  }, 5000);
 }
 
 function _mostrarPIXManual(plano, preco) {
@@ -5984,14 +6049,12 @@ window.addEventListener('DOMContentLoaded', () => {
   const planoPago       = params.get('plano');
 
   if (statusPagamento === 'sucesso' && planoPago) {
-    // Aguarda sessão carregar para ativar plano
-    setTimeout(() => {
+    const paymentId = params.get('payment_id') || params.get('collection_id') || null;
+    setTimeout(async () => {
       if (currentCompany) {
-        salvarPlano(planoPago);
-        toast(`🎉 Pagamento aprovado! Plano ${PLANOS_CONFIG[planoPago]?.nome || planoPago} ativado!`, 5000);
+        await salvarPlano(planoPago, paymentId);
         navegar('plano');
       }
-      // Limpar URL
       window.history.replaceState({}, '', window.location.pathname);
     }, 2000);
   }
