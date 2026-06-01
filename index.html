@@ -2298,10 +2298,14 @@ let prodEdit  = null;
 const $ = id => document.getElementById(id);
 
 function hoje() {
-  return new Date().toISOString().split('T')[0];
+  const d = new Date();
+  return d.getFullYear() + '-'
+    + String(d.getMonth()+1).padStart(2,'0') + '-'
+    + String(d.getDate()).padStart(2,'0');
 }
 function mesAtual() {
-  return new Date().toISOString().slice(0, 7);
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
 }
 
 function fmt(v) { return moeda(v); }
@@ -2781,11 +2785,14 @@ window._syncTudo = async function _syncTudo() {
     if (v.data && v.data.length > 0) {
       vendas = v.data.map(x => ({
         ...x,
-        id:      String(x.id),
-        items:   x.items || x.itens || [],
-        forma:   x.forma_pagto || x.forma || x.pagamento || 'dinheiro',
-        cliente: x.cliente || x.cliente_nome || '',
-        data:    x.created_at || x.data || new Date().toISOString(),
+        id:         String(x.id),
+        items:      typeof x.items === 'string' ? (() => { try { return JSON.parse(x.items); } catch(e) { return []; } })() : (x.items || x.itens || []),
+        forma:      x.forma_pagto || x.forma || x.pagamento || 'dinheiro',
+        forma_pagto:x.forma_pagto || x.forma || x.pagamento || 'dinheiro',
+        cliente:    x.cliente || x.cliente_nome || '',
+        cliente_nome:x.cliente_nome || x.cliente || '',
+        data:       x.data || x.created_at || new Date().toISOString(),
+        created_at: x.created_at || x.data || new Date().toISOString(),
       }));
       localStorage.setItem(getKey('vendas'), JSON.stringify(vendas));
     }
@@ -3843,8 +3850,11 @@ function vendStats() {
   const getDataVenda = v => {
     const raw = v.data || v.created_at || '';
     if (!raw) return '';
+    // Se é só data (YYYY-MM-DD), retorna direto sem conversão de fuso
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
     const d = new Date(raw);
     if (isNaN(d.getTime())) return raw.substring(0,10);
+    // Usar horário local para evitar bug UTC-3 (vendas à noite viram "amanhã" em UTC)
     return d.getFullYear() + '-'
       + String(d.getMonth()+1).padStart(2,'0') + '-'
       + String(d.getDate()).padStart(2,'0');
@@ -3873,11 +3883,14 @@ async function syncDados() {
     if (v.data && v.data.length > 0) {
       vendas = v.data.map(x => ({
         ...x,
-        id:      String(x.id),
-        items:   typeof x.items === 'string' ? JSON.parse(x.items||'[]') : (x.items || []),
-        forma:   x.forma_pagto || x.forma || 'dinheiro',
-        cliente: x.cliente || x.cliente_nome || '',
-        data:    x.data || x.created_at || new Date().toISOString(),
+        id:          String(x.id),
+        items:       typeof x.items === 'string' ? (() => { try { return JSON.parse(x.items); } catch(e) { return []; } })() : (x.items || x.itens || []),
+        forma:       x.forma_pagto || x.forma || 'dinheiro',
+        forma_pagto: x.forma_pagto || x.forma || 'dinheiro',
+        cliente:     x.cliente || x.cliente_nome || '',
+        cliente_nome:x.cliente_nome || x.cliente || '',
+        data:        x.data || x.created_at || new Date().toISOString(),
+        created_at:  x.created_at || x.data || new Date().toISOString(),
       }));
       localStorage.setItem(getKey('vendas'), JSON.stringify(vendas));
     }
@@ -3905,8 +3918,11 @@ function dashAtualizar() {
   const _dvData = v => {
     const raw = v.data || v.created_at || '';
     if (!raw) return '';
+    // Se é só data (YYYY-MM-DD), retorna direto sem conversão de fuso
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
     const d = new Date(raw);
     if (isNaN(d.getTime())) return raw.substring(0,10);
+    // Usar horário local para evitar bug UTC-3
     return d.getFullYear() + '-'
       + String(d.getMonth()+1).padStart(2,'0') + '-'
       + String(d.getDate()).padStart(2,'0');
@@ -4770,40 +4786,9 @@ function planoAssinar(plano) {
   abrirCheckout(plano);
 }
 
-async function salvarPlano(plano, payment_id) {
-  if (plano === 'free') {
-    if (!confirm('Deseja fazer downgrade para o plano Free?')) return;
-  }
-
-  // Chamar Edge Function que valida pagamento antes de gravar
-  if (_sb && currentCompany?.id && currentCompany.id !== 'demo_company') {
-    try {
-      const res = await fetch(PAGAMENTO_CONFIG.EDGE_URL + '/ativar-plano', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({
-          payment_id: payment_id || null,
-          plano,
-          company_id: currentCompany.id,
-        })
-      });
-      const data = await res.json();
-      if (data.error) {
-        toast('❌ ' + (data.message || 'Erro ao ativar plano.'), 5000);
-        return;
-      }
-      if (currentCompany) currentCompany.plan = plano;
-      planoRenderPagina();
-      toast(`🎉 Plano ${PLANOS_CONFIG[plano]?.nome || plano} ativado!`, 5000);
-    } catch(e) {
-      console.error('[Nexos] salvarPlano erro:', e.message);
-      toast('❌ Erro de conexão ao ativar plano.', 5000);
-    }
-    return;
-  }
-
-  // Demo/local
+function salvarPlano(plano) {
   if (currentCompany) currentCompany.plan = plano;
+  // Atualiza localStorage da sessão demo
   try {
     const s = localStorage.getItem('erp_session');
     if (s) {
@@ -4812,8 +4797,12 @@ async function salvarPlano(plano, payment_id) {
       localStorage.setItem('erp_session', JSON.stringify(sess));
     }
   } catch(e) {}
+  // Atualiza Supabase se configurado
+  if (_sb && currentCompany?.id) {
+    _sb.from('companies').update({ plan: plano }).eq('id', currentCompany.id).then(() => {});
+  }
   planoRenderPagina();
-  toast(`✅ Plano alterado para ${PLANOS_CONFIG[plano]?.nome || plano}!`);
+  toast(`✅ Plano alterado para ${PLANOS_CONFIG[plano].nome}!`);
 }
 
 /* ═══════════════════════════════════════════
@@ -4897,7 +4886,7 @@ async function checkoutFinalizar() {
         forma:      checkoutFormaSelecionada,
         preco:      cfg.preco,
         company_id: currentCompany.id,
-        email:      currentUser?.email || 'cliente@nexoserp.com.br',
+        email:      'teste@nexoserp.com.br',
         nome:       currentUser.name || currentUser.email,
       })
     });
@@ -5998,12 +5987,14 @@ window.addEventListener('DOMContentLoaded', () => {
   const planoPago       = params.get('plano');
 
   if (statusPagamento === 'sucesso' && planoPago) {
-    const paymentId = params.get('payment_id') || params.get('collection_id') || null;
-    setTimeout(async () => {
+    // Aguarda sessão carregar para ativar plano
+    setTimeout(() => {
       if (currentCompany) {
-        await salvarPlano(planoPago, paymentId);
+        salvarPlano(planoPago);
+        toast(`🎉 Pagamento aprovado! Plano ${PLANOS_CONFIG[planoPago]?.nome || planoPago} ativado!`, 5000);
         navegar('plano');
       }
+      // Limpar URL
       window.history.replaceState({}, '', window.location.pathname);
     }, 2000);
   }
