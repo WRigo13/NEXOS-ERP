@@ -2785,14 +2785,14 @@ window._syncTudo = async function _syncTudo() {
     if (v.data && v.data.length > 0) {
       vendas = v.data.map(x => ({
         ...x,
-        id:         String(x.id),
-        items:      typeof x.items === 'string' ? (() => { try { return JSON.parse(x.items); } catch(e) { return []; } })() : (x.items || x.itens || []),
-        forma:      x.forma_pagto || x.forma || x.pagamento || 'dinheiro',
-        forma_pagto:x.forma_pagto || x.forma || x.pagamento || 'dinheiro',
-        cliente:    x.cliente || x.cliente_nome || '',
+        id:          String(x.id),
+        items:       typeof x.items === 'string' ? (() => { try { return JSON.parse(x.items); } catch(e) { return []; } })() : (x.items || x.itens || []),
+        forma:       x.forma_pagto || x.forma || x.pagamento || 'dinheiro',
+        forma_pagto: x.forma_pagto || x.forma || x.pagamento || 'dinheiro',
+        cliente:     x.cliente || x.cliente_nome || '',
         cliente_nome:x.cliente_nome || x.cliente || '',
-        data:       x.data || x.created_at || new Date().toISOString(),
-        created_at: x.created_at || x.data || new Date().toISOString(),
+        data:        x.data || x.created_at || new Date().toISOString(),
+        created_at:  x.created_at || x.data || new Date().toISOString(),
       }));
       localStorage.setItem(getKey('vendas'), JSON.stringify(vendas));
     }
@@ -3850,11 +3850,9 @@ function vendStats() {
   const getDataVenda = v => {
     const raw = v.data || v.created_at || '';
     if (!raw) return '';
-    // Se é só data (YYYY-MM-DD), retorna direto sem conversão de fuso
     if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
     const d = new Date(raw);
     if (isNaN(d.getTime())) return raw.substring(0,10);
-    // Usar horário local para evitar bug UTC-3 (vendas à noite viram "amanhã" em UTC)
     return d.getFullYear() + '-'
       + String(d.getMonth()+1).padStart(2,'0') + '-'
       + String(d.getDate()).padStart(2,'0');
@@ -3918,11 +3916,9 @@ function dashAtualizar() {
   const _dvData = v => {
     const raw = v.data || v.created_at || '';
     if (!raw) return '';
-    // Se é só data (YYYY-MM-DD), retorna direto sem conversão de fuso
     if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
     const d = new Date(raw);
     if (isNaN(d.getTime())) return raw.substring(0,10);
-    // Usar horário local para evitar bug UTC-3
     return d.getFullYear() + '-'
       + String(d.getMonth()+1).padStart(2,'0') + '-'
       + String(d.getDate()).padStart(2,'0');
@@ -4317,6 +4313,7 @@ function vendaDiretaSalvar() {
       cliente_nome:'Venda direta',
       items:       venda.items || [],
       status:      'concluido',
+      data:        venda.data || new Date().toISOString(),
     }, { onConflict: 'id' }).then(function(res) {
       if (res.error) console.error('[Nexos] venda direta Supabase erro:', res.error.message);
       else console.log('[Nexos] venda direta salva no Supabase ✅');
