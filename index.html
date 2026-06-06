@@ -2701,9 +2701,10 @@ async function iniciarApp(user, company) {
   vendRenderCatalogo(); vendRenderHistorico(); vendStats();
   fluxoPopularMeses(); fluxoRender();
   dashAtualizar();
-  // Sync silencioso após carregar (garante dados frescos do banco)
+  // Sync silencioso + Realtime após carregar
   if (_sb && currentCompany && currentCompany.id !== 'demo_company') {
     setTimeout(syncDados, 2000);
+    setTimeout(iniciarRealtime, 3000);
   }
 
   // ── Nav ──
@@ -3885,32 +3886,73 @@ async function syncDados() {
   if (!_sb || !currentCompany || currentCompany.id === 'demo_company') return;
   const cid = currentCompany.id;
   try {
-    const [v, r] = await Promise.all([
-      _sb.from('vendas').select('*').eq('company_id', cid).order('created_at', {ascending: false}),
-      _sb.from('receitas').select('*').eq('company_id', cid),
+    const [v, r, d, p, c, mv] = await Promise.all([
+      _sb.from('vendas').select('*').eq('company_id', cid).order('created_at', {ascending:false}).limit(500),
+      _sb.from('receitas').select('*').eq('company_id', cid).order('created_at', {ascending:false}).limit(500),
+      _sb.from('despesas').select('*').eq('company_id', cid).order('created_at', {ascending:false}).limit(500),
+      _sb.from('produtos').select('*').eq('company_id', cid),
+      _sb.from('clientes').select('*').eq('company_id', cid),
+      _sb.from('movimentacoes').select('*').eq('company_id', cid).order('created_at', {ascending:false}).limit(500),
     ]);
-    if (v.data && v.data.length > 0) {
+    if (v.data?.length) {
       vendas = v.data.map(x => ({
-        ...x,
-        id:      String(x.id),
-        items:   typeof x.items === 'string' ? JSON.parse(x.items||'[]') : (x.items || []),
-        forma:   x.forma_pagto || x.forma || 'dinheiro',
-        cliente: x.cliente || x.cliente_nome || '',
-        data:    x.data || x.created_at || new Date().toISOString(),
+        ...x, id: String(x.id),
+        items:       typeof x.items === 'string' ? (() => { try { return JSON.parse(x.items); } catch(e) { return []; } })() : (x.items||[]),
+        forma:       x.forma_pagto || x.forma || 'dinheiro',
+        forma_pagto: x.forma_pagto || x.forma || 'dinheiro',
+        cliente:     x.cliente || x.cliente_nome || '',
+        data:        x.data || x.created_at || new Date().toISOString(),
       }));
       localStorage.setItem(getKey('vendas'), JSON.stringify(vendas));
     }
-    if (r.data && r.data.length > 0) {
+    if (r.data?.length) {
       receitas = r.data.map(x => ({...x, id: String(x.id)}));
       localStorage.setItem(getKey('receitas'), JSON.stringify(receitas));
     }
-    dashAtualizar();
-    vendStats();
+    if (d.data?.length) {
+      despesas = d.data.map(x => ({...x, id: String(x.id)}));
+      localStorage.setItem(getKey('despesas'), JSON.stringify(despesas));
+    }
+    if (p.data?.length) {
+      produtos = p.data.map(x => ({...x, id: String(x.id), quantidade: Number(x.quantidade??x.estoque)||0}));
+      localStorage.setItem(getKey('produtos'), JSON.stringify(produtos));
+    }
+    if (c.data?.length) {
+      clientes = c.data.map(x => ({...x, id: String(x.id)}));
+      localStorage.setItem(getKey('clientes'), JSON.stringify(clientes));
+    }
+    if (mv.data?.length) {
+      movimentacoes = mv.data.map(x => ({...x, id: String(x.id), qtd: Number(x.qtd)||0}));
+      localStorage.setItem(getKey('movimentacoes'), JSON.stringify(movimentacoes));
+    }
+    dashAtualizar(); vendStats(); recRender(); despRender();
   } catch(e) {
     console.warn('[Nexos] syncDados falhou:', e.message);
   }
 }
 
+function iniciarRealtime() {
+  if (!_sb || !currentCompany || currentCompany.id === 'demo_company') return;
+  if (window._realtimeChannel) { _sb.removeChannel(window._realtimeChannel); window._realtimeChannel = null; }
+  const cid = currentCompany.id;
+  let syncTimer = null;
+  const debouncedSync = () => {
+    if (syncTimer) clearTimeout(syncTimer);
+    syncTimer = setTimeout(() => { console.log('[Realtime] Sincronizando...'); syncDados(); }, 800);
+  };
+  window._realtimeChannel = _sb
+    .channel('nexos-' + cid)
+    .on('postgres_changes', { event:'*', schema:'public', table:'vendas',   filter:'company_id=eq.'+cid }, debouncedSync)
+    .on('postgres_changes', { event:'*', schema:'public', table:'receitas', filter:'company_id=eq.'+cid }, debouncedSync)
+    .on('postgres_changes', { event:'*', schema:'public', table:'despesas', filter:'company_id=eq.'+cid }, debouncedSync)
+    .on('postgres_changes', { event:'*', schema:'public', table:'produtos', filter:'company_id=eq.'+cid }, debouncedSync)
+    .on('postgres_changes', { event:'*', schema:'public', table:'clientes',      filter:'company_id=eq.'+cid }, debouncedSync)
+    .on('postgres_changes', { event:'*', schema:'public', table:'movimentacoes', filter:'company_id=eq.'+cid }, debouncedSync)
+    .subscribe(status => {
+      if (status === 'SUBSCRIBED') console.log('[Realtime] ✅ Sync em tempo real ativo');
+      else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') { console.warn('[Realtime] Desconectado, reconectando...'); setTimeout(iniciarRealtime, 5000); }
+    });
+}
 
 function dashAtualizar() {
   const hj  = hoje();
