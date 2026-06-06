@@ -783,26 +783,7 @@
   </script>
 
   <script>
-    // PWA — Registrar Service Worker
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function() {
-        navigator.serviceWorker.register('/sw.js')
-          .then(function(reg) { console.log('[PWA] SW registrado:', reg.scope); })
-          .catch(function(e)  { console.warn('[PWA] SW falhou:', e); });
-      });
-    }
-    // PWA — Capturar evento de instalação
-    window._pwaInstallEvent = null;
-    window.addEventListener('beforeinstallprompt', function(e) {
-      e.preventDefault();
-      window._pwaInstallEvent = e;
-      const btn = document.getElementById('btnInstalarPWA');
-      if (btn) btn.style.display = 'flex';
-    });
-    window.addEventListener('appinstalled', function() {
-      const btn = document.getElementById('btnInstalarPWA');
-      if (btn) btn.style.display = 'none';
-    });
+    // PWA — Service Worker registrado no bloco principal
   </script>
 </head>
 <body>
@@ -1422,6 +1403,10 @@
         <div class="panel-title" id="prodFormTitle">➕ Novo produto</div>
         <div class="form-row">
           <div class="field" style="flex:2;min-width:180px">
+            <label>Fornecedor</label>
+            <input type="text" id="prodFornecedor" placeholder="Ex: Distribuidora ABC…" autocomplete="off">
+          </div>
+          <div class="field" style="flex:2;min-width:180px">
             <label>Nome do produto</label>
             <input type="text" id="prodNome" placeholder="Ex: Coxinha, Parafuso M8…" autocomplete="off">
           </div>
@@ -1506,6 +1491,7 @@
             <thead>
               <tr>
                 <th>Data/Hora</th>
+                <th>Fornecedor</th>
                 <th>Produto</th>
                 <th>Tipo</th>
                 <th>Qtd</th>
@@ -2916,7 +2902,7 @@ function prodHistoricoRender() {
     .sort((a, b) => (b.data||'').localeCompare(a.data||''));
 
   if (!lista.length) {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><span class="empty-ico">📋</span><p>Nenhuma movimentação registrada.</p></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><span class="empty-ico">📋</span><p>Nenhuma movimentação registrada.</p></td></tr>';
     const pag = $('mov_pag'); if (pag) pag.style.display = 'none';
     return;
   }
@@ -2933,8 +2919,12 @@ function prodHistoricoRender() {
     const dt  = d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
     const cor   = m.qtd > 0 ? 'var(--success)' : 'var(--danger)';
     const sinal = m.qtd > 0 ? '+' : '';
+    // Busca fornecedor no produto correspondente
+    const prod    = produtos.find(p => p.id === m.produto_id);
+    const fornec  = m.fornecedor || (prod ? prod.fornecedor : '') || '—';
     return '<tr>'
       + '<td class="mono" style="font-size:.75rem;white-space:nowrap">' + dt + '</td>'
+      + '<td style="font-size:.78rem;color:var(--text-muted)">' + esc(fornec) + '</td>'
       + '<td style="font-size:.82rem;font-weight:500">' + esc(m.produto||m.produto_nome||'—') + '</td>'
       + '<td>' + (tipoLabel[m.tipo] || m.tipo) + '</td>'
       + '<td class="mono" style="font-weight:700;color:' + cor + '">' + sinal + m.qtd + '</td>'
@@ -3411,6 +3401,7 @@ function prodAtualizarFiltroCateg() {
   }
 }
 function prodSalvar() {
+  const fornecedor = ($('prodFornecedor')?.value || '').trim();
   const nome  = $('prodNome').value.trim();
   const categ = $('prodCateg').value;
   const qtd   = parseInt($('prodQtd').value)||0;
@@ -3419,10 +3410,8 @@ function prodSalvar() {
   if (!nome) { toast('⚠️ Informe o nome do produto.'); return; }
 
   if (prodEdit) {
-    // Edição direta (via Ajuste Manual) — atualiza tudo
     const antes = prodEdit.quantidade;
-    Object.assign(prodEdit, { nome, categoria:categ, quantidade:qtd, preco, minimo:min });
-    // Registrar movimentação se quantidade mudou
+    Object.assign(prodEdit, { fornecedor, nome, categoria:categ, quantidade:qtd, preco, minimo:min });
     if (qtd !== antes) {
       prodRegistrarMov(prodEdit.id, nome, qtd - antes, 'ajuste', 'Ajuste manual');
     }
@@ -3450,7 +3439,7 @@ function prodSalvar() {
       toast(`✅ Entrada registrada! "${nome}": ${antes} → ${existente.quantidade} unidades`);
     } else {
       // Produto realmente novo
-      const novoProd = { id:uid(), company_id:currentCompany.id, nome, categoria:categ, quantidade:qtd, preco, minimo:min };
+      const novoProd = { id:uid(), company_id:currentCompany.id, fornecedor, nome, categoria:categ, quantidade:qtd, preco, minimo:min };
       produtos.push(novoProd);
       if (qtd > 0) prodRegistrarMov(novoProd.id, nome, qtd, 'entrada', 'Estoque inicial');
       toast('✅ Produto cadastrado!');
@@ -3466,19 +3455,22 @@ function prodSalvar() {
 
 // Registrar movimentação de estoque com data/hora
 function prodRegistrarMov(prodId, prodNome, qtd, tipo, motivo) {
+  const prod = produtos.find(p => p.id === prodId);
   movimentacoes.push({
     id:         uid(),
     company_id: currentCompany.id,
     produto_id: prodId,
     produto:    prodNome,
+    fornecedor: prod?.fornecedor || '',
     qtd:        qtd,
-    tipo:       tipo,       // 'entrada', 'saida', 'ajuste', 'venda'
+    tipo:       tipo,
     motivo:     motivo,
     data:       new Date().toISOString(),
   });
   salvar('movimentacoes', movimentacoes);
 }
 function prodLimparForm() {
+  if ($('prodFornecedor')) $('prodFornecedor').value = '';
   $('prodNome').value  = '';
   $('prodCateg').value = '';
   $('prodQtd').value   = '0';
@@ -3583,6 +3575,7 @@ function prodAbrirAjuste(id) {
   const p = produtos.find(x => x.id === id);
   if (!p) return;
   prodEdit = p;
+  if ($('prodFornecedor')) $('prodFornecedor').value = p.fornecedor || '';
   $('prodNome').value   = p.nome;
   $('prodCateg').value  = p.categoria||'';
   $('prodQtd').value    = p.quantidade;
@@ -4249,69 +4242,108 @@ async function auditLogCarregar() {
    PWA + SERVICE WORKER
 ═══════════════════════════════════════════ */
 let deferredPrompt = null;
-window.addEventListener('beforeinstallprompt', e => {
+
+// ── Gera ícone PNG via canvas → Blob URL → manifest blob ──
+(function _injectManifest() {
+  function gerarIconeBlob(size, cb) {
+    var c = document.createElement('canvas');
+    c.width = size; c.height = size;
+    var ctx = c.getContext('2d');
+    var r = size * 0.18;
+    ctx.beginPath();
+    ctx.moveTo(r,0); ctx.lineTo(size-r,0); ctx.quadraticCurveTo(size,0,size,r);
+    ctx.lineTo(size,size-r); ctx.quadraticCurveTo(size,size,size-r,size);
+    ctx.lineTo(r,size); ctx.quadraticCurveTo(0,size,0,size-r);
+    ctx.lineTo(0,r); ctx.quadraticCurveTo(0,0,r,0); ctx.closePath();
+    var bg = ctx.createLinearGradient(0,0,size,size);
+    bg.addColorStop(0,'#1e4f9f'); bg.addColorStop(1,'#0d2464');
+    ctx.fillStyle = bg; ctx.fill();
+    var cx=size/2, cy=size/2, rad=size*0.39, sw=size*0.09;
+    var ag = ctx.createLinearGradient(cx-rad,cy-rad,cx+rad,cy+rad);
+    ag.addColorStop(0,'#93c5fd'); ag.addColorStop(1,'#3b82f6');
+    ctx.beginPath(); ctx.arc(cx,cy,rad,3.58,2.53,false);
+    ctx.strokeStyle=ag; ctx.lineWidth=sw; ctx.lineCap='round'; ctx.stroke();
+    var ar=rad*0.52;
+    var cg=ctx.createLinearGradient(cx,cy-ar,cx,cy+ar);
+    cg.addColorStop(0,'#bfdbfe'); cg.addColorStop(1,'#93c5fd');
+    ctx.beginPath(); ctx.moveTo(cx-ar*0.55,cy-ar*0.72); ctx.lineTo(cx+ar*0.55,cy); ctx.lineTo(cx-ar*0.55,cy+ar*0.72);
+    ctx.strokeStyle=cg; ctx.lineWidth=sw*0.78; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx-rad*0.76,cy+rad*0.64,sw*0.56,0,Math.PI*2);
+    ctx.fillStyle='rgba(147,197,253,0.55)'; ctx.fill();
+    c.toBlob(function(blob){ cb(URL.createObjectURL(blob)); },'image/png');
+  }
+  try {
+    gerarIconeBlob(192, function(url192) {
+      gerarIconeBlob(512, function(url512) {
+        var manifest = {
+          name: 'Nexos — Gestão Empresarial',
+          short_name: 'Nexos',
+          description: 'ERP completo para MEI e pequenas empresas',
+          start_url: 'https://nexoserp.com.br/',
+          id: 'https://nexoserp.com.br/',
+          display: 'standalone',
+          background_color: '#1B4491',
+          theme_color: '#1B4491',
+          orientation: 'portrait-primary',
+          lang: 'pt-BR',
+          categories: ['business','finance','productivity'],
+          icons: [
+            { src: url192, sizes: '192x192', type: 'image/png', purpose: 'any' },
+            { src: url192, sizes: '192x192', type: 'image/png', purpose: 'maskable' },
+            { src: url512, sizes: '512x512', type: 'image/png', purpose: 'any' },
+            { src: url512, sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          ]
+        };
+        var blob = new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'});
+        var link = document.getElementById('pwaManifest');
+        if (link) { link.href = URL.createObjectURL(blob); console.log('[PWA] Manifest injetado ✅'); }
+      });
+    });
+  } catch(e) { console.warn('[PWA] manifest falhou:', e.message); }
+})();
+
+// ── Captura evento de instalação ──
+window.addEventListener('beforeinstallprompt', function(e) {
   e.preventDefault();
   deferredPrompt = e;
-  const banner = $('installBanner');
+  var btn = document.getElementById('btnInstalarPWA');
+  if (btn) btn.style.display = 'flex';
+  var banner = document.getElementById('installBanner');
   if (banner) banner.style.display = 'block';
+  console.log('[PWA] Pronto para instalar ✅');
 });
 
-$('btnInstall')?.addEventListener('click', async () => {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
-  if (outcome === 'accepted') toast('✅ ERP MEI instalado!');
+window.addEventListener('appinstalled', function() {
   deferredPrompt = null;
-  $('installBanner').style.display = 'none';
+  var btn = document.getElementById('btnInstalarPWA');
+  if (btn) btn.style.display = 'none';
+  var banner = document.getElementById('installBanner');
+  if (banner) banner.style.display = 'none';
+  toast('✅ Nexos instalado com sucesso!');
 });
 
-if ('serviceWorker' in navigator && location.protocol === 'https:') {
-  // Manifest dinâmico — não depende de arquivo externo
-  const _manifest = {
-    name: 'Nexos — Gestão Empresarial',
-    short_name: 'Nexos',
-    description: 'ERP completo para MEI e pequenas empresas',
-    start_url: '/',
-    display: 'standalone',
-    background_color: '#1B4491',
-    theme_color: '#1B4491',
-    orientation: 'portrait-primary',
-    lang: 'pt-BR',
-    categories: ['business','finance','productivity'],
-    icons: [
-      { src: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjkyIiBmaWxsPSIjMWU0ZjlmIi8+CiAgPHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIHJ4PSI5MiIgZmlsbD0idXJsKCNiZ2dyYWQpIi8+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJnZ3JhZCIgeDE9IjAiIHkxPSIwIiB4Mj0iNTEyIiB5Mj0iNTEyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMxZTRmOWYiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMGQyNDY0Ii8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJhcmMiIHgxPSIwIiB5MT0iMCIgeDI9IjUxMiIgeTI9IjUxMiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjOTNjNWZkIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzNiODJmNiIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iY2hldiIgeDE9IjI1NiIgeTE9IjEwMCIgeDI9IjI1NiIgeTI9IjQxMiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjYmZkYmZlIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzkzYzVmZCIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHBhdGggZD0iTSAyNTYgNTYgQSAyMDAgMjAwIDAgMSAxIDg3IDQwMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2FyYykiIHN0cm9rZS13aWR0aD0iNDYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwb2x5bGluZSBwb2ludHM9IjEyMiwxNDggMjU2LDI1NiAxMjIsMzY0IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjY2hldikiIHN0cm9rZS13aWR0aD0iNDAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjEzMyIgY3k9IjQxNSIgcj0iMjYiIGZpbGw9IiM5M2M1ZmQiIG9wYWNpdHk9IjAuNTUiLz4KPC9zdmc+', sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' },
-      { src: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjkyIiBmaWxsPSIjMWU0ZjlmIi8+CiAgPHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIHJ4PSI5MiIgZmlsbD0idXJsKCNiZ2dyYWQpIi8+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJnZ3JhZCIgeDE9IjAiIHkxPSIwIiB4Mj0iNTEyIiB5Mj0iNTEyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMxZTRmOWYiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMGQyNDY0Ii8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJhcmMiIHgxPSIwIiB5MT0iMCIgeDI9IjUxMiIgeTI9IjUxMiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjOTNjNWZkIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzNiODJmNiIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iY2hldiIgeDE9IjI1NiIgeTE9IjEwMCIgeDI9IjI1NiIgeTI9IjQxMiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjYmZkYmZlIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzkzYzVmZCIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHBhdGggZD0iTSAyNTYgNTYgQSAyMDAgMjAwIDAgMSAxIDg3IDQwMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2FyYykiIHN0cm9rZS13aWR0aD0iNDYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwb2x5bGluZSBwb2ludHM9IjEyMiwxNDggMjU2LDI1NiAxMjIsMzY0IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgjY2hldikiIHN0cm9rZS13aWR0aD0iNDAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjEzMyIgY3k9IjQxNSIgcj0iMjYiIGZpbGw9IiM5M2M1ZmQiIG9wYWNpdHk9IjAuNTUiLz4KPC9zdmc+', sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }
-    ]
-  };
-  const _mBlob = new Blob([JSON.stringify(_manifest)], { type: 'application/manifest+json' });
-  const _mURL  = URL.createObjectURL(_mBlob);
-  const _mLink = document.getElementById('pwaManifest');
-  if (_mLink) _mLink.href = _mURL;
+// ── Botão do banner ──
+document.addEventListener('DOMContentLoaded', function() {
+  var btnBanner = document.getElementById('btnInstall');
+  if (btnBanner) {
+    btnBanner.addEventListener('click', async function() {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      var result = await deferredPrompt.userChoice;
+      if (result.outcome === 'accepted') toast('✅ Nexos instalado!');
+      deferredPrompt = null;
+      var banner = document.getElementById('installBanner');
+      if (banner) banner.style.display = 'none';
+    });
+  }
+});
 
-  // Service Worker inline — não depende de service-worker.js no servidor
-  const _swSrc = [
-    "const CACHE='nexos-v2';",
-    "self.addEventListener('install',e=>{",
-    "  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/','/']).catch(()=>{})).then(()=>self.skipWaiting()));",
-    "});",
-    "self.addEventListener('activate',e=>{",
-    "  e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));",
-    "});",
-    "self.addEventListener('fetch',e=>{",
-    "  if(e.request.method!=='GET')return;",
-    "  e.respondWith(fetch(e.request).then(r=>{",
-    "    if(r&&r.status===200){const cl=r.clone();caches.open(CACHE).then(c=>c.put(e.request,cl));}",
-    "    return r;",
-    "  }).catch(()=>caches.match(e.request).then(r=>r||new Response('',{status:408}))));",
-    "});"
-  ].join('\n');
-  const _swBlob = new Blob([_swSrc], { type: 'application/javascript' });
-  const _swURL  = URL.createObjectURL(_swBlob);
-
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register(_swURL)
-      .then(() => console.log('SW inline registrado ✅'))
-      .catch(() => {}); // silencia erro em dev/local
+// ── Service Worker externo ──
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/sw.js')
+      .then(function(reg) { console.log('[PWA] SW registrado ✅', reg.scope); })
+      .catch(function(e)  { console.warn('[PWA] SW falhou:', e.message); });
   });
 }
 
