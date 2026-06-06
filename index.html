@@ -2373,7 +2373,7 @@ async function _salvarSupabase(mod, data) {
     clientes:      r => ({ id: String(r.id), company_id: cid, nome: r.nome||'', email: r.email||'', telefone: r.telefone||'', cpf: r.cpf||'', endereco: r.endereco||'' }),
     produtos:      r => ({ id: String(r.id), company_id: cid, nome: r.nome||'', categoria: r.categoria||'', preco: Number(r.preco)||0, quantidade: Number(r.quantidade??r.estoque)||0, minimo: Number(r.minimo??r.estoque_min)||5 }),
     vendas:        r => ({ id: String(r.id), company_id: cid, total: Number(r.total)||0, forma_pagto: r.forma_pagto||r.forma||r.pagamento||'dinheiro', cliente: r.cliente||r.cliente_nome||'', cliente_nome: r.cliente||r.cliente_nome||'', items: r.items||r.itens||[], status: r.status||'concluido' }),
-    movimentacoes: r => ({ id: String(r.id), company_id: cid, produto_id: String(r.produto_id||''), produto_nome: r.produto_nome||r.nome||'', tipo: r.tipo||'', qtd: Number(r.qtd)||0, motivo: r.motivo||'' }),
+    movimentacoes: r => ({ id: String(r.id), company_id: cid, produto_id: String(r.produto_id||''), produto_nome: r.produto_nome||r.produto||r.nome||'', produto: r.produto||r.produto_nome||r.nome||'', fornecedor: r.fornecedor||'', tipo: r.tipo||'', qtd: Number(r.qtd)||0, motivo: r.motivo||'', data: r.data||new Date().toISOString() }),
   };
 
   const fn = limpar[mod];
@@ -2804,8 +2804,19 @@ window._syncTudo = async function _syncTudo() {
       }));
       localStorage.setItem(getKey('vendas'), JSON.stringify(vendas));
     }
-    // Movimentações
-    if (m.data && m.data.length > 0) { movimentacoes = m.data; localStorage.setItem(getKey('movimentacoes'), JSON.stringify(movimentacoes)); }
+    // Movimentações — normalizar campos
+    if (m.data && m.data.length > 0) {
+      movimentacoes = m.data.map(x => ({
+        ...x,
+        id:          String(x.id),
+        qtd:         Number(x.qtd)||0,
+        produto:     x.produto||x.produto_nome||'',
+        produto_nome:x.produto_nome||x.produto||'',
+        fornecedor:  x.fornecedor||'',
+        data:        x.data||x.created_at||new Date().toISOString(),
+      }));
+      localStorage.setItem(getKey('movimentacoes'), JSON.stringify(movimentacoes));
+    }
 
     // Migração automática: se banco está vazio mas local tem dados, enviar pro banco
     const migKey = 'nexos_sync_' + cid;
@@ -3922,8 +3933,17 @@ async function syncDados() {
       localStorage.setItem(getKey('clientes'), JSON.stringify(clientes));
     }
     if (mv.data?.length) {
-      movimentacoes = mv.data.map(x => ({...x, id: String(x.id), qtd: Number(x.qtd)||0}));
+      movimentacoes = mv.data.map(x => ({
+        ...x,
+        id:          String(x.id),
+        qtd:         Number(x.qtd)||0,
+        produto:     x.produto||x.produto_nome||'',
+        produto_nome:x.produto_nome||x.produto||'',
+        fornecedor:  x.fornecedor||'',
+        data:        x.data||x.created_at||new Date().toISOString(),
+      }));
       localStorage.setItem(getKey('movimentacoes'), JSON.stringify(movimentacoes));
+      prodHistoricoRender();
     }
     dashAtualizar(); vendStats(); recRender(); despRender();
   } catch(e) {
