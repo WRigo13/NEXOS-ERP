@@ -188,6 +188,21 @@
     .dif-item h4 { font-size: .9rem; font-weight: 700; margin-bottom: 4px; }
     .dif-item p { font-size: .8rem; color: var(--muted); }
 
+    /* CARROSSEL */
+    .carousel-wrap { padding: 0 5% 72px; background: var(--bg); }
+    .carousel { max-width: 860px; margin: 0 auto; position: relative; }
+    .carousel-track { overflow: hidden; border-radius: 20px; box-shadow: 0 32px 80px rgba(27,68,145,.18); }
+    .carousel-slides { display: flex; transition: transform .45s cubic-bezier(.4,0,.2,1); }
+    .carousel-slide { min-width: 100%; }
+    .carousel-dots { display: flex; justify-content: center; gap: 8px; margin-top: 20px; }
+    .carousel-dot { width: 8px; height: 8px; border-radius: 50%; background: #bfdbfe; border: none; cursor: pointer; transition: background .2s, transform .2s; padding: 0; }
+    .carousel-dot.active { background: var(--azul); transform: scale(1.3); }
+    .carousel-btn { position: absolute; top: 50%; transform: translateY(-60%); background: white; border: 1px solid var(--border); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,.1); z-index: 2; }
+    .carousel-btn.prev { left: -20px; }
+    .carousel-btn.next { right: -20px; }
+    .slide-label { background: var(--azul); color: white; text-align: center; font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 8px; }
+    @media (max-width: 700px) { .carousel-btn { display: none; } }
+
     /* FAQ */
     .faq { background: var(--bg); }
     .faq-list { max-width: 680px; margin: 0 auto; }
@@ -222,7 +237,7 @@
 <!-- NAV -->
 <nav>
   <a href="https://nexoserp.com.br/landing.html" class="nav-brand">
-    <svg width="24" height="24" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="24" height="24" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Nexos ERP logo" role="img">
       <defs>
         <linearGradient id="na" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#93c5fd"/><stop offset="100%" stop-color="#3b82f6"/></linearGradient>
         <linearGradient id="nb" x1="100%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#bfdbfe"/><stop offset="100%" stop-color="#93c5fd"/></linearGradient>
@@ -280,52 +295,164 @@
   </div>
 </section>
 
-<!-- MOCKUP DASHBOARD -->
-<div class="mockup-wrap">
-  <div class="hero-preview">
-    <div class="preview-topbar">
-      <div class="preview-dots">
-        <span style="background:#ff5f57"></span>
-        <span style="background:#ffbd2e"></span>
-        <span style="background:#28ca41"></span>
-      </div>
-      <span style="color:rgba(255,255,255,.7);font-size:.82rem;margin-left:8px">Nexos — Dashboard</span>
-    </div>
-    <div class="preview-app">
-      <div class="preview-sidebar">
-        <div style="color:rgba(255,255,255,.4);font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:0 10px 8px">Principal</div>
-        <div class="preview-nav-item active">📊 Dashboard</div>
-        <div style="color:rgba(255,255,255,.4);font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:12px 10px 8px">Financeiro</div>
-        <div class="preview-nav-item">📈 Receitas</div>
-        <div class="preview-nav-item">📉 Despesas</div>
-        <div class="preview-nav-item">💰 Fluxo de Caixa</div>
-        <div style="color:rgba(255,255,255,.4);font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:12px 10px 8px">Comercial</div>
-        <div class="preview-nav-item">👥 Clientes</div>
-        <div class="preview-nav-item">📦 Produtos</div>
-        <div class="preview-nav-item">🛒 Vendas</div>
-      </div>
-      <div class="preview-content">
-        <div style="font-size:1.1rem;font-weight:800;color:#0d2464;margin-bottom:14px">Nexos <span style="font-size:.72rem;font-weight:500;color:#8aa0b8">/ Dashboard</span></div>
-        <div class="preview-kpi-row">
-          <div class="preview-kpi"><div class="lbl">Vendas hoje</div><div class="val" style="color:#16a34a">R$ 847</div></div>
-          <div class="preview-kpi"><div class="lbl">Vendas no mês</div><div class="val" style="color:#1B4491">R$ 8.450</div></div>
-          <div class="preview-kpi"><div class="lbl">Estoque</div><div class="val">312 un</div></div>
+<!-- CARROSSEL DE PAINÉIS -->
+<div class="carousel-wrap">
+  <div class="carousel">
+    <button class="carousel-btn prev" onclick="carouselMove(-1)" aria-label="Slide anterior">&#8249;</button>
+    <button class="carousel-btn next" onclick="carouselMove(1)" aria-label="Próximo slide">&#8250;</button>
+    <div class="carousel-track">
+      <div class="carousel-slides" id="carouselSlides">
+
+        <!-- SLIDE 1: Dashboard -->
+        <div class="carousel-slide">
+          <div class="slide-label">📊 Dashboard — Visão geral do negócio</div>
+          <div class="hero-preview" style="border-radius:0;box-shadow:none">
+          <div class="preview-topbar">
+            <div class="preview-dots">
+              <span style="background:#ff5f57"></span>
+              <span style="background:#ffbd2e"></span>
+              <span style="background:#28ca41"></span>
+            </div>
+            <span style="color:rgba(255,255,255,.7);font-size:.82rem;margin-left:8px">Nexos — Dashboard</span>
+          </div>
+            <div class="preview-app">
+        <div class="preview-sidebar">
+          <div style="color:rgba(255,255,255,.4);font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:0 10px 8px">Principal</div>
+          <div class="preview-nav-item active">📊 Dashboard</div>
+          <div style="color:rgba(255,255,255,.4);font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:12px 10px 8px">Financeiro</div>
+          <div class="preview-nav-item ">📈 Receitas</div>
+          <div class="preview-nav-item">📉 Despesas</div>
+          <div class="preview-nav-item ">💰 Fluxo de Caixa</div>
+          <div style="color:rgba(255,255,255,.4);font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:12px 10px 8px">Comercial</div>
+          <div class="preview-nav-item">👥 Clientes</div>
+          <div class="preview-nav-item">📦 Produtos</div>
+          <div class="preview-nav-item ">🛒 Vendas</div>
         </div>
-        <div class="preview-kpi-row">
-          <div class="preview-kpi"><div class="lbl">Clientes</div><div class="val" style="color:#1B4491">124</div></div>
-          <div class="preview-kpi"><div class="lbl">Receitas mês</div><div class="val" style="color:#16a34a">R$ 8.450</div></div>
-          <div class="preview-kpi"><div class="lbl">Despesas mês</div><div class="val" style="color:#dc2626">R$ 3.220</div></div>
-        </div>
-        <div class="preview-cashflow">
-          <div class="lbl">Saldo do mês</div>
-          <div class="val">R$ 5.230,00</div>
-          <div style="display:flex;gap:24px;margin-top:10px">
-            <div><div style="font-size:.6rem;opacity:.5">Receitas</div><div style="font-size:.82rem;font-weight:700">R$ 8.450</div></div>
-            <div><div style="font-size:.6rem;opacity:.5">Despesas</div><div style="font-size:.82rem;font-weight:700">R$ 3.220</div></div>
-            <div><div style="font-size:.6rem;opacity:.5">Saldo</div><div style="font-size:.82rem;font-weight:700;color:#86efac">+ R$ 5.230</div></div>
+              <div class="preview-content">
+                <div style="font-size:1.1rem;font-weight:800;color:#0d2464;margin-bottom:14px">Nexos <span style="font-size:.72rem;font-weight:500;color:#8aa0b8">/ Dashboard</span></div>
+                <div class="preview-kpi-row">
+                  <div class="preview-kpi"><div class="lbl">Vendas hoje</div><div class="val" style="color:#16a34a">R$ 847</div></div>
+                  <div class="preview-kpi"><div class="lbl">Vendas no mês</div><div class="val" style="color:#1B4491">R$ 8.450</div></div>
+                  <div class="preview-kpi"><div class="lbl">Estoque</div><div class="val">312 un</div></div>
+                </div>
+                <div class="preview-kpi-row">
+                  <div class="preview-kpi"><div class="lbl">Clientes</div><div class="val" style="color:#1B4491">124</div></div>
+                  <div class="preview-kpi"><div class="lbl">Receitas mês</div><div class="val" style="color:#16a34a">R$ 8.450</div></div>
+                  <div class="preview-kpi"><div class="lbl">Despesas mês</div><div class="val" style="color:#dc2626">R$ 3.220</div></div>
+                </div>
+                <div class="preview-cashflow">
+                  <div class="lbl">Saldo do mês</div><div class="val">R$ 5.230,00</div>
+                  <div style="display:flex;gap:24px;margin-top:10px">
+                    <div><div style="font-size:.6rem;opacity:.5">Receitas</div><div style="font-size:.82rem;font-weight:700">R$ 8.450</div></div>
+                    <div><div style="font-size:.6rem;opacity:.5">Despesas</div><div style="font-size:.82rem;font-weight:700">R$ 3.220</div></div>
+                    <div><div style="font-size:.6rem;opacity:.5">Saldo</div><div style="font-size:.82rem;font-weight:700;color:#86efac">+R$ 5.230</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+
+        <!-- SLIDE 2: Fluxo de Caixa -->
+        <div class="carousel-slide">
+          <div class="slide-label">💰 Fluxo de Caixa — Controle financeiro completo</div>
+          <div class="hero-preview" style="border-radius:0;box-shadow:none">
+          <div class="preview-topbar">
+            <div class="preview-dots">
+              <span style="background:#ff5f57"></span>
+              <span style="background:#ffbd2e"></span>
+              <span style="background:#28ca41"></span>
+            </div>
+            <span style="color:rgba(255,255,255,.7);font-size:.82rem;margin-left:8px">Nexos — Fluxo de Caixa</span>
+          </div>
+            <div class="preview-app">
+        <div class="preview-sidebar">
+          <div style="color:rgba(255,255,255,.4);font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:0 10px 8px">Principal</div>
+          <div class="preview-nav-item ">📊 Dashboard</div>
+          <div style="color:rgba(255,255,255,.4);font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:12px 10px 8px">Financeiro</div>
+          <div class="preview-nav-item ">📈 Receitas</div>
+          <div class="preview-nav-item">📉 Despesas</div>
+          <div class="preview-nav-item active">💰 Fluxo de Caixa</div>
+          <div style="color:rgba(255,255,255,.4);font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:12px 10px 8px">Comercial</div>
+          <div class="preview-nav-item">👥 Clientes</div>
+          <div class="preview-nav-item">📦 Produtos</div>
+          <div class="preview-nav-item ">🛒 Vendas</div>
+        </div>
+              <div class="preview-content">
+                <div style="font-size:1.1rem;font-weight:800;color:#0d2464;margin-bottom:12px">💰 Fluxo de Caixa <span style="font-size:.72rem;font-weight:500;color:#8aa0b8">/ Maio 2026</span></div>
+                <div class="preview-cashflow" style="margin-bottom:10px">
+                  <div class="lbl">Saldo líquido</div><div class="val">R$ 5.230,00</div>
+                  <div style="display:flex;gap:24px;margin-top:8px">
+                    <div><div style="font-size:.6rem;opacity:.5">Receitas</div><div style="font-size:.82rem;font-weight:700;color:#86efac">R$ 8.450</div></div>
+                    <div><div style="font-size:.6rem;opacity:.5">Despesas</div><div style="font-size:.82rem;font-weight:700;color:#fca5a5">R$ 3.220</div></div>
+                  </div>
+                </div>
+                <div style="background:white;border-radius:10px;border:1px solid #d0e4f7;overflow:hidden">
+                  <div style="display:grid;grid-template-columns:1fr 1fr 1.5fr 1fr 1fr;background:#f8faff;padding:7px 10px;font-size:.6rem;font-weight:700;text-transform:uppercase;color:#8aa0b8">
+                    <span>Data</span><span>Tipo</span><span>Descrição</span><span>Categ.</span><span>Valor</span>
+                  </div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr 1.5fr 1fr 1fr;padding:6px 10px;font-size:.68rem;border-top:1px solid #f1f5f9"><span>01/05</span><span style="color:#16a34a">Receita</span><span>Venda PDV</span><span>Venda</span><span style="color:#16a34a;font-weight:700">+R$320</span></div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr 1.5fr 1fr 1fr;padding:6px 10px;font-size:.68rem;background:#f8faff;border-top:1px solid #f1f5f9"><span>02/05</span><span style="color:#dc2626">Despesa</span><span>Aluguel</span><span>Fixo</span><span style="color:#dc2626;font-weight:700">−R$800</span></div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr 1.5fr 1fr 1fr;padding:6px 10px;font-size:.68rem;border-top:1px solid #f1f5f9"><span>03/05</span><span style="color:#16a34a">Receita</span><span>Venda PDV</span><span>Venda</span><span style="color:#16a34a;font-weight:700">+R$527</span></div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr 1.5fr 1fr 1fr;padding:6px 10px;font-size:.68rem;background:#f8faff;border-top:1px solid #f1f5f9"><span>04/05</span><span style="color:#16a34a">Receita</span><span>Cobrança</span><span>Serviço</span><span style="color:#16a34a;font-weight:700">+R$400</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 3: Vendas -->
+        <div class="carousel-slide">
+          <div class="slide-label">🛒 Vendas — Histórico e PDV integrado</div>
+          <div class="hero-preview" style="border-radius:0;box-shadow:none">
+          <div class="preview-topbar">
+            <div class="preview-dots">
+              <span style="background:#ff5f57"></span>
+              <span style="background:#ffbd2e"></span>
+              <span style="background:#28ca41"></span>
+            </div>
+            <span style="color:rgba(255,255,255,.7);font-size:.82rem;margin-left:8px">Nexos — Vendas</span>
+          </div>
+            <div class="preview-app">
+        <div class="preview-sidebar">
+          <div style="color:rgba(255,255,255,.4);font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:0 10px 8px">Principal</div>
+          <div class="preview-nav-item ">📊 Dashboard</div>
+          <div style="color:rgba(255,255,255,.4);font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:12px 10px 8px">Financeiro</div>
+          <div class="preview-nav-item ">📈 Receitas</div>
+          <div class="preview-nav-item">📉 Despesas</div>
+          <div class="preview-nav-item ">💰 Fluxo de Caixa</div>
+          <div style="color:rgba(255,255,255,.4);font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:12px 10px 8px">Comercial</div>
+          <div class="preview-nav-item">👥 Clientes</div>
+          <div class="preview-nav-item">📦 Produtos</div>
+          <div class="preview-nav-item active">🛒 Vendas</div>
+        </div>
+              <div class="preview-content">
+                <div style="font-size:1.1rem;font-weight:800;color:#0d2464;margin-bottom:12px">🛒 Vendas <span style="font-size:.72rem;font-weight:500;color:#8aa0b8">/ este mês</span></div>
+                <div class="preview-kpi-row" style="margin-bottom:10px">
+                  <div class="preview-kpi"><div class="lbl">Vendas hoje</div><div class="val" style="color:#16a34a">R$ 847</div></div>
+                  <div class="preview-kpi"><div class="lbl">Qtd. vendas</div><div class="val" style="color:#1B4491">38</div></div>
+                  <div class="preview-kpi"><div class="lbl">Ticket médio</div><div class="val">R$ 222</div></div>
+                </div>
+                <div style="background:white;border-radius:10px;border:1px solid #d0e4f7;overflow:hidden">
+                  <div style="display:grid;grid-template-columns:1fr 1.5fr 1fr 1fr;background:#f8faff;padding:7px 10px;font-size:.6rem;font-weight:700;text-transform:uppercase;color:#8aa0b8">
+                    <span>Data</span><span>Cliente</span><span>Pagto</span><span>Total</span>
+                  </div>
+                  <div style="display:grid;grid-template-columns:1fr 1.5fr 1fr 1fr;padding:6px 10px;font-size:.68rem;border-top:1px solid #f1f5f9"><span>06/06</span><span>Maria Silva</span><span>PIX</span><span style="color:#16a34a;font-weight:700">R$320</span></div>
+                  <div style="display:grid;grid-template-columns:1fr 1.5fr 1fr 1fr;padding:6px 10px;font-size:.68rem;background:#f8faff;border-top:1px solid #f1f5f9"><span>06/06</span><span>João Ramos</span><span>Dinheiro</span><span style="color:#16a34a;font-weight:700">R$85</span></div>
+                  <div style="display:grid;grid-template-columns:1fr 1.5fr 1fr 1fr;padding:6px 10px;font-size:.68rem;border-top:1px solid #f1f5f9"><span>05/06</span><span>Distribuidora X</span><span>PIX</span><span style="color:#16a34a;font-weight:700">R$442</span></div>
+                  <div style="display:grid;grid-template-columns:1fr 1.5fr 1fr 1fr;padding:6px 10px;font-size:.68rem;background:#f8faff;border-top:1px solid #f1f5f9"><span>05/06</span><span>Ana Costa</span><span>Cartão</span><span style="color:#16a34a;font-weight:700">R$198</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
+    </div>
+    <div class="carousel-dots">
+      <button class="carousel-dot active" onclick="carouselGo(0)" aria-label="Dashboard"></button>
+      <button class="carousel-dot" onclick="carouselGo(1)" aria-label="Fluxo de Caixa"></button>
+      <button class="carousel-dot" onclick="carouselGo(2)" aria-label="Vendas"></button>
     </div>
   </div>
 </div>
@@ -470,8 +597,10 @@
 <!-- FOOTER -->
 <footer>
   <span>© 2026 Nexos ERP — Sistema de Gestão para MEI</span>
-  <div style="display:flex;gap:20px">
+  <div style="display:flex;gap:20px;flex-wrap:wrap">
     <a href="https://nexoserp.com.br/landing.html">Home</a>
+    <a href="https://nexoserp.com.br/landing.html#planos">Planos</a>
+    <a href="https://nexoserp.com.br/politica-privacidade.html">Política de Privacidade</a>
     <a href="https://nexoserp.com.br/">Entrar</a>
     <a href="mailto:contato@nexoserp.com.br">Contato</a>
   </div>
@@ -485,6 +614,72 @@ function toggleFaq(btn) {
   document.querySelectorAll('.faq-q').forEach(x => x.classList.remove('open'));
   if (!open) { a.classList.add('open'); btn.classList.add('open'); }
 }
+
+// ── Carrossel acessível ──────────────────────────────────────
+(function() {
+  const total   = 3;
+  let idx       = 0;
+  let paused    = false;
+  let timer     = null;
+
+  const slides  = document.getElementById('carouselSlides');
+  const track   = slides?.closest('.carousel-track');
+  const dots    = document.querySelectorAll('.carousel-dot');
+  const wrap    = slides?.closest('.carousel');
+
+  if (!slides) return;
+
+  // ARIA no track
+  track.setAttribute('role', 'region');
+  track.setAttribute('aria-label', 'Capturas de tela do Nexos ERP');
+  track.setAttribute('aria-live', 'polite');
+
+  // ARIA nos slides
+  document.querySelectorAll('.carousel-slide').forEach((s, i) => {
+    s.setAttribute('role', 'group');
+    s.setAttribute('aria-roledescription', 'slide');
+    s.setAttribute('aria-label', `Slide ${i + 1} de ${total}`);
+    s.setAttribute('aria-hidden', i !== 0 ? 'true' : 'false');
+  });
+
+  function go(n, focus) {
+    idx = (n + total) % total;
+    slides.style.transform = `translateX(-${idx * 100}%)`;
+    dots.forEach((d, i) => {
+      d.classList.toggle('active', i === idx);
+      d.setAttribute('aria-selected', i === idx ? 'true' : 'false');
+    });
+    document.querySelectorAll('.carousel-slide').forEach((s, i) => {
+      s.setAttribute('aria-hidden', i !== idx ? 'true' : 'false');
+    });
+    if (focus) dots[idx]?.focus();
+  }
+
+  window.carouselGo   = (n)   => go(n, true);
+  window.carouselMove = (dir) => go(idx + dir, false);
+
+  // ARIA nos dots
+  dots.forEach((d, i) => {
+    d.setAttribute('role', 'tab');
+    d.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+    d.setAttribute('aria-controls', 'carouselSlides');
+  });
+
+  // Navegação por teclado no carrossel
+  wrap.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft')  { carouselMove(-1); paused = true; }
+    if (e.key === 'ArrowRight') { carouselMove(1);  paused = true; }
+  });
+
+  // Pausa no hover e focus
+  wrap.addEventListener('mouseenter', () => { paused = true; });
+  wrap.addEventListener('mouseleave', () => { paused = false; });
+  wrap.addEventListener('focusin',    () => { paused = true; });
+  wrap.addEventListener('focusout',   () => { paused = false; });
+
+  // Auto-play com pausa respeitada
+  timer = setInterval(() => { if (!paused) carouselMove(1); }, 4000);
+})();
 </script>
 </body>
 </html>
